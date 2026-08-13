@@ -302,6 +302,14 @@ const AI_KEY = 'cybermerge_ai_unlock_day';  // 存最后一次看广告解锁智
 const AI_TICK_MS = 180;                     // AI 循环周期（毫秒）：不要太快避免卡顿
 const ADSGRAM_BLOCK_ID = '42649';          // Adsgram 激励视频广告单元 ID
 
+// ═══════ 每日任务：3 个 Adsgram 任务广告单元 + 金币奖励 ═══════
+const DAILY_TASKS = [
+  { key: 'task-42653', blockId: 'task-42653', icon: '📺', name: '看视频领金币', desc: '观看广告领取 500 金币', coins: 500 },
+  { key: 'task-42654', blockId: 'task-42654', icon: '🎁', name: '看视频领金币', desc: '观看广告领取 800 金币', coins: 800 },
+  { key: 'task-42655', blockId: 'task-42655', icon: '💰', name: '看视频领金币', desc: '观看广告领取 1200 金币', coins: 1200 },
+];
+const TASK_DONE_KEY = 'cybermerge_daily_tasks';  // 存 { date, done: [taskKey] }，每日重置
+
 // ═══════ 提现进度/创世分红：阶梯提现比例 + 里程碑 ═══════
 const WD_AD_LIMIT = 3;                      // 看视频临时特权每日上限 3 次
 const WD_MILESTONES = [
@@ -1121,6 +1129,70 @@ function watchAd() {
   }
 }
 
+// ═══════ 每日任务：弹窗 + Adsgram 任务广告 ═══════
+function getDoneTasks() {
+  const today = todayStr();
+  try {
+    const raw = localStorage.getItem(TASK_DONE_KEY);
+    const obj = raw ? JSON.parse(raw) : { date: today, done: [] };
+    if (obj.date !== today) return { date: today, done: [] };  // 每日重置
+    return obj;
+  } catch(_) { return { date: today, done: [] }; }
+}
+function isTaskDone(key) {
+  return getDoneTasks().done.includes(key);
+}
+function markTaskDone(key) {
+  const t = getDoneTasks();
+  if (!t.done.includes(key)) t.done.push(key);
+  try { localStorage.setItem(TASK_DONE_KEY, JSON.stringify(t)); } catch(_) {}
+}
+function renderTasks() {
+  const list = document.getElementById('task-list');
+  if (!list) return;
+  list.innerHTML = '';
+  DAILY_TASKS.forEach(task => {
+    const done = isTaskDone(task.key);
+    const item = d('button', 'task-item' + (done ? ' task-done' : ''));
+    item.type = 'button';
+    item.innerHTML =
+      '<span class="task-icon">' + task.icon + '</span>' +
+      '<span class="task-info">' +
+        '<span class="task-name">' + task.name + '</span>' +
+        '<span class="task-desc">' + task.desc + '</span>' +
+      '</span>' +
+      '<span class="task-reward">' + (done ? '✅ 已完成' : '领取 +' + task.coins) + '</span>';
+    if (!done) item.addEventListener('click', () => doTask(task));
+    list.appendChild(item);
+  });
+}
+function doTask(task) {
+  try {
+    if (!window.Adsgram) { toast('广告系统未加载，请稍后再试','warn'); return; }
+    const AdController = window.Adsgram.init({ blockId: task.blockId });
+    AdController.show()
+      .then(() => {
+        // 发金币奖励 + 标记完成 + 立即云存档
+        S.usdt = parseFloat((S.usdt + task.coins).toFixed(4));
+        markTaskDone(task.key);
+        ui();
+        toast(task.icon + ' 任务完成！获得 ' + task.coins + ' 金币','success');
+        saveCloudNow();
+        renderTasks();                     // 刷新任务列表（标记已完成）
+      })
+      .catch(() => toast('广告未看完，无法获得奖励','warn'));
+  } catch(_) {
+    toast('广告加载失败，请稍后再试','warn');
+  }
+}
+function openTasks() {
+  renderTasks();
+  document.getElementById('task-modal')?.classList.add('show');
+}
+function closeTasks() {
+  document.getElementById('task-modal')?.classList.remove('show');
+}
+
 // ═══════ 拖拽（2 只同等级合成升级）═══════
 function down(e) {
   if(e.button!==undefined&&e.button!==0) return;
@@ -1364,22 +1436,10 @@ function btn(){
   document.getElementById('btn-ads')?.addEventListener('click',openPokedex);
   // TON 钱包链接按钮
   document.getElementById('btn-connect-wallet')?.addEventListener('click', connectWallet);
-  // 每日任务墙：TG 暴利引擎 - 关注频道/绑定推特等外部变现任务入口
-  document.getElementById('btn-task-wall')?.addEventListener('click', () => {
-    // TODO: 后端任务墙 API，例如 /api/tasks?user=xxx
-    // 阶段 1：跳转到任务墙外链（TG 频道关注 / 推特绑定 / YouTube 订阅等）
-    const taskWallUrl = 'https://t.me/CyberMergeBot?start=taskwall';
-    if (tg && tg.openTelegramLink) {
-      tg.openTelegramLink('https://t.me/share/url?url=' + encodeURIComponent(taskWallUrl));
-    } else {
-      try {
-        navigator.clipboard?.writeText(taskWallUrl);
-        toast('📋 任务墙链接已复制！去 Telegram 完成任务赚金币~', 'success');
-      } catch (_) {
-        toast('🔗 任务墙：' + taskWallUrl, 'info');
-      }
-    }
-  });
+  // 每日任务：打开每日任务弹窗（3 个 Adsgram 任务广告）
+  document.getElementById('btn-task-wall')?.addEventListener('click', openTasks);
+  document.getElementById('task-close')?.addEventListener('click', closeTasks);
+  document.getElementById('task-modal')?.addEventListener('click', (e) => { if (e.target.id === 'task-modal') closeTasks(); });
   document.getElementById('pokedex-close')?.addEventListener('click',closePokedex);
   document.getElementById('pokedex-modal')?.addEventListener('click',(e)=>{ if(e.target.id==='pokedex-modal') closePokedex(); });
   const aiBtn = document.querySelector('.ai-merge-btn');
