@@ -537,7 +537,7 @@
    占中间区约 8% 屏幕高度
    ═══════════════════════════════════════════ */
 .timer-card {
-  display: none;                           /* 隐藏鱼池横幅（红心 + 000000000.000$），用户要求移除 */
+  display: none;                           /* 顶部鱼池横幅：用户要求隐藏，不显示 */
   align-items: center;
   justify-content: space-between;          /* 370 拉满后：爱心贴左 / rate 贴右 / 数字居中 —— 视觉均匀 */
   gap: 8px;
