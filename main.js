@@ -301,6 +301,7 @@ const S = {
 const AI_KEY = 'cybermerge_ai_unlock_day';  // 存最后一次看广告解锁智能合成的日期 "YYYY-MM-DD"
 const AI_TICK_MS = 180;                     // AI 循环周期（毫秒）：不要太快避免卡顿
 const ADSGRAM_BLOCK_ID = '42649';          // Adsgram 激励视频广告单元 ID
+const AI_AD_BLOCK_ID = '42657';            // 智能合成解锁激励视频广告单元 ID
 
 // ═══════ 每日任务：3 个 Adsgram 任务广告单元 + 金币奖励 ═══════
 const DAILY_TASKS = [
@@ -530,32 +531,42 @@ function aiTick() {
   }
 }
 
-// 点击智能合成按钮：未解锁→看广告解锁→开；已解锁→开关切换
+// 点击智能合成按钮：未解锁→看激励视频广告解锁→开；已解锁→开关切换
 function toggleAiMerge(e) {
   if (e) { e.preventDefault?.(); e.stopPropagation?.(); }
   if (!isAiUnlockedToday()) {
-    // 签到解锁今日智能合成（消耗 1 次广告/签到次数，同时给签到奖励）
-    if (S.adUsedToday >= AD_DAILY_LIMIT) {
-      toast('今日签到次数用完啦，明天再开启智能合成~','warn');
-      return;
-    }
+    // 未解锁今日：看一次激励视频广告（Adsgram 42657）才能开启智能合成
     const lv = adRewardLv();
     let idx = -1; for (let i = 0; i < TOTAL; i++) if (S.grid[i] === null) { idx = i; break; }
     if (idx === -1) {
       toast('猫窝满啦！先合一下腾位~','warn');
       return;
     }
-    S.adUsedToday++;
-    setAiUnlockedToday();
-    // 签到奖励（1只 LV.X 猫）+ 开启智能合成
-    S.grid[idx] = lv;
-    draw(idx);
-    const pet = g?.children[idx]?.querySelector('.pet-card');
-    if (pet) { pet.classList.add('pet-spawn'); pet.addEventListener('animationend',()=>pet.classList.remove('pet-spawn'),{once:true}); }
-    collect(lv);
-    startAiLoop();
-    toast('📅 签到成功！智能合成已开启，获得 '+CATS[lv].name+' LV.'+lv,'success');
-    ui();
+
+    const unlockAfterAd = () => {
+      S.adUsedToday++;
+      setAiUnlockedToday();
+      // 解锁奖励（1只 LV.X 猫）+ 开启智能合成
+      S.grid[idx] = lv;
+      draw(idx);
+      const pet = g?.children[idx]?.querySelector('.pet-card');
+      if (pet) { pet.classList.add('pet-spawn'); pet.addEventListener('animationend',()=>pet.classList.remove('pet-spawn'),{once:true}); }
+      collect(lv);
+      startAiLoop();
+      toast('🎬 看广告成功！智能合成已开启，获得 '+CATS[lv].name+' LV.'+lv,'success');
+      ui();
+      saveCloudNow();
+    };
+
+    try {
+      if (!window.Adsgram) { toast('广告系统未加载，请稍后再试','warn'); return; }
+      const AdController = window.Adsgram.init({ blockId: AI_AD_BLOCK_ID });
+      AdController.show()
+        .then(() => unlockAfterAd())                                  // 看完广告 → 解锁 + 发奖励 + 存档
+        .catch(() => toast('广告未看完，无法开启智能合成','warn'));   // 中途关闭 / 失败
+    } catch(_) {
+      toast('广告加载失败，请稍后再试','warn');
+    }
     return;
   }
   // 已解锁 → 切换开关
