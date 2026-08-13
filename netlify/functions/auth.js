@@ -57,13 +57,22 @@ export const handler = async function (event, context) {
 
   try {
     const body = JSON.parse(event.body);
-    const { initData, action, data } = body;
+    const { initData, action, data, inviterId } = body;
 
     if (!initData) {
       return { statusCode: 401, body: JSON.stringify({ success: false, message: '无授权信息' }) };
     }
 
-    const v = verifyInitData(initData);
+    // 测试模式（环境变量 ALLOW_TEST_AUTH=true）：测试数据无 hash 时跳过验真，仅用于电脑浏览器本地调试
+    let v;
+    if (process.env.ALLOW_TEST_AUTH === 'true' && !initData.includes('hash=')) {
+      const p = new URLSearchParams(initData);
+      let u = null;
+      try { const ur = p.get('user'); if (ur) u = JSON.parse(ur); } catch(_) {}
+      v = { ok: true, user: u };
+    } else {
+      v = verifyInitData(initData);
+    }
     if (!v.ok) {
       return { statusCode: 403, body: JSON.stringify({ success: false, message: '验真失败' }) };
     }
@@ -94,6 +103,20 @@ export const handler = async function (event, context) {
       };
       await col.insertOne(newUser);
       user = newUser;
+
+      // 邀请裂变：新用户带 inviterId 时，给邀请者发金币奖励 + inviteCount++
+      if (inviterId) {
+        const inviterTgId = String(inviterId);
+        if (inviterTgId !== tgId) {                 // 防止自己邀请自己
+          const inviter = await col.findOne({ tgId: inviterTgId });
+          if (inviter) {
+            await col.updateOne(
+              { tgId: inviterTgId },
+              { $inc: { coins: 5000, inviteCount: 1 }, $set: { updatedAt: Date.now() } }
+            );
+          }
+        }
+      }
     }
 
     // save 动作：把前端最新存档写回 MongoDB

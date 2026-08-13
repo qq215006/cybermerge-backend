@@ -619,6 +619,21 @@ function twa() {
   } catch(_){}
 }
 
+// ═══════ 邀请裂变：生成带邀请者 TG ID 的短链 ═══════
+const INVITE_BASE_URL = 'https://t.me/CyberCatMergeBot/app?startapp=';  // 邀请短链前缀（startapp 后接邀请者 tgId）
+
+function buildInviteLink() {
+  const myId = tg?.initDataUnsafe?.user?.id;
+  return INVITE_BASE_URL + (myId ? myId : '');
+}
+
+// 普通浏览器调试：initData 为空时填充伪造测试数据（配合后端 ALLOW_TEST_AUTH=true 测试模式）
+const TEST_INIT_DATA = 'query_id=test&user=%7B%22id%22%3A12345678%2C%22first_name%22%3A%22TestUser%22%7D';
+
+function getInitData() {
+  return window.Telegram?.WebApp?.initData || TEST_INIT_DATA;
+}
+
 // ═══════ 云存档：Telegram 鉴权 + 拉取/写回 MongoDB（Netlify Functions）═══════
 
 // 收集需要云端保存的完整存档
@@ -644,8 +659,7 @@ function collectCloudData() {
 
 // 立即写回云端（不防抖）
 async function saveCloudNow() {
-  const initData = window.Telegram?.WebApp?.initData;
-  if (!initData) return;
+  const initData = getInitData();
   try {
     await fetch('/.netlify/functions/auth', {
       method: 'POST',
@@ -665,12 +679,13 @@ function saveCloud() {
 // 初始化：向后端鉴权并恢复完整云存档（金币 / grid / 图鉴 / 设置等）
 async function syncBackend() {
   try {
-    const initData = window.Telegram?.WebApp?.initData;
-    if (!initData) return;                              // 非 Telegram 环境（本地浏览器）直接跳过
+    const initData = getInitData();                     // Telegram 环境用真实 initData，普通浏览器用测试数据
+    // 提取邀请者 ID（通过 startapp 参数传入，被邀请的新用户才会有）
+    const inviterId = window.Telegram?.WebApp?.initDataUnsafe?.start_param || '';
     const resp = await fetch('/.netlify/functions/auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'login', initData })
+      body: JSON.stringify({ action: 'login', initData, inviterId })
     });
     const data = await resp.json();
     if (!data.success || !data.user) return;
@@ -1300,7 +1315,7 @@ function btn(){
   });
   // 邀请 3 名好友跃升下一级比例（复用邀请分享）
   document.getElementById('wd-invite-btn')?.addEventListener('click', () => {
-    const inviteUrl = 'https://t.me/CyberMergeBot?start=invite';
+    const inviteUrl = buildInviteLink();
     if (tg && tg.openTelegramLink) {
       tg.openTelegramLink('https://t.me/share/url?url=' + encodeURIComponent(inviteUrl) + '&text=' + encodeURIComponent('快来 CyberMerge 合成猫咪，瓜分大奖池！🐱💰'));
     } else {
@@ -1314,8 +1329,8 @@ function btn(){
   document.getElementById('btn-merge')?.addEventListener('click',buy);
   document.getElementById('btn-ad-reward')?.addEventListener('click',watchAd);
   document.getElementById('btn-invite')?.addEventListener('click', () => {
-    // 邀请链接：邀请者带入参（这里只放 bot 链接，后续可加 inviter_id）
-    const inviteUrl = 'https://t.me/CyberMergeBot?start=invite';
+    // 邀请链接带上当前用户 tgId，被邀请者点进来后 start_param 会带上这个 ID
+    const inviteUrl = buildInviteLink();
     // Telegram 内：走原生分享，弹出好友选择
     if (tg && tg.openTelegramLink) {
       tg.openTelegramLink('https://t.me/share/url?url=' + encodeURIComponent(inviteUrl) + '&text=' + encodeURIComponent('快来 CyberMerge 合成猫咪，瓜分大奖池！🐱💰'));
@@ -1476,8 +1491,7 @@ function init(){
   syncBackend();
   // 关闭/切后台兜底保存：完全静默（不 preventDefault、不设 returnValue），避免弹「确认离开」框
   const beaconSave = () => {
-    const initData = window.Telegram?.WebApp?.initData;
-    if (!initData) return;
+    const initData = getInitData();
     try {
       const payload = JSON.stringify({ action: 'save', initData, data: collectCloudData() });
       navigator.sendBeacon('/.netlify/functions/auth', new Blob([payload], { type: 'application/json' }));
