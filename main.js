@@ -300,7 +300,7 @@ const S = {
 };
 const AI_KEY = 'cybermerge_ai_unlock_day';  // 存最后一次看广告解锁智能合成的日期 "YYYY-MM-DD"
 const AI_TICK_MS = 180;                     // AI 循环周期（毫秒）：不要太快避免卡顿
-const ADSGRAM_BLOCK_ID = '12345678';        // Adsgram 广告位 ID（临时占位符，需替换为真实 blockId）
+const ADSGRAM_BLOCK_ID = '42649';          // Adsgram 激励视频广告单元 ID
 
 // ═══════ 提现进度/创世分红：阶梯提现比例 + 里程碑 ═══════
 const WD_AD_LIMIT = 3;                      // 看视频临时特权每日上限 3 次
