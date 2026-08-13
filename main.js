@@ -757,7 +757,6 @@ function collectCloudData() {
     adUsedToday: S.adUsedToday,
     wdAdUsed: S.wdAdUsed,
     pokedex: [...collected],
-    inviteCount: S.inviteCount,
     aiUnlockDay: lsGet(AI_KEY, ''),
     settings: {
       lang: _lang,
@@ -1510,8 +1509,6 @@ function btn(){
       try { navigator.clipboard?.writeText(inviteUrl); toast(t('t_invite_copied'), 'success'); }
       catch (_) { toast(t('t_invite_link') + inviteUrl, 'info'); }
     }
-    S.inviteCount++;
-    saveCloudNow();   // 邀请是核心动作，立即落库
   });
 
   document.getElementById('btn-merge')?.addEventListener('click',buy);
@@ -1531,8 +1528,6 @@ function btn(){
         toast(t('t_invite_link') + inviteUrl, 'info');
       }
     }
-    S.inviteCount++;
-    saveCloudNow();   // 邀请是核心动作，立即落库
   });
   document.getElementById('btn-ads')?.addEventListener('click',openPokedex);
   // TON 钱包链接按钮

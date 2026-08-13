@@ -201,7 +201,6 @@ export const handler = async function (event, context) {
       if (typeof data.adUsedToday === 'number') { sets.push(`ad_used_today = $${i++}`); params.push(data.adUsedToday); }
       if (typeof data.wdAdUsed === 'number') { sets.push(`wd_ad_used = $${i++}`); params.push(data.wdAdUsed); }
       if (Array.isArray(data.pokedex)) { sets.push(`pokedex = $${i++}`); params.push(JSON.stringify(data.pokedex.filter(x => typeof x === 'number'))); }
-      if (typeof data.inviteCount === 'number') { sets.push(`invite_count = $${i++}`); params.push(data.inviteCount); }
       if (typeof data.aiUnlockDay === 'string') { sets.push(`ai_unlock_day = $${i++}`); params.push(data.aiUnlockDay); }
 
       if (data.settings && typeof data.settings === 'object') {
