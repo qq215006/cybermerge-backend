@@ -300,6 +300,7 @@ const S = {
 };
 const AI_KEY = 'cybermerge_ai_unlock_day';  // 存最后一次看广告解锁智能合成的日期 "YYYY-MM-DD"
 const AI_TICK_MS = 180;                     // AI 循环周期（毫秒）：不要太快避免卡顿
+const ADSGRAM_BLOCK_ID = '12345678';        // Adsgram 广告位 ID（临时占位符，需替换为真实 blockId）
 
 // ═══════ 提现进度/创世分红：阶梯提现比例 + 里程碑 ═══════
 const WD_AD_LIMIT = 3;                      // 看视频临时特权每日上限 3 次
@@ -1052,7 +1053,7 @@ function buy() {
   saveCloudNow();   // 买猫是核心动作，立即落库防丢档
 }
 
-// ═══════ 加速可产出（不花金币，给 adRewardLv() 等级的猫）═══════
+// ═══════ 加速可产出（看 Adsgram 广告，成功看完才给猫）═══════
 function watchAd() {
   if (S.adUsedToday >= AD_DAILY_LIMIT) {
     toast('今日加速次数已用完，明日再来~','warn');
@@ -1060,16 +1061,34 @@ function watchAd() {
   }
   let idx = -1; for (let i = 0; i < TOTAL; i++) if (S.grid[i] === null) { idx = i; break; }
   if (idx === -1) { toast('猫窝满啦！先合一下腾位~','warn'); return; }
-  const lv = adRewardLv();
-  S.adUsedToday++;
-  S.grid[idx] = lv;
-  draw(idx);
-  ui();
-  let pet = g?.children[idx]?.querySelector('.pet-card');
-  if (pet) { pet.classList.add('pet-spawn'); pet.addEventListener('animationend',()=>pet.classList.remove('pet-spawn'),{once:true}); }
-  collect(lv);
-  toast('⚡ 加速成功！获得 '+CATS[lv].name+' LV.'+lv,'success');
-  saveCloudNow();   // 加速得猫也是核心动作，立即落库
+
+  // 成功看完广告后发放加速奖励并立即落库
+  const grantReward = () => {
+    const lv = adRewardLv();
+    S.adUsedToday++;
+    S.grid[idx] = lv;
+    draw(idx);
+    ui();
+    let pet = g?.children[idx]?.querySelector('.pet-card');
+    if (pet) { pet.classList.add('pet-spawn'); pet.addEventListener('animationend',()=>pet.classList.remove('pet-spawn'),{once:true}); }
+    collect(lv);
+    toast('⚡ 加速成功！获得 '+CATS[lv].name+' LV.'+lv,'success');
+    saveCloudNow();   // 加速得猫也是核心动作，立即落库
+  };
+
+  // 接入 Adsgram 广告
+  try {
+    if (!window.Adsgram) {
+      toast('广告系统未加载，请稍后再试','warn');
+      return;
+    }
+    const AdController = window.Adsgram.init({ blockId: ADSGRAM_BLOCK_ID });
+    AdController.show()
+      .then(() => grantReward())                                 // 成功看完 → 发奖励 + 存档
+      .catch(() => toast('广告未看完，无法获得奖励','warn'));    // 中途关闭 / 拉取失败
+  } catch(_) {
+    toast('广告加载失败，请稍后再试','warn');
+  }
 }
 
 // ═══════ 拖拽（2 只同等级合成升级）═══════
