@@ -719,6 +719,10 @@ async function syncBackend() {
     if (typeof u.adUsedToday === 'number') S.adUsedToday = u.adUsedToday;
     if (typeof u.wdAdUsed === 'number') S.wdAdUsed = u.wdAdUsed;
     if (typeof u.inviteCount === 'number') S.inviteCount = u.inviteCount;
+    // 恢复智能合成签到解锁日期
+    if (typeof u.aiUnlockDay === 'string' && u.aiUnlockDay) {
+      try { localStorage.setItem(AI_KEY, u.aiUnlockDay); } catch(_) {}
+    }
 
     // 恢复图鉴
     if (Array.isArray(u.pokedex)) {
