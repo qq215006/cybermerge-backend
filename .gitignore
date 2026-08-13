@@ -1,0 +1,34 @@
+# 依赖
+node_modules/
+
+# 构建产物
+dist/
+
+# 后端运行时生成的用户数据
+data/
+
+# 环境变量（含 BOT_TOKEN，切勿提交）
+.env
+.env.local
+.env.*
+!.env.example
+
+# 误生成的 npm 缓存/包目录
+.npm/
+package/
+
+# 原始素材（已处理为 public/ 下的 png，无需入库）
+*.jpeg
+*.jpg
+*.png.bak
+
+# 日志
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#fff3e0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>CyberMerge</title>
+
+  <!-- Telegram Web App SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- Tailwind CSS (Vite PostCSS 构建) -->
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <!-- 房间背景装饰层 -->
+  <div id="room-bg">
+    <!-- 左：窗户 + 窗帘 -->
+    <div class="room-window">
+      <div class="window-frame">
+        <div class="window-glass"></div>
+      </div>
+      <div class="curtain curtain-left"></div>
+      <div class="curtain curtain-right"></div>
+    </div>
+    <!-- 左：猫爬架 -->
+    <div class="room-cattree">
+      <div class="cattree-base"></div>
+      <div class="cattree-post"></div>
+      <div class="cattree-platform cattree-p1"></div>
+      <div class="cattree-platform cattree-p2"></div>
+      <div class="cattree-platform cattree-p3"></div>
+      <div class="cattree-house"></div>
+    </div>
+    <!-- 左：绿植 + 鹦鹉 -->
+    <div class="room-plant">
+      <div class="plant-pot"></div>
+      <div class="plant-leaf plant-l1"></div>
+      <div class="plant-leaf plant-l2"></div>
+      <div class="plant-leaf plant-l3"></div>
+    </div>
+    <div class="room-parrot">
+      <div class="parrot-body"></div>
+      <div class="parrot-wing"></div>
+      <div class="parrot-beak"></div>
+    </div>
+  </div>
+
+  <!-- 9:16 锁定框：桌面黑边居中裁剪，移动端满屏 100dvh -->
+  <div id="stage" class="
+    fixed inset-0 z-0
+    flex items-center justify-center
+  "></div>
+  <div id="app" class="
+    relative
+    w-full h-[100dvh] max-w-[430px] mx-auto
+    flex flex-col
+    overflow-hidden
+    shadow-[0_0_60px_rgba(0,0,0,0.25)]
+  ">
+
+    <!-- ═══════════ 顶部区域 ═══════════ -->
+    <header id="top-bar" class="shrink-0 px-2 pt-2">
+      <!-- 第一行：双红色余额胶囊 + 暗币按钮 -->
+      <div class="top-row flex gap-2 items-center">
+        <button id="btn-leaderboard" class="balance-pill balance-pill-left leaderboard-btn" type="button">
+          <span class="bp-icon">🌍</span>
+          <span class="leaderboard-label" data-i18n="leaderboard">全球等级榜</span>
+        </button>
+        <button id="btn-withdraw" class="balance-pill balance-pill-right flex-1 leaderboard-btn" type="button">
+          <span class="bp-icon">🎁</span>
+          <span class="leaderboard-label" data-i18n="withdraw_btn">分红进度</span>
+        </button>
+        <button id="btn-settings" class="settings-btn" aria-label="系统设置">
+          <svg class="gear-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <path fill="currentColor" d="M19.14 12.94a7.49 7.49 0 0 0 .05-.94 7.49 7.49 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.61-.22l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96a.5.5 0 0 0-.61.22L2.65 8.84a.5.5 0 0 0 .12.64L4.8 11.06c-.03.31-.05.62-.05.94s.02.63.05.94L2.77 14.52a.5.5 0 0 0-.12.64l1.92 3.32c.13.23.4.32.61.22l2.39-.96c.49.38 1.03.7 1.62.94l.36 2.54c.05.24.26.42.5.42h3.84c.24 0 .45-.18.5-.42l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.21.1.48.01.61-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.04-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- 第二行：等级进度条 -->
+      <div class="level-bar flex items-center gap-2 mt-2">
+        <div class="level-info flex items-center gap-1">
+          <div class="level-cat">
+            <img class="level-cat-img" src="/cats/LV.40.png" alt="招财猫" />
+          </div>
+          <div class="level-text">
+            <span class="level-lv" id="level-lv">Lv.1</span>
+            <span class="level-coins" id="level-coins">0</span>
+          </div>
+        </div>
+        <div class="level-progress flex-1 flex flex-col gap-1 min-w-0 mx-1">
+          <div class="prog-bar">
+            <div class="prog-bar-fill" id="prog-bar-fill" style="width: 0%"></div>
+          </div>
+          <div class="prog-bar-labels">
+            <span class="prog-label-start">Lv.<span id="prog-cur-lv">1</span></span>
+            <span class="prog-label-end" data-i18n="level_max">40级</span>
+          </div>
+        </div>
+        <div class="level-reward">
+          <span class="lr-title" data-i18n="level_reward_t">本期收益</span>
+          <span class="lr-sub" data-i18n="level_reward_s">鱼池瓜分</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ═══════════ 核心游戏区 ═══════════ -->
+    <main id="game-area" class="flex-1 flex flex-col items-center justify-center px-2 min-h-0">
+      <!-- 大计时器卡片 -->
+      <div class="timer-card">
+        <span class="timer-heart">❤️</span>
+        <span class="timer-num" id="timer-num">364.02秒</span>
+        <span class="timer-rate" id="timer-rate" data-i18n="timer_rate">本期鱼池</span>
+      </div>
+
+      <!-- 标签行 -->
+      <div class="side-labels flex justify-between w-full px-4 mb-1">
+        <button id="btn-connect-wallet" class="side-label side-label-wallet">
+          <span class="wallet-dot" id="wallet-dot"></span>
+          <span class="wallet-text" id="wallet-text" data-i18n="wallet_connect">链接钱包 Connect</span>
+        </button>
+        <button id="btn-invite" class="side-label side-label-invite">
+          🎁 <span data-i18n="invite_text">邀请好友</span> <span class="invite-en" data-i18n="invite_en">Invite / Friends</span>
+        </button>
+      </div>
+
+      <!-- 网格：奶白色卡片 + 粉橙色爪印圆盘（尺寸收紧，确保底部栏不被挤出） -->
+      <div id="board-frame">
+        <div id="matrix-grid" class="
+          grid grid-cols-4 grid-rows-4
+          w-full max-w-[320px]
+          aspect-square
+          relative gap-[11px]
+        ">
+        </div>
+      </div>
+    </main>
+
+    <!-- ═══════════ 底部导航栏 ═══════════ -->
+    <nav id="bottom-bar" class="
+      flex items-end justify-between
+      px-3 pb-[calc(env(safe-area-inset-bottom,8px)+8px)]
+      shrink-0
+      gap-2
+    ">
+      <!-- 左：加速可产出（上） + 每日任务（下）垂直堆叠 -->
+      <div class="bottom-btn-group bottom-btn-group-left">
+        <button id="btn-ad-reward" class="ad-reward-btn">
+          <span class="ad-emoji">⚡</span>
+          <span class="ad-text"><span data-i18n="ad_text">加速可产出</span> <b>LV.<span id="ad-lv">2</span></b></span>
+          <span class="ad-count" id="ad-count">10/10</span>
+        </button>
+        <button id="btn-task-wall" class="bottom-btn bottom-btn-yellow">
+          <div class="bb-cat-icon"></div>
+          <div class="bb-center">
+            <span class="bb-title" data-i18n="task_title">每日任务</span>
+            <span class="bb-sub"><b data-i18n="task_sub">Task / Earn</b></span>
+          </div>
+        </button>
+      </div>
+
+      <!-- 中：红色购买猫咪按钮（只显示「买 LV.x」，不显示金币总数） -->
+      <button id="btn-merge" class="bottom-btn bottom-btn-red bottom-btn-red-main">
+        <span class="bb-coin-icon">❤</span>
+        <span class="bb-lv-label" id="bb-lv-label">买 LV.1</span>
+      </button>
+
+      <!-- 右：智能合成 + 猫咪图鉴（垂直堆叠） -->
+      <div class="bottom-btn-group">
+        <span class="ai-merge-btn">⚡ 智能合成</span>
+        <button id="btn-ads" class="bottom-btn bottom-btn-yellow">
+          <div class="bb-cat-icon bb-cat-icon-right"></div>
+          <div class="bb-center">
+            <span class="bb-title" data-i18n="pokedex_btn">猫咪图鉴</span>
+            <span class="bb-sub" id="pokedex-count">0/40</span>
+          </div>
+        </button>
+      </div>
+    </nav>
+  </div>
+
+  <!-- ═══════════ 猫咪图鉴弹窗 ═══════════ -->
+  <div id="pokedex-modal" class="pokedex-modal">
+    <div class="pokedex-content">
+      <div class="pokedex-header">
+        <span class="pokedex-title">🐱 <span data-i18n="pokedex_btn">猫咪图鉴</span></span>
+        <button id="pokedex-close" class="pokedex-close">✕</button>
+      </div>
+      <div class="pokedex-summary">
+        <span class="ps-text"><span data-i18n="pokedex_count">已收集</span> <span id="ps-collected">0</span> / 40 <span data-i18n="pokedex_unit">只猫咪</span></span>
+        <div class="ps-bar"><div id="ps-progress" class="ps-progress-fill"></div></div>
+      </div>
+      <div id="pokedex-grid" class="pokedex-grid"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ 系统设置弹窗 ═══════════ -->
+  <div id="settings-modal" class="settings-modal">
+    <div class="settings-content">
+      <div class="settings-header">
+        <span class="settings-title" data-i18n="settings_title">⚙️ 系统设置 Settings</span>
+        <button id="settings-close" class="settings-close">✕</button>
+      </div>
+      <div class="settings-body">
+        <!-- 音频开关 -->
+        <div class="settings-row">
+          <span class="settings-label" data-i18n="music_label">🎵 背景音乐</span>
+          <button id="toggle-music" class="toggle-switch" data-on="false">
+            <span class="toggle-knob"></span>
+          </button>
+        </div>
+        <div class="settings-row">
+          <span class="settings-label" data-i18n="sfx_label">🔔 游戏音效</span>
+          <button id="toggle-sfx" class="toggle-switch" data-on="false">
+            <span class="toggle-knob"></span>
+          </button>
+        </div>
+        <!-- 语言切换 -->
+        <div class="settings-row">
+          <span class="settings-label" data-i18n="lang_label">🌍 语言 Language</span>
+          <div class="lang-options">
+            <button class="lang-btn lang-active" data-lang="zh">中</button>
+            <button class="lang-btn" data-lang="en">EN</button>
+            <button class="lang-btn" data-lang="ru">RU</button>
+          </div>
+        </div>
+        <!-- 游戏规则 -->
+        <div class="settings-row settings-rules-row" style="flex-direction:column;align-items:flex-start;gap:6px;">
+          <span class="settings-label" data-i18n="rules_label">📖 游戏规则</span>
+          <div class="rules-text" data-i18n="rules_text" data-i18n-html>
+            • 拖动相同等级的猫咪可合成更高一级<br>• 商店购买猫咪消耗金币，每次购买全场物价+7%<br>• 看广告可加速产出并免费领猫咪<br>• 智能合成签到后自动运行（每日解锁）<br>• 邀请好友 + 完成任务墙赚额外金币<br>• 链接 TON 钱包后可提现鱼池收益
+          </div>
+        </div>
+        <div class="settings-version" data-i18n="version">v1.0.0 · CyberMerge</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ 全球等级榜弹窗 ═══════════ -->
+  <div id="leaderboard-modal" class="leaderboard-modal">
+    <div class="leaderboard-content">
+      <div class="leaderboard-header">
+        <span class="leaderboard-title">🌍 <span data-i18n="leaderboard">全球等级榜</span></span>
+        <button id="leaderboard-close" class="leaderboard-close">✕</button>
+      </div>
+      <div class="leaderboard-body">
+        <!-- 排行类型切换 Tab -->
+        <div class="lb-tabs">
+          <button class="lb-tab lb-tab-active" data-tab="global" data-i18n="lb_tab_global">🌍 全球排行</button>
+          <button class="lb-tab" data-tab="friends" data-i18n="lb_tab_friends">👥 好友排行</button>
+        </div>
+        <!-- 我的排名 -->
+        <div class="lb-my-rank">
+          <span class="lb-my-label" data-i18n="lb_my_rank">我的排名</span>
+          <span class="lb-my-value" id="lb-my-rank">#1</span>
+        </div>
+        <!-- 排行榜列表（占位：后续接通所有玩家实时排名） -->
+        <div id="leaderboard-list" class="leaderboard-list">
+          <div class="lb-empty" id="lb-empty" data-i18n="lb_empty">🏆 排行榜数据接入中，敬请期待</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ 提现进度 / 创世分红弹窗 ═══════════ -->
+  <div id="withdraw-modal" class="withdraw-modal">
+    <div class="withdraw-content">
+      <div class="withdraw-header">
+        <span class="withdraw-title">📈 <span data-i18n="withdraw_title">提现进度 / 创世分红</span></span>
+        <button id="withdraw-close" class="withdraw-close">✕</button>
+      </div>
+      <div class="withdraw-body">
+        <!-- 1. 核心资产大字报 -->
+        <div class="wd-hero">
+          <div class="wd-hero-label" data-i18n="wd_pool_label">💰 本期鱼池（可提现）</div>
+          <div class="wd-hero-amount" id="wd-pool-amount">0</div>
+          <div class="wd-hero-rate">
+            <span data-i18n="wd_rate_prefix">当前可提现比例：</span><b id="wd-rate-value">1%</b>
+          </div>
+        </div>
+
+        <!-- 2. 阶梯里程碑进度条（JS 动态渲染 4 个阶梯） -->
+        <div class="wd-milestones" id="wd-milestones"></div>
+
+        <!-- 3. 变现加速按钮 -->
+        <div class="wd-actions">
+          <button id="wd-ad-btn" class="wd-action-btn wd-action-ad">
+            <span class="wd-action-icon">📺</span>
+            <span class="wd-action-text"><span data-i18n="wd_ad_text">看视频，临时体验 20% 提现特权</span> <b id="wd-ad-count">(0/3)</b></span>
+          </button>
+          <button id="wd-invite-btn" class="wd-action-btn wd-action-invite">
+            <span class="wd-action-icon">🚀</span>
+            <span class="wd-action-text" data-i18n="wd_invite_text">邀请 3 名好友，直接跃升下一级比例！</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 主逻辑脚本 -->
+  <script type="module" src="/main.js"></script>
+</body>
+</html>
