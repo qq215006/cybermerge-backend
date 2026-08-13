@@ -29,6 +29,14 @@ CREATE TABLE IF NOT EXISTS invites (
 );
 CREATE INDEX IF NOT EXISTS idx_invites_inviter_day ON invites (inviter_tg_id, created_at);
 
+-- ── 广告服务端回调表（Adsgram Reward URL 回调记录，用于交叉校验风控）──
+CREATE TABLE IF NOT EXISTS ad_callbacks (
+  id         SERIAL PRIMARY KEY,
+  tg_id      TEXT,
+  created_at BIGINT
+);
+CREATE INDEX IF NOT EXISTS idx_ad_callbacks_tg_day ON ad_callbacks (tg_id, created_at);
+
 -- ── RPC 1：邀请奖励（原子操作）──────────────────────────────────────
 CREATE OR REPLACE FUNCTION apply_invite_reward(p_inviter_tg_id text, p_invited_tg_id text, p_ts bigint)
 RETURNS void AS $$
