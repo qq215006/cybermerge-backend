@@ -41,10 +41,15 @@ const I18N = {
   pokedex_btn:     { zh:'猫咪图鉴',           en:'Pedia',                   ru:'Сбор' },
   pokedex_count:   { zh:'已收集',             en:'Collected',              ru:'Собрано' },
   pokedex_unit:    { zh:'只猫咪',             en:'cats',                   ru:'котов' },
-  // 智能合成按钮（中文用「智能合成」，其他语言简写为「挂机」对应词：英文 Idle / 俄文 Авто）
-  ai_on:           { zh:'⚡ 智能合成 ON',     en:'⚡ Idle ON',           ru:'⚡ Авто ВКЛ' },
-  ai_off:          { zh:'⚡ 智能合成 OFF',    en:'⚡ Idle OFF',          ru:'⚡ Авто ВЫКЛ' },
-  ai_locked:       { zh:'⚡ 开启智能合成',    en:'⚡ Enable Idle',       ru:'⚡ Включить авто' },
+  // 智能签到按钮（每日签到解锁智能合成 + 离线产出，0点重置）
+  ai_on:           { zh:'⚡ 智能签到 ON',     en:'⚡ Check-in ON',       ru:'⚡ Чек-ин ВКЛ' },
+  ai_off:          { zh:'⚡ 智能签到 OFF',    en:'⚡ Check-in OFF',      ru:'⚡ Чек-ин ВЫКЛ' },
+  ai_locked:       { zh:'⚡ 智能签到',        en:'⚡ Check-in',          ru:'⚡ Чек-ин' },
+  // 离线收益弹窗
+  offline_title:   { zh:'🎁 离线收益',        en:'🎁 Offline Earnings',  ru:'🎁 Офлайн-доход' },
+  offline_desc:    { zh:'你离开期间累计产出', en:'Earned while you were away', ru:'Заработано за время офлайн' },
+  offline_tip:     { zh:'记得每天签到，离线也会继续产出哦', en:'Check in daily to keep earning offline', ru:'Заходите ежедневно, чтобы зарабатывать офлайн' },
+  offline_claim:   { zh:'领取',              en:'Claim',                ru:'Получить' },
   // 设置面板
   settings_title:  { zh:'⚙️ 系统设置 Settings', en:'⚙️ Settings',         ru:'⚙️ Настройки' },
   music_label:     { zh:'🎵 背景音乐',         en:'🎵 Background Music',    ru:'🎵 Фоновая музыка' },
@@ -52,9 +57,9 @@ const I18N = {
   lang_label:      { zh:'🌍 语言 Language',    en:'🌍 Language',            ru:'🌍 Язык' },
   rules_label:     { zh:'📖 游戏规则',         en:'📖 Game Rules',          ru:'📖 Правила игры' },
   rules_text: {
-    zh: '• 拖动相同等级的猫咪可合成更高一级<br>• 商店购买猫咪消耗金币，每次购买全场物价+7%<br>• 看广告可加速产出并免费领猫咪<br>• 智能合成签到后自动运行（每日解锁）<br>• 邀请好友 + 完成任务墙赚额外金币<br>• 链接 TON 钱包后可提现鱼池收益',
-    en: '• Drag same-level cats to merge into a higher level<br>• Buying cats costs coins; each purchase raises all prices by 7%<br>• Watch ads to boost output and get free cats<br>• Auto Merge runs after daily check-in (unlocks daily)<br>• Invite friends + complete tasks to earn extra coins<br>• Connect TON wallet to withdraw pool earnings',
-    ru: '• Перетаскивайте котов одного уровня, чтобы объединить их<br>• Покупка котов стоит монеты; каждая покупка повышает все цены на 7%<br>• Смотрите рекламу для ускорения и бесплатных котов<br>• Автослияние запускается после ежедневной регистрации<br>• Приглашайте друзей + выполняйте задания для бонусов<br>• Подключите TON-кошелек для вывода из пула'
+    zh: '• 拖动相同等级的猫咪可合成更高一级<br>• 商店购买猫咪消耗金币，每次购买全场物价+7%<br>• 看广告可加速产出并免费领猫咪<br>• 智能签到后自动合成并离线产出（每日解锁）<br>• 邀请好友 + 完成任务墙赚额外金币<br>• 链接 TON 钱包后可提现鱼池收益',
+    en: '• Drag same-level cats to merge into a higher level<br>• Buying cats costs coins; each purchase raises all prices by 7%<br>• Watch ads to boost output and get free cats<br>• Auto Merge + offline earnings run after daily check-in<br>• Invite friends + complete tasks to earn extra coins<br>• Connect TON wallet to withdraw pool earnings',
+    ru: '• Перетаскивайте котов одного уровня, чтобы объединить их<br>• Покупка котов стоит монеты; каждая покупка повышает все цены на 7%<br>• Смотрите рекламу для ускорения и бесплатных котов<br>• Автослияние и офлайн-доход после ежедневного чек-ина<br>• Приглашайте друзей + выполняйте задания для бонусов<br>• Подключите TON-кошелек для вывода из пула'
   },
   version:         { zh:'v1.0.0 · CyberMerge', en:'v1.0.0 · CyberMerge',  ru:'v1.0.0 · CyberMerge' },
   // 提现进度 / 创世分红弹窗
@@ -84,14 +89,14 @@ const I18N = {
   wd_ad_ok:         { zh:'✅ 20% 提现特权已激活（临时）', en:'✅ 20% withdrawal boost activated (temporary)', ru:'✅ Временный вывод 20% активирован' },
   wd_ad_done:       { zh:'⚠️ 今日特权次数已用完 (3/3)', en:'⚠️ Daily boost used up (3/3)', ru:'⚠️ Дневной лимит исчерпан (3/3)' },
   // 通用/广告/合成/购买/任务/邀请 toast（补齐三语，替换原硬编码中文）
-  t_ai_daily_reset: { zh:'⏰ 新的一天到啦~智能合成已关闭', en:'⏰ New day! Auto merge turned off', ru:'⏰ Новый день! Автослияние выключено' },
+  t_ai_daily_reset: { zh:'⏰ 新的一天到啦~智能签到已关闭', en:'⏰ New day! Check-in turned off', ru:'⏰ Новый день! Чек-ин выключен' },
   t_ad_limit:       { zh:'今日广告次数已用完，明天再来~', en:'Daily ad limit reached, come back tomorrow~', ru:'Дневной лимит рекламы исчерпан, завтра~' },
   t_ad_limit_accel: { zh:'今日加速次数已用完，明日再来~', en:'Daily boost limit reached, come back tomorrow~', ru:'Дневной лимит буста исчерпан, завтра~' },
   t_grid_full:      { zh:'猫窝满啦！先合一下腾位~', en:'Nest is full! Merge first to make room~', ru:'Гнездо заполнено! Сначала объедините~' },
   t_grid_full_buy:  { zh:'猫窝满啦！合一下腾位~', en:'Nest is full! Merge to make room~', ru:'Гнездо заполнено! Объедините~' },
-  t_ad_success_ai:  { zh:'🎬 看广告成功！智能合成已开启，获得 {name} LV.{lv}', en:'🎬 Ad done! Auto merge ON, got {name} LV.{lv}', ru:'🎬 Реклама просмотрена! Автослияние ВКЛ, получен {name} LV.{lv}' },
+  t_ad_success_ai:  { zh:'🎬 看广告成功！智能签到已开启，获得 {name} LV.{lv}', en:'🎬 Ad done! Check-in ON, got {name} LV.{lv}', ru:'🎬 Реклама просмотрена! Чек-ин ВКЛ, получен {name} LV.{lv}' },
   t_ad_not_loaded:  { zh:'广告系统未加载，请稍后再试', en:'Ad system not loaded, try again later', ru:'Рекламная система не загружена, повторите позже' },
-  t_ad_not_finished_ai: { zh:'广告未看完，无法开启智能合成', en:'Ad not finished, cannot enable auto merge', ru:'Реклама не досмотрена, автослияние недоступно' },
+  t_ad_not_finished_ai: { zh:'广告未看完，无法开启智能签到', en:'Ad not finished, cannot enable check-in', ru:'Реклама не досмотрена, чек-ин недоступен' },
   t_ad_load_failed: { zh:'广告加载失败，请稍后再试', en:'Ad failed to load, try again later', ru:'Не удалось загрузить рекламу, повторите позже' },
   t_ad_not_finished:{ zh:'广告未看完，无法获得奖励', en:'Ad not finished, no reward', ru:'Реклама не досмотрена, награды нет' },
   t_no_coins:       { zh:'❤ 金币不足！需 {price} 金（看广告免费领）', en:'❤ Not enough coins! Need {price} coins (watch ad for free)', ru:'❤ Не хватает монет! Нужно {price} монет (смотрите рекламу)' },
@@ -180,6 +185,17 @@ function totalEarnPerSec() {
     if (lv) sum += lvEarnPerSec(lv);
   }
   return sum;
+}
+
+// 计算一个 grid 数组的总算力分值（云端/本地存档合并时，选分值更高的一方，避免丢猫）
+function gridScore(grid) {
+  if (!Array.isArray(grid)) return 0;
+  let s = 0;
+  for (let i = 0; i < TOTAL; i++) {
+    const lv = grid[i];
+    if (typeof lv === 'number' && lv >= 1 && lv <= MAX_LV) s += lvEarnPerSec(lv);
+  }
+  return s;
 }
 
 // 历史最高解锁等级（基于已收集图鉴）
@@ -375,7 +391,8 @@ function catName(lv) {
 // ═══════ 状态 ═══════
 const S = {
   grid: new Array(TOTAL).fill(null),  // grid[i] = null 或 lv 整数
-  usdt: 1000,                         // 初始金币（够买 1 只 LV.1）
+  usdt: 1000,                         // 总金币（= 自有金币 + 服务端 bonusCoins）
+  bonusCoins: 0,                      // 服务端发放的奖励（邀请奖励 + 离线产出），前端不直接修改
   buyCount: 0,                        // 历史总购买次数（驱动 7% 通胀）
   adUsedToday: 0,                     // 今日已用广告次数
   aiRunning: false,                   // 智能合成是否运行中
@@ -386,14 +403,14 @@ const S = {
 };
 const AI_KEY = 'cybermerge_ai_unlock_day';  // 存最后一次看广告解锁智能合成的日期 "YYYY-MM-DD"
 const AI_TICK_MS = 180;                     // AI 循环周期（毫秒）：不要太快避免卡顿
-const ADSGRAM_BLOCK_ID = '42649';          // Adsgram 激励视频广告单元 ID
-const AI_AD_BLOCK_ID = '42657';            // 智能合成解锁激励视频广告单元 ID
+const ADSGRAM_BLOCK_ID = '42720';          // Adsgram 激励视频广告单元 ID（加速可产出）
+const AI_AD_BLOCK_ID = '42727';            // 智能合成解锁激励视频广告单元 ID（每日一次，0点重置）
 
 // ═══════ 每日任务：3 个 Adsgram 任务广告单元 + 金币奖励 ═══════
 const DAILY_TASKS = [
-  { key: 'task-42653', blockId: 'task-42653', icon: '📺', descKey: 'task_desc_1', coins: 3000 },
-  { key: 'task-42654', blockId: 'task-42654', icon: '🎁', descKey: 'task_desc_2', coins: 5000 },
-  { key: 'task-42655', blockId: 'task-42655', icon: '💰', descKey: 'task_desc_3', coins: 8000 },
+  { key: 'task-42723', blockId: 'task-42723', icon: '📺', descKey: 'task_desc_1', coins: 3000 },
+  { key: 'task-42725', blockId: 'task-42725', icon: '🎁', descKey: 'task_desc_2', coins: 5000 },
+  { key: 'task-42726', blockId: 'task-42726', icon: '💰', descKey: 'task_desc_3', coins: 8000 },
 ];
 const TASK_DONE_KEY = 'cybermerge_daily_tasks';  // 存 { date, done: [taskKey] }，每日重置
 
@@ -521,10 +538,8 @@ async function connectWallet() {
 }
 
 function todayStr() {
-  const d = new Date();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${d.getFullYear()}-${m}-${day}`;
+  // 统一使用上海时区（UTC+8），与后端离线结算/每日重置的 0点 保持一致
+  return new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 10);
 }
 // 当前玩家每日广告上限 = 基础 15 + 邀请加成（每邀请1人+1，封顶+5，总封顶20）
 function adDailyLimit() {
@@ -625,7 +640,7 @@ function aiTick() {
 function toggleAiMerge(e) {
   if (e) { e.preventDefault?.(); e.stopPropagation?.(); }
   if (!isAiUnlockedToday()) {
-    // 未解锁今日：看一次激励视频广告（Adsgram 42657）才能开启智能合成
+    // 未解锁今日：看一次激励视频广告（Adsgram 42727）才能开启智能合成
     if (S.adUsedToday >= adDailyLimit()) {
       toast(t('t_ad_limit'),'warn');
       return;
@@ -759,7 +774,8 @@ function getInitData() {
 function collectCloudData() {
   const lsGet = (k, d) => { try { return localStorage.getItem(k) ?? d; } catch(_) { return d; } };
   return {
-    coins: S.usdt,
+    coins: S.usdt - S.bonusCoins,   // 只存前端自有金币（服务端 bonusCoins 单独保存，不参与覆盖）
+    bonusCoins: S.bonusCoins,
     grid: S.grid,
     buyCount: S.buyCount,
     adUsedToday: S.adUsedToday,
@@ -801,6 +817,7 @@ function buildSignString(tgId, data, timestamp) {
   return [
     tgId,
     data.coins ?? 0,
+    data.bonusCoins ?? 0,
     grid,
     data.buyCount ?? 0,
     data.adUsedToday ?? 0,
@@ -856,7 +873,8 @@ function startCloudSyncTimer() {
 // 把存档对象恢复到运行状态（金币 / grid / 图鉴 / 进度）
 function applyStateToS(obj) {
   if (!obj) return;
-  if (typeof obj.coins === 'number') S.usdt = obj.coins;
+  if (typeof obj.bonusCoins === 'number') S.bonusCoins = obj.bonusCoins;
+  if (typeof obj.coins === 'number') S.usdt = obj.coins + S.bonusCoins;
   if (Array.isArray(obj.grid)) {
     for (let i = 0; i < TOTAL; i++) {
       const x = obj.grid[i];
@@ -881,7 +899,6 @@ function applyStateToS(obj) {
 // 初始化：拉取云端，与本地 localStorage 对比合并（等级/金币/图鉴以较高者为准）
 async function syncBackend() {
   const local = loadLocal();                          // 本地实时存档（可能为 null）
-  const localLv = local && Array.isArray(local.pokedex) ? Math.max(0, ...local.pokedex) : 0;
 
   try {
     const initData = getInitData();                   // Telegram 环境用真实 initData，普通浏览器用测试数据
@@ -897,16 +914,20 @@ async function syncBackend() {
     if (!data.success || !data.user) { applyStateToS(local); return; }
     const u = data.user;
 
-    const cloudLv = Array.isArray(u.pokedex) ? Math.max(0, ...u.pokedex) : 0;
-
-    // 金币：取较大者（金币只增不减，离线也持续产出）
-    const localCoins = local && typeof local.coins === 'number' ? local.coins : 0;
+    // 金币：总金币 = 云端总额 与 本地总额 取较大者；服务端 bonusCoins 单独记录
+    const localCoins = (local && typeof local.coins === 'number' ? local.coins : 0)
+      + (local && typeof local.bonusCoins === 'number' ? local.bonusCoins : 0);
+    S.bonusCoins = Number(u.bonusCoins) || 0;
     S.usdt = Math.max(Number(u.coins) || 0, localCoins);
 
-    // grid：以等级更高的一方为准
-    const gridSrc = (cloudLv >= localLv && Array.isArray(u.grid))
-      ? u.grid
-      : (local && Array.isArray(local.grid) ? local.grid : null);
+    // 离线收益弹窗：后端在 login 时已结算当日签到后的离线产出
+    const offlineReward = Number(data.offlineReward) || 0;
+    if (offlineReward > 0) showOfflineReward(offlineReward);
+
+    // grid：按总算力分值取更优的一方（避免最大等级相同但猫数量不同时覆盖丢猫，伤到大户）
+    const cloudGrid = Array.isArray(u.grid) ? u.grid : null;
+    const localGrid = (local && Array.isArray(local.grid)) ? local.grid : null;
+    const gridSrc = gridScore(cloudGrid) >= gridScore(localGrid) ? cloudGrid : localGrid;
     if (Array.isArray(gridSrc)) {
       for (let i = 0; i < TOTAL; i++) {
         const x = gridSrc[i];
@@ -971,6 +992,18 @@ function toast(m, t) {
   let el = d('div','toast toast-'+(t||'info')); el.textContent = m; c.appendChild(el);
   requestAnimationFrame(() => el.classList.add('toast-enter'));
   setTimeout(() => { el.classList.add('toast-leave'); el.addEventListener('transitionend',()=>el.remove(),{once:true}); }, 1500);
+}
+
+// ═══════ 离线收益弹窗：展示当日签到后的离线产出 ═══════
+function showOfflineReward(amount) {
+  const modal = document.getElementById('offline-modal');
+  if (!modal) return;
+  const amtEl = document.getElementById('offline-amount');
+  if (amtEl) amtEl.textContent = fmtNum(amount) + ' ' + t('level_coins_suf');
+  modal.classList.add('show');
+}
+function closeOfflineReward() {
+  document.getElementById('offline-modal')?.classList.remove('show');
 }
 
 // ═══════ 音频系统：仅 BGM + 合成音（默认开启，用户可手动关闭）═══════
@@ -1633,6 +1666,9 @@ function btn(){
   document.getElementById('task-modal')?.addEventListener('click', (e) => { if (e.target.id === 'task-modal') closeTasks(); });
   document.getElementById('pokedex-close')?.addEventListener('click',closePokedex);
   document.getElementById('pokedex-modal')?.addEventListener('click',(e)=>{ if(e.target.id==='pokedex-modal') closePokedex(); });
+  // 离线收益弹窗：领取按钮 / 点击遮罩关闭
+  document.getElementById('offline-claim')?.addEventListener('click', closeOfflineReward);
+  document.getElementById('offline-modal')?.addEventListener('click', (e) => { if (e.target.id === 'offline-modal') closeOfflineReward(); });
   const aiBtn = document.querySelector('.ai-merge-btn');
   if (aiBtn) {
     aiBtn.addEventListener('click', (e)=>{ e.stopPropagation(); toggleAiMerge(e); });
