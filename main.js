@@ -613,6 +613,31 @@ function twa() {
   } catch(_){}
 }
 
+// ═══════ 后端同步：Telegram 身份鉴权 + 拉取金币/用户信息（Netlify Functions）═══════
+async function syncBackend() {
+  try {
+    const initData = window.Telegram?.WebApp?.initData;
+    if (!initData) return;                              // 非 Telegram 环境（本地浏览器）直接跳过
+    const resp = await fetch('/.netlify/functions/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ initData })
+    });
+    const data = await resp.json();
+    if (data.success && data.user) {
+      // 用后端返回的金币覆盖本地金币（新用户默认 1000）
+      S.usdt = Number(data.user.coins) || 1000;
+      // 保存用户身份信息，供后续提现/绑定使用
+      try {
+        localStorage.setItem('cybermerge_user', JSON.stringify({ tgId: data.user.tgId, username: data.user.username }));
+      } catch(_) {}
+      ui();                                             // 刷新金币显示
+    }
+  } catch(_) {
+    // 后端不可用（本地/未部署）时保持本地数据，不打断游戏
+  }
+}
+
 // ═══════ Toast ═══════
 function toast(m, t) {
   let c = document.getElementById('toast-container');
@@ -1322,6 +1347,8 @@ function init(){
   refreshWalletUI();
   // 应用当前保存的语言（覆盖 HTML 默认中文文案）
   applyI18n();
+  // 初始化完成后，向后端鉴权并同步金币/用户信息（Telegram 环境下才会真正请求）
+  syncBackend();
 }
 
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init);
