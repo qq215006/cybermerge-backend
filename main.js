@@ -28,9 +28,11 @@ const I18N = {
   leaderboard:     { zh:'全球等级榜',        en:'Global Rank',            ru:'Мировой рейтинг' },
   lb_my_rank:      { zh:'我的排名',          en:'My Rank',                ru:'Мой рейтинг' },
   lb_tab_global:   { zh:'🌍 全球排行',       en:'🌍 Global',              ru:'🌍 Мировой' },
-  lb_tab_friends:  { zh:'👥 好友排行',       en:'👥 Friends',             ru:'👥 Друзья' },
+  lb_tab_invite:   { zh:'👥 邀请榜',          en:'👥 Invites',            ru:'👥 Приглашения' },
   lb_empty:        { zh:'🏆 排行榜数据接入中，敬请期待', en:'🏆 Leaderboard data loading...', ru:'🏆 Данные рейтинга загружаются...' },
-  lb_empty_friends:{ zh:'👥 暂无好友，快去邀请好友一起冲榜吧！', en:'👥 No friends yet. Invite friends to compete!', ru:'👥 Пока нет друзей. Пригласите друзей!' },
+  lb_empty_invite: { zh:'👥 今日暂无邀请，快去邀请好友冲榜吧！', en:'👥 No invites today. Invite friends to rank!', ru:'👥 Пока нет приглашений сегодня. Пригласите друзей!' },
+  lb_loading:      { zh:'⏳ 排行榜加载中...', en:'⏳ Loading leaderboard...', ru:'⏳ Загрузка рейтинга...' },
+  lb_invite_unit:  { zh:'邀请', en:'invites', ru:'пригл.' },
   // 底部按钮
   ad_text:         { zh:'加速可产出',         en:'Boost',                  ru:'Буст' },
   task_title:      { zh:'每日任务',           en:'Task',                    ru:'Задания' },
@@ -1457,31 +1459,25 @@ function renderWithdrawPanel() {
 
 // ═══════ 按钮 ═══════
 function btn(){
-  // 全球等级榜按钮：打开排行榜弹窗（后续接通所有玩家实时排名）
+  // 全球等级榜按钮：打开弹窗并拉取真实排行榜（按等级）
   const lbModal = document.getElementById('leaderboard-modal');
-  const openLeaderboard = () => lbModal?.classList.add('show');
+  const openLeaderboard = () => { lbModal?.classList.add('show'); fetchLeaderboard(); };
   const closeLeaderboard = () => lbModal?.classList.remove('show');
   document.getElementById('btn-leaderboard')?.addEventListener('click', openLeaderboard);
   document.getElementById('leaderboard-close')?.addEventListener('click', closeLeaderboard);
   lbModal?.addEventListener('click', (e) => { if (e.target.id === 'leaderboard-modal') closeLeaderboard(); });
 
-  // 排行榜 Tab 切换（全球排行 / 好友排行）
+  // 排行榜 Tab 切换（全球排行 / 当日邀请榜）
   const lbTabs = document.querySelectorAll('.lb-tab');
-  const lbEmpty = document.getElementById('lb-empty');
-  const lbMyRank = document.getElementById('lb-my-rank');
   lbTabs.forEach(tab => {
     tab.addEventListener('click', () => {
       lbTabs.forEach(t => t.classList.remove('lb-tab-active'));
       tab.classList.add('lb-tab-active');
-      const isGlobal = tab.dataset.tab === 'global';
-      // 切换空态文案（后续接真实数据后改为渲染对应榜单）
-      if (lbEmpty) {
-        const key = isGlobal ? 'lb_empty' : 'lb_empty_friends';
-        lbEmpty.setAttribute('data-i18n', key);
-        lbEmpty.textContent = t(key);
+      if (tab.dataset.tab === 'global') {
+        fetchLeaderboard();      // 全球榜：按等级
+      } else {
+        fetchInviteBoard();      // 当日邀请榜：按今日邀请数
       }
-      // 我的排名徽章：全球 #1 / 好友暂无
-      if (lbMyRank) lbMyRank.textContent = isGlobal ? '#1' : '—';
     });
   });
 
@@ -1615,6 +1611,104 @@ function btn(){
   const savedLang = (() => { try { return localStorage.getItem(LANG_KEY) || 'zh'; } catch(_) { return 'zh'; } })();
   applyLang(savedLang, true);                      // 初始化静默恢复，不弹 toast
   langBtns.forEach(b => b?.addEventListener('click', () => applyLang(b.dataset.lang)));
+}
+
+// ═══════ 全球等级榜：拉取 + 渲染真实数据（按等级）═══════
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// 榜单用户名过长时截断，避免撑坏布局
+function shortName(name, max) {
+  const s = String(name == null ? '' : name).trim();
+  return s.length > max ? s.slice(0, max) + '…' : s;
+}
+
+async function fetchLeaderboard() {
+  const listEl = document.getElementById('leaderboard-list');
+  const myRankEl = document.getElementById('lb-my-rank');
+  if (!listEl) return;
+  listEl.innerHTML = '<div class="lb-empty">' + t('lb_loading') + '</div>';
+  try {
+    const initData = getInitData();
+    const resp = await fetch('/.netlify/functions/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'leaderboard', initData })
+    });
+    const data = await resp.json();
+    if (!data.success || !data.leaderboard) throw new Error('empty');
+    renderLeaderboard(data.leaderboard);
+  } catch(_) {
+    if (listEl) listEl.innerHTML = '<div class="lb-empty">' + t('lb_empty') + '</div>';
+    if (myRankEl) myRankEl.textContent = '—';
+  }
+}
+
+function renderLeaderboard(lb) {
+  const listEl = document.getElementById('leaderboard-list');
+  const myRankEl = document.getElementById('lb-my-rank');
+  if (!listEl) return;
+  const items = Array.isArray(lb.list) ? lb.list : [];
+  if (myRankEl) myRankEl.textContent = lb.myRank ? '#' + lb.myRank : '—';
+  if (!items.length) {
+    listEl.innerHTML = '<div class="lb-empty">' + t('lb_empty') + '</div>';
+    return;
+  }
+  listEl.innerHTML = items.map(p => {
+    return '<div class="lb-item' + (p.isMe ? ' lb-item-me' : '') + '">' +
+      '<span class="lb-rank">' + p.rank + '</span>' +
+      '<span class="lb-name">' + escapeHtml(shortName(p.username, 14)) + '</span>' +
+      '<span class="lb-lv">Lv.' + p.lv + '</span>' +
+      '<span class="lb-coins">' + fmtNum(p.coins) + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+// ═══════ 当日邀请榜：拉取 + 渲染（按今日邀请数）═══════
+async function fetchInviteBoard() {
+  const listEl = document.getElementById('leaderboard-list');
+  const myRankEl = document.getElementById('lb-my-rank');
+  if (!listEl) return;
+  listEl.innerHTML = '<div class="lb-empty">' + t('lb_loading') + '</div>';
+  try {
+    const initData = getInitData();
+    const resp = await fetch('/.netlify/functions/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'inviteboard', initData })
+    });
+    const data = await resp.json();
+    if (!data.success || !data.inviteboard) throw new Error('empty');
+    renderInviteBoard(data.inviteboard);
+  } catch(_) {
+    if (listEl) listEl.innerHTML = '<div class="lb-empty">' + t('lb_empty_invite') + '</div>';
+    if (myRankEl) myRankEl.textContent = '—';
+  }
+}
+
+function renderInviteBoard(b) {
+  const listEl = document.getElementById('leaderboard-list');
+  const myRankEl = document.getElementById('lb-my-rank');
+  if (!listEl) return;
+  const items = Array.isArray(b.list) ? b.list : [];
+  if (myRankEl) myRankEl.textContent = b.myRank ? '#' + b.myRank : '—';
+  if (!items.length) {
+    listEl.innerHTML = '<div class="lb-empty">' + t('lb_empty_invite') + '</div>';
+    return;
+  }
+  listEl.innerHTML = items.map(p => {
+    return '<div class="lb-item' + (p.isMe ? ' lb-item-me' : '') + '">' +
+      '<span class="lb-rank">' + p.rank + '</span>' +
+      '<span class="lb-name">' + escapeHtml(shortName(p.username, 14)) + '</span>' +
+      '<span class="lb-lv">' + p.count + ' ' + t('lb_invite_unit') + '</span>' +
+    '</div>';
+  }).join('');
 }
 
 // ═══════ 猫咪图鉴 ═══════

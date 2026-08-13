@@ -28,6 +28,14 @@ const MAX_LV = 40;
  *   created_at    BIGINT DEFAULT 0,
  *   updated_at    BIGINT DEFAULT 0
  * );
+ *
+ * CREATE TABLE IF NOT EXISTS invites (
+ *   id             SERIAL PRIMARY KEY,
+ *   inviter_tg_id  TEXT,
+ *   invited_tg_id  TEXT,
+ *   created_at     BIGINT
+ * );
+ * CREATE INDEX IF NOT EXISTS idx_invites_inviter_day ON invites (inviter_tg_id, created_at);
  */
 
 // 复用连接池（Netlify warm instance 内共享，避免每次冷启动都重连）
@@ -171,6 +179,11 @@ export const handler = async function (event, context) {
               'UPDATE users SET coins = coins + 5000, invite_count = invite_count + 1, updated_at = $1 WHERE tg_id = $2',
               [Date.now(), inviterTgId]
             );
+            // 记录邀请事件（用于「当日邀请榜」统计）
+            await db.query(
+              'INSERT INTO invites (inviter_tg_id, invited_tg_id, created_at) VALUES ($1, $2, $3)',
+              [inviterTgId, tgId, Date.now()]
+            );
           }
         }
       }
@@ -221,6 +234,97 @@ export const handler = async function (event, context) {
 
       res = await db.query('SELECT * FROM users WHERE tg_id = $1', [tgId]);
       row = res.rows[0];
+    }
+
+    // leaderboard 动作：按等级（图鉴最高解锁等级）降序返回全球排行榜
+    if (action === 'leaderboard') {
+      const listRes = await db.query(
+        `SELECT tg_id, username, coins,
+           COALESCE((SELECT max(elem::int) FROM jsonb_array_elements_text(pokedex) elem), 0) AS max_lv
+         FROM users
+         ORDER BY max_lv DESC, coins DESC
+         LIMIT 100`
+      );
+      const list = listRes.rows.map((r, idx) => ({
+        rank: idx + 1,
+        username: r.username || 'unknown',
+        lv: Number(r.max_lv) || 1,
+        coins: Number(r.coins) || 0,
+        isMe: r.tg_id === tgId,
+      }));
+
+      // 当前用户等级与排名
+      const myRes = await db.query(
+        `SELECT COALESCE((SELECT max(elem::int) FROM jsonb_array_elements_text(pokedex) elem), 0) AS max_lv, coins
+         FROM users WHERE tg_id = $1`,
+        [tgId]
+      );
+      let myRank = 0, myLv = 1, myCoins = 0;
+      if (myRes.rows.length) {
+        myLv = Number(myRes.rows[0].max_lv) || 1;
+        myCoins = Number(myRes.rows[0].coins) || 0;
+        const rankRes = await db.query(
+          `SELECT COUNT(*) AS rank FROM users
+           WHERE COALESCE((SELECT max(elem::int) FROM jsonb_array_elements_text(pokedex) elem), 0) > $1
+              OR (COALESCE((SELECT max(elem::int) FROM jsonb_array_elements_text(pokedex) elem), 0) = $1 AND coins > $2)`,
+          [myLv, myCoins]
+        );
+        myRank = Number(rankRes.rows[0].rank) + 1;
+      }
+
+      return {
+        statusCode: 200,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ success: true, leaderboard: { list, myRank, myLv, myCoins } })
+      };
+    }
+
+    // inviteboard 动作：当日邀请榜（按今天成功邀请的好友数降序，Asia/Shanghai 时区）
+    if (action === 'inviteboard') {
+      const now = new Date();
+      // 上海当日 0 点对应的 UTC 毫秒（UTC+8，无夏令时）
+      const dayStart = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) - 8 * 3600 * 1000;
+
+      const listRes = await db.query(
+        `SELECT i.inviter_tg_id, u.username, COUNT(*) AS cnt
+         FROM invites i
+         LEFT JOIN users u ON u.tg_id = i.inviter_tg_id
+         WHERE i.created_at >= $1
+         GROUP BY i.inviter_tg_id, u.username
+         ORDER BY cnt DESC
+         LIMIT 100`,
+        [dayStart]
+      );
+      const list = listRes.rows.map((r, idx) => ({
+        rank: idx + 1,
+        username: r.username || 'unknown',
+        count: Number(r.cnt) || 0,
+        isMe: r.inviter_tg_id === tgId,
+      }));
+
+      const myRes = await db.query(
+        'SELECT COUNT(*) AS cnt FROM invites WHERE inviter_tg_id = $1 AND created_at >= $2',
+        [tgId, dayStart]
+      );
+      const myCount = Number(myRes.rows[0].cnt) || 0;
+      let myRank = 0;
+      if (myCount > 0) {
+        const rankRes = await db.query(
+          `SELECT COUNT(*) AS rank FROM (
+             SELECT inviter_tg_id FROM invites WHERE created_at >= $1
+             GROUP BY inviter_tg_id
+             HAVING COUNT(*) > $2
+           ) t`,
+          [dayStart, myCount]
+        );
+        myRank = Number(rankRes.rows[0].rank) + 1;
+      }
+
+      return {
+        statusCode: 200,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ success: true, inviteboard: { list, myRank, myCount } })
+      };
     }
 
     const user = rowToUser(row);
