@@ -631,7 +631,13 @@ function buildInviteLink() {
 const TEST_INIT_DATA = 'query_id=test&user=%7B%22id%22%3A12345678%2C%22first_name%22%3A%22TestUser%22%7D';
 
 function getInitData() {
-  return window.Telegram?.WebApp?.initData || TEST_INIT_DATA;
+  // 判断是否在 Telegram 环境（WebApp 对象存在）
+  if (window.Telegram?.WebApp) {
+    // TG 环境：严格使用真实 initData（即使为空也返回真实值，绝不用测试数据）
+    return window.Telegram.WebApp.initData || '';
+  }
+  // 纯网页环境（无 Telegram.WebApp）：使用测试数据
+  return TEST_INIT_DATA;
 }
 
 // ═══════ 云存档：Telegram 鉴权 + 拉取/写回 MongoDB（Netlify Functions）═══════
