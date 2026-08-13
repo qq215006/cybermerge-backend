@@ -61,29 +61,35 @@ export const handler = async function (event, context) {
     const body = JSON.parse(event.body);
     const { initData, action, data, inviterId } = body;
 
+    const allowTest = process.env.ALLOW_TEST_AUTH === 'true';
+    const TEST_USER = { id: 12345678, first_name: 'TG_Test_User' };
+
+    let authUser = null;
+
     if (!initData) {
-      return { statusCode: 401, body: JSON.stringify({ success: false, message: '无授权信息' }) };
-    }
-
-    // 测试模式（环境变量 ALLOW_TEST_AUTH=true）：测试数据无 hash 时跳过验真，仅用于电脑浏览器本地调试
-    let v;
-    if (process.env.ALLOW_TEST_AUTH === 'true' && !initData.includes('hash=')) {
-      const p = new URLSearchParams(initData);
-      let u = null;
-      try { const ur = p.get('user'); if (ur) u = JSON.parse(ur); } catch(_) {}
-      v = { ok: true, user: u };
+      // initData 为空
+      if (allowTest) {
+        authUser = TEST_USER;                          // 测试模式：降级放行
+      } else {
+        return { statusCode: 401, body: JSON.stringify({ success: false, message: '无授权信息' }) };
+      }
     } else {
-      v = verifyInitData(initData);
-    }
-    if (!v.ok) {
-      console.error('Auth verification failed:', v.error, 'initData:', initData);
-      return { statusCode: 403, body: JSON.stringify({ success: false, message: '验真失败' }) };
-    }
-    if (!v.user?.id) {
-      return { statusCode: 400, body: JSON.stringify({ success: false, message: 'invalid user' }) };
+      const v = verifyInitData(initData);
+      if (v.ok && v.user?.id) {
+        authUser = v.user;                             // 验真通过：使用真实用户
+      } else {
+        if (allowTest) {
+          // 测试模式：验真失败也降级放行，使用默认测试用户
+          console.error('Auth verification failed, fallback to test user:', v.error, 'initData:', initData);
+          authUser = TEST_USER;
+        } else {
+          console.error('Auth verification failed:', v.error, 'initData:', initData);
+          return { statusCode: 403, body: JSON.stringify({ success: false, message: '验真失败' }) };
+        }
+      }
     }
 
-    const tgId = String(v.user.id);
+    const tgId = String(authUser.id);
     const client = await getClient();
     const col = client.db(DB_NAME).collection(COLLECTION);
 
@@ -92,7 +98,7 @@ export const handler = async function (event, context) {
     if (!user) {
       const newUser = {
         tgId,
-        username: v.user.username || 'unknown',
+        username: authUser.username || authUser.first_name || 'unknown',
         coins: 1000,
         grid: new Array(TOTAL).fill(null),
         buyCount: 0,
