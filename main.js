@@ -609,9 +609,11 @@ function twa() {
       tg = window.Telegram.WebApp;
       tg.ready(); tg.expand();
       tg.lockOrientation?.('portrait');
-      tg.enableClosingConfirmation();
+      // 不调用 enableClosingConfirmation()：它会触发「确认离开」弹窗，强退时导致存档丢失
       tg.setHeaderColor('#f5e6d3');
       tg.setBackgroundColor('#f5e6d3');
+      // Telegram 原生关闭事件兜底：静默保存，不弹窗
+      try { tg.onEvent?.('web_app_close', () => saveCloudNow()); } catch(_) {}
     }
   } catch(_){}
 }
@@ -652,11 +654,11 @@ async function saveCloudNow() {
   } catch(_) {}
 }
 
-// 防抖写回：3 秒内的多次变动合并成一次请求
+// 防抖写回：1 秒内的多次变动合并成一次请求（更快落库，减少强退丢档）
 let _cloudTimer = null;
 function saveCloud() {
   if (_cloudTimer) clearTimeout(_cloudTimer);
-  _cloudTimer = setTimeout(() => { saveCloudNow(); }, 3000);
+  _cloudTimer = setTimeout(() => { saveCloudNow(); }, 1000);
 }
 
 // 初始化：向后端鉴权并恢复完整云存档（金币 / grid / 图鉴 / 设置等）
@@ -1047,7 +1049,7 @@ function buy() {
   if (pet) { pet.classList.add('pet-spawn'); pet.addEventListener('animationend',()=>pet.classList.remove('pet-spawn'),{once:true}); }
   collect(lv);
   toast('获得 '+CATS[lv].name+' LV.'+lv+'（下次涨价 7%）','success');
-  saveCloud();
+  saveCloudNow();   // 买猫是核心动作，立即落库防丢档
 }
 
 // ═══════ 加速可产出（不花金币，给 adRewardLv() 等级的猫）═══════
@@ -1067,7 +1069,7 @@ function watchAd() {
   if (pet) { pet.classList.add('pet-spawn'); pet.addEventListener('animationend',()=>pet.classList.remove('pet-spawn'),{once:true}); }
   collect(lv);
   toast('⚡ 加速成功！获得 '+CATS[lv].name+' LV.'+lv,'success');
-  saveCloud();
+  saveCloudNow();   // 加速得猫也是核心动作，立即落库
 }
 
 // ═══════ 拖拽（2 只同等级合成升级）═══════
@@ -1128,7 +1130,7 @@ function up(e) {
       if(cl.parentNode) cl.remove();
       clearTimeout(safeKill);
       S.grid[sr]=null; S.grid[tgt]=sl; draw(sr); draw(tgt);
-      saveCloud();
+      saveCloudNow();   // 移动猫改变 grid，立即落库
     }, {once:true});
     return;
   }
@@ -1159,7 +1161,7 @@ function up(e) {
     audio.sfxMerge();                          // 🔔 合成成功音效
     toast('🎉 合体！'+CATS[nl].name+' LV.'+nl,'success');
     ui();
-    saveCloud();
+    saveCloudNow();   // 合成是核心动作，立即落库防丢档
   }, {once:true});
 }
 
@@ -1287,7 +1289,7 @@ function btn(){
       catch (_) { toast('🔗 邀请链接：' + inviteUrl, 'info'); }
     }
     S.inviteCount++;
-    saveCloud();
+    saveCloudNow();   // 邀请是核心动作，立即落库
   });
 
   document.getElementById('btn-merge')?.addEventListener('click',buy);
@@ -1308,7 +1310,7 @@ function btn(){
       }
     }
     S.inviteCount++;
-    saveCloud();
+    saveCloudNow();   // 邀请是核心动作，立即落库
   });
   document.getElementById('btn-ads')?.addEventListener('click',openPokedex);
   // TON 钱包链接按钮
@@ -1378,7 +1380,7 @@ function btn(){
     try { localStorage.setItem(MUSIC_KEY, (!on) ? '1' : '0'); } catch(_) {}
     if (!on) audio.startBgm(); else audio.stopBgm();   // 开→播 BGM；关→停 BGM
     toast(on ? t('t_music_off') : t('t_music_on'), 'info');
-    saveCloud();
+    saveCloudNow();   // 更改设置立即落库
   });
   sfxToggle?.addEventListener('click', () => {
     const on = sfxToggle.dataset.on === 'true';
@@ -1387,7 +1389,7 @@ function btn(){
     audio.sfxEnabled = !on;                             // 同步音效开关
     if (audio.sfxEnabled) audio.sfxMerge();             // 立即试听一下合成音
     toast(on ? t('t_sfx_off') : t('t_sfx_on'), 'info');
-    saveCloud();
+    saveCloudNow();   // 更改设置立即落库
   });
 
   // 语言切换：改 _lang → 持久化 → 高亮当前按钮 → 调 applyI18n() 真正切换全站文本
@@ -1402,7 +1404,7 @@ function btn(){
     applyI18n();                                   // ← 核心：真正替换所有 [data-i18n] 元素文本
     if (!silent) {
       toast('🌍 Language: ' + ({zh:'中文', en:'English', ru:'Русский'})[lang], 'info');
-      saveCloud();
+      saveCloudNow();   // 更改语言立即落库
     }
   };
   const savedLang = (() => { try { return localStorage.getItem(LANG_KEY) || 'zh'; } catch(_) { return 'zh'; } })();
@@ -1453,15 +1455,17 @@ function init(){
   applyI18n();
   // 初始化完成后，向后端鉴权并同步金币/用户信息（Telegram 环境下才会真正请求）
   syncBackend();
-  // 页面关闭/跳转前，用 sendBeacon 尽力做最后一次云存档（不阻塞关闭）
-  window.addEventListener('beforeunload', () => {
+  // 关闭/切后台兜底保存：完全静默（不 preventDefault、不设 returnValue），避免弹「确认离开」框
+  const beaconSave = () => {
     const initData = window.Telegram?.WebApp?.initData;
     if (!initData) return;
     try {
       const payload = JSON.stringify({ action: 'save', initData, data: collectCloudData() });
       navigator.sendBeacon('/.netlify/functions/auth', new Blob([payload], { type: 'application/json' }));
     } catch(_) {}
-  });
+  };
+  window.addEventListener('beforeunload', beaconSave);
+  window.addEventListener('pagehide', beaconSave);
 }
 
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init);
