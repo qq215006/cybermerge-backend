@@ -306,9 +306,9 @@ const AI_AD_BLOCK_ID = '42657';            // 智能合成解锁激励视频广�
 
 // ═══════ 每日任务：3 个 Adsgram 任务广告单元 + 金币奖励 ═══════
 const DAILY_TASKS = [
-  { key: 'task-42653', blockId: 'task-42653', icon: '📺', name: '看视频领金币', desc: '观看广告领取 500 金币', coins: 500 },
-  { key: 'task-42654', blockId: 'task-42654', icon: '🎁', name: '看视频领金币', desc: '观看广告领取 800 金币', coins: 800 },
-  { key: 'task-42655', blockId: 'task-42655', icon: '💰', name: '看视频领金币', desc: '观看广告领取 1200 金币', coins: 1200 },
+  { key: 'task-42653', blockId: 'task-42653', icon: '📺', desc: '看广告领 500 金币', coins: 500 },
+  { key: 'task-42654', blockId: 'task-42654', icon: '🎁', desc: '看广告领 800 金币', coins: 800 },
+  { key: 'task-42655', blockId: 'task-42655', icon: '💰', desc: '看广告领 1200 金币', coins: 1200 },
 ];
 const TASK_DONE_KEY = 'cybermerge_daily_tasks';  // 存 { date, done: [taskKey] }，每日重置
 
@@ -1178,10 +1178,9 @@ function renderTasks() {
     item.innerHTML =
       '<span class="task-icon">' + task.icon + '</span>' +
       '<span class="task-info">' +
-        '<span class="task-name">' + task.name + '</span>' +
         '<span class="task-desc">' + task.desc + '</span>' +
       '</span>' +
-      '<span class="task-reward">' + (done ? '✅ 已完成' : '领取 +' + task.coins) + '</span>';
+      '<span class="task-reward">' + (done ? '✅ 已完成' : '▶ 领取') + '</span>';
     if (!done) item.addEventListener('click', () => doTask(task));
     list.appendChild(item);
   });
