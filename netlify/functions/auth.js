@@ -1,27 +1,70 @@
 import crypto from 'crypto';
-import { MongoClient } from 'mongodb';
+import pg from 'pg';
+
+const { Pool } = pg;
 
 // 安全：敏感配置一律从环境变量读取，代码里不出现任何明文密码
 const BOT_TOKEN = process.env.BOT_TOKEN || '你的BotToken';
-const MONGODB_URI = process.env.MONGODB_URI || '';
+const DATABASE_URL = process.env.DATABASE_URL || '';
 
-const DB_NAME = 'cybermerge';
-const COLLECTION = 'users';
 const TOTAL = 16;
 const MAX_LV = 40;
 
-// 复用 MongoClient 连接（Netlify warm instance 内共享，避免每次冷启动都重连）
-let clientPromise = null;
+/*
+ * Supabase (PostgreSQL) 表结构 —— 请在 Supabase SQL Editor 执行一次：
+ *
+ * CREATE TABLE IF NOT EXISTS users (
+ *   tg_id         TEXT PRIMARY KEY,
+ *   username      TEXT,
+ *   coins         DOUBLE PRECISION DEFAULT 1000,
+ *   grid          JSONB DEFAULT '[]'::jsonb,
+ *   buy_count     INTEGER DEFAULT 0,
+ *   ad_used_today INTEGER DEFAULT 0,
+ *   wd_ad_used    INTEGER DEFAULT 0,
+ *   pokedex       JSONB DEFAULT '[]'::jsonb,
+ *   settings      JSONB DEFAULT '{}'::jsonb,
+ *   ai_unlock_day TEXT DEFAULT '',
+ *   invite_count  INTEGER DEFAULT 0,
+ *   created_at    BIGINT DEFAULT 0,
+ *   updated_at    BIGINT DEFAULT 0
+ * );
+ */
 
-function getClient() {
-  if (!MONGODB_URI) throw new Error('MONGODB_URI 未配置');
-  if (!clientPromise) {
-    clientPromise = MongoClient.connect(MONGODB_URI, {
-      serverSelectionTimeoutMS: 5000,
-      connectTimeoutMS: 10000,
+// 复用连接池（Netlify warm instance 内共享，避免每次冷启动都重连）
+let pool = null;
+
+function getPool() {
+  if (!DATABASE_URL) throw new Error('DATABASE_URL 未配置');
+  if (!pool) {
+    pool = new Pool({
+      connectionString: DATABASE_URL,
+      ssl: { rejectUnauthorized: false },   // Supabase Transaction Pooler 需要 SSL
     });
   }
-  return clientPromise;
+  return pool;
+}
+
+// 将数据库行（snake_case）转换为前端用户对象（camelCase）
+function rowToUser(row) {
+  if (!row) return null;
+  const parseJson = (v, d) => {
+    if (v == null) return d;
+    if (typeof v === 'string') { try { return JSON.parse(v); } catch(_) { return d; } }
+    return v;
+  };
+  return {
+    tgId: row.tg_id,
+    username: row.username,
+    coins: Number(row.coins) || 0,
+    grid: parseJson(row.grid, new Array(TOTAL).fill(null)),
+    buyCount: Number(row.buy_count) || 0,
+    adUsedToday: Number(row.ad_used_today) || 0,
+    wdAdUsed: Number(row.wd_ad_used) || 0,
+    pokedex: parseJson(row.pokedex, []),
+    settings: parseJson(row.settings, { lang: 'zh', music: '1', sfx: '1', wallet: null }),
+    aiUnlockDay: row.ai_unlock_day || '',
+    inviteCount: Number(row.invite_count) || 0,
+  };
 }
 
 // Telegram initData 验真（HMAC-SHA256）
@@ -90,87 +133,103 @@ export const handler = async function (event, context) {
     }
 
     const tgId = String(authUser.id);
-    const client = await getClient();
-    const col = client.db(DB_NAME).collection(COLLECTION);
+    const db = getPool();
 
-    // 查找已有用户，没有则自动开户（送 1000 金币 + 空 grid）
-    let user = await col.findOne({ tgId });
-    if (!user) {
-      const newUser = {
-        tgId,
-        username: authUser.username || authUser.first_name || 'unknown',
-        coins: 1000,
-        grid: new Array(TOTAL).fill(null),
-        buyCount: 0,
-        adUsedToday: 0,
-        wdAdUsed: 0,
-        pokedex: [],
-        settings: { lang: 'zh', music: '1', sfx: '1', wallet: null },
-        aiUnlockDay: '',
-        inviteCount: 0,
-        createdAt: Date.now(),
-      };
-      await col.insertOne(newUser);
-      user = newUser;
+    // 查找已有用户
+    let res = await db.query('SELECT * FROM users WHERE tg_id = $1', [tgId]);
+    let row = res.rows[0];
+
+    if (!row) {
+      // 自动开户（送 1000 金币 + 空 grid）
+      await db.query(
+        `INSERT INTO users
+           (tg_id, username, coins, grid, buy_count, ad_used_today, wd_ad_used, pokedex, settings, ai_unlock_day, invite_count, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+        [
+          tgId,
+          authUser.username || authUser.first_name || 'unknown',
+          1000,
+          JSON.stringify(new Array(TOTAL).fill(null)),
+          0,
+          0,
+          0,
+          JSON.stringify([]),
+          JSON.stringify({ lang: 'zh', music: '1', sfx: '1', wallet: null }),
+          '',
+          0,
+          Date.now(),
+        ]
+      );
 
       // 邀请裂变：新用户带 inviterId 时，给邀请者发金币奖励 + inviteCount++
       if (inviterId) {
         const inviterTgId = String(inviterId);
-        if (inviterTgId !== tgId) {                 // 防止自己邀请自己
-          const inviter = await col.findOne({ tgId: inviterTgId });
-          if (inviter) {
-            await col.updateOne(
-              { tgId: inviterTgId },
-              { $inc: { coins: 5000, inviteCount: 1 }, $set: { updatedAt: Date.now() } }
+        if (inviterTgId !== tgId) {                   // 防止自己邀请自己
+          const invRes = await db.query('SELECT 1 FROM users WHERE tg_id = $1', [inviterTgId]);
+          if (invRes.rows.length) {
+            await db.query(
+              'UPDATE users SET coins = coins + 5000, invite_count = invite_count + 1, updated_at = $1 WHERE tg_id = $2',
+              [Date.now(), inviterTgId]
             );
           }
         }
       }
+
+      res = await db.query('SELECT * FROM users WHERE tg_id = $1', [tgId]);
+      row = res.rows[0];
     }
 
-    // save 动作：把前端最新存档写回 MongoDB
+    // save 动作：把前端最新存档写回 PostgreSQL
     if (action === 'save' && data && typeof data === 'object') {
-      const upd = { updatedAt: Date.now() };
+      const sets = [];
+      const params = [];
+      let i = 1;
 
-      if (typeof data.coins === 'number') upd.coins = data.coins;
+      if (typeof data.coins === 'number') { sets.push(`coins = $${i++}`); params.push(data.coins); }
 
       // grid 规范化：补齐 16 格，非法等级置 null
       if (Array.isArray(data.grid)) {
         const g = [];
-        for (let i = 0; i < TOTAL; i++) {
-          const x = data.grid[i];
+        for (let k = 0; k < TOTAL; k++) {
+          const x = data.grid[k];
           g.push((typeof x === 'number' && x >= 1 && x <= MAX_LV) ? x : null);
         }
-        upd.grid = g;
+        sets.push(`grid = $${i++}`); params.push(JSON.stringify(g));
       }
 
-      if (typeof data.buyCount === 'number') upd.buyCount = data.buyCount;
-      if (typeof data.adUsedToday === 'number') upd.adUsedToday = data.adUsedToday;
-      if (typeof data.wdAdUsed === 'number') upd.wdAdUsed = data.wdAdUsed;
-      if (Array.isArray(data.pokedex)) upd.pokedex = data.pokedex.filter(x => typeof x === 'number');
-      if (typeof data.inviteCount === 'number') upd.inviteCount = data.inviteCount;
-      if (typeof data.aiUnlockDay === 'string') upd.aiUnlockDay = data.aiUnlockDay;
+      if (typeof data.buyCount === 'number') { sets.push(`buy_count = $${i++}`); params.push(data.buyCount); }
+      if (typeof data.adUsedToday === 'number') { sets.push(`ad_used_today = $${i++}`); params.push(data.adUsedToday); }
+      if (typeof data.wdAdUsed === 'number') { sets.push(`wd_ad_used = $${i++}`); params.push(data.wdAdUsed); }
+      if (Array.isArray(data.pokedex)) { sets.push(`pokedex = $${i++}`); params.push(JSON.stringify(data.pokedex.filter(x => typeof x === 'number'))); }
+      if (typeof data.inviteCount === 'number') { sets.push(`invite_count = $${i++}`); params.push(data.inviteCount); }
+      if (typeof data.aiUnlockDay === 'string') { sets.push(`ai_unlock_day = $${i++}`); params.push(data.aiUnlockDay); }
 
       if (data.settings && typeof data.settings === 'object') {
-        upd.settings = {
+        sets.push(`settings = $${i++}`);
+        params.push(JSON.stringify({
           lang: data.settings.lang || 'zh',
           music: data.settings.music || '1',
           sfx: data.settings.sfx || '1',
           wallet: data.settings.wallet || null,
-        };
+        }));
       }
 
-      await col.updateOne({ tgId }, { $set: upd });
-      user = await col.findOne({ tgId });
+      if (sets.length) {
+        sets.push(`updated_at = $${i++}`); params.push(Date.now());
+        params.push(tgId);
+        await db.query(`UPDATE users SET ${sets.join(', ')} WHERE tg_id = $${i}`, params);
+      }
+
+      res = await db.query('SELECT * FROM users WHERE tg_id = $1', [tgId]);
+      row = res.rows[0];
     }
 
-    // 去掉 MongoDB 自动生成的 _id，避免序列化问题
-    const { _id, ...safeUser } = user;
+    const user = rowToUser(row);
 
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ success: true, user: safeUser })
+      body: JSON.stringify({ success: true, user })
     };
 
   } catch (err) {
