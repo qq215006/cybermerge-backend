@@ -81,6 +81,34 @@ const I18N = {
   // 提现弹窗 toast
   wd_ad_ok:         { zh:'✅ 20% 提现特权已激活（临时）', en:'✅ 20% withdrawal boost activated (temporary)', ru:'✅ Временный вывод 20% активирован' },
   wd_ad_done:       { zh:'⚠️ 今日特权次数已用完 (3/3)', en:'⚠️ Daily boost used up (3/3)', ru:'⚠️ Дневной лимит исчерпан (3/3)' },
+  // 通用/广告/合成/购买/任务/邀请 toast（补齐三语，替换原硬编码中文）
+  t_ai_daily_reset: { zh:'⏰ 新的一天到啦~智能合成已关闭', en:'⏰ New day! Auto merge turned off', ru:'⏰ Новый день! Автослияние выключено' },
+  t_ad_limit:       { zh:'今日广告次数已用完，明天再来~', en:'Daily ad limit reached, come back tomorrow~', ru:'Дневной лимит рекламы исчерпан, завтра~' },
+  t_ad_limit_accel: { zh:'今日加速次数已用完，明日再来~', en:'Daily boost limit reached, come back tomorrow~', ru:'Дневной лимит буста исчерпан, завтра~' },
+  t_grid_full:      { zh:'猫窝满啦！先合一下腾位~', en:'Nest is full! Merge first to make room~', ru:'Гнездо заполнено! Сначала объедините~' },
+  t_grid_full_buy:  { zh:'猫窝满啦！合一下腾位~', en:'Nest is full! Merge to make room~', ru:'Гнездо заполнено! Объедините~' },
+  t_ad_success_ai:  { zh:'🎬 看广告成功！智能合成已开启，获得 {name} LV.{lv}', en:'🎬 Ad done! Auto merge ON, got {name} LV.{lv}', ru:'🎬 Реклама просмотрена! Автослияние ВКЛ, получен {name} LV.{lv}' },
+  t_ad_not_loaded:  { zh:'广告系统未加载，请稍后再试', en:'Ad system not loaded, try again later', ru:'Рекламная система не загружена, повторите позже' },
+  t_ad_not_finished_ai: { zh:'广告未看完，无法开启智能合成', en:'Ad not finished, cannot enable auto merge', ru:'Реклама не досмотрена, автослияние недоступно' },
+  t_ad_load_failed: { zh:'广告加载失败，请稍后再试', en:'Ad failed to load, try again later', ru:'Не удалось загрузить рекламу, повторите позже' },
+  t_ad_not_finished:{ zh:'广告未看完，无法获得奖励', en:'Ad not finished, no reward', ru:'Реклама не досмотрена, награды нет' },
+  t_no_coins:       { zh:'❤ 金币不足！需 {price} 金（看广告免费领）', en:'❤ Not enough coins! Need {price} coins (watch ad for free)', ru:'❤ Не хватает монет! Нужно {price} монет (смотрите рекламу)' },
+  t_got_cat:        { zh:'获得 {name} LV.{lv}（下次涨价 7%）', en:'Got {name} LV.{lv} (next price +7%)', ru:'Получен {name} LV.{lv} (следующая цена +7%)' },
+  t_accel_success:  { zh:'⚡ 加速成功！获得 {name} LV.{lv}', en:'⚡ Boost success! Got {name} LV.{lv}', ru:'⚡ Буст успешен! Получен {name} LV.{lv}' },
+  t_task_done:      { zh:'{icon} 任务完成！获得 {coins} 金币', en:'{icon} Task done! Got {coins} coins', ru:'{icon} Задание выполнено! Получено {coins} монет' },
+  t_wrong_type:     { zh:'品种不同，不能合体哦', en:'Different breeds cannot merge', ru:'Разные породы нельзя объединять' },
+  t_merge_success:  { zh:'🎉 合体！{name} LV.{lv}', en:'🎉 Merged! {name} LV.{lv}', ru:'🎉 Объединение! {name} LV.{lv}' },
+  t_invite_copied:  { zh:'📋 邀请链接已复制！去 Telegram 粘贴给好友吧~', en:'📋 Invite link copied! Paste it to friends on Telegram~', ru:'📋 Ссылка скопирована! Отправьте друзьям в Telegram~' },
+  t_invite_link:    { zh:'🔗 邀请链接：', en:'🔗 Invite link: ', ru:'🔗 Ссылка: ' },
+  t_coin_soon:      { zh:'暗币系统即将开放！', en:'Dark coin system coming soon!', ru:'Система тёмных монет скоро!' },
+  t_task_done_label:{ zh:'✅ 已完成', en:'✅ Done', ru:'✅ Готово' },
+  t_task_claim:     { zh:'▶ 领取', en:'▶ Claim', ru:'▶ Получить' },
+  t_locked:         { zh:'未解锁', en:'Locked', ru:'Заблокировано' },
+  t_share_text:     { zh:'快来 CyberMerge 合成猫咪，瓜分大奖池！🐱💰', en:'Come to CyberMerge, merge cats and win the big pool! 🐱💰', ru:'Заходи в CyberMerge, объединяй котов и выигрывай призы! 🐱💰' },
+  // 每日任务描述
+  task_desc_1:      { zh:'接任务领 3000 金币', en:'Take task for 3000 coins', ru:'Задание на 3000 монет' },
+  task_desc_2:      { zh:'接任务领 5000 金币', en:'Take task for 5000 coins', ru:'Задание на 5000 монет' },
+  task_desc_3:      { zh:'接任务领 8000 金币', en:'Take task for 8000 coins', ru:'Задание на 8000 монет' },
 };
 
 // 当前语言（默认中文，可被 localStorage 覆盖）
@@ -287,6 +315,55 @@ const CATS = [
   { img:'/cats/LV.40.png', name:'招财神猫' },
 ];
 
+// ═══════ 猫咪名称三语（catName() 按当前语言返回，缺省回退中文）═══════
+const CAT_NAMES = {
+  1:  { zh:'小奶猫',   en:'Kitten',            ru:'Котёнок' },
+  2:  { zh:'狸花猫',   en:'Tabby Cat',         ru:'Табби' },
+  3:  { zh:'橘猫',     en:'Orange Cat',        ru:'Рыжий кот' },
+  4:  { zh:'三花猫',   en:'Calico Cat',        ru:'Трёхцветная' },
+  5:  { zh:'奶牛猫',   en:'Cow Cat',           ru:'Коровка' },
+  6:  { zh:'黑猫',     en:'Black Cat',         ru:'Чёрный кот' },
+  7:  { zh:'白猫',     en:'White Cat',         ru:'Белый кот' },
+  8:  { zh:'暹罗猫',   en:'Siamese',           ru:'Сиамская' },
+  9:  { zh:'波斯猫',   en:'Persian',           ru:'Персидская' },
+  10: { zh:'英短猫',   en:'British Shorthair', ru:'Британская' },
+  11: { zh:'美短猫',   en:'American Shorthair',ru:'Американская' },
+  12: { zh:'布偶猫',   en:'Ragdoll',           ru:'Рэгдолл' },
+  13: { zh:'金吉拉',   en:'Chinchilla',        ru:'Шиншилла' },
+  14: { zh:'蓝猫',     en:'Blue Cat',          ru:'Русская голубая' },
+  15: { zh:'银渐层',   en:'Silver Shaded',     ru:'Серебристый' },
+  16: { zh:'金渐层',   en:'Golden Shaded',     ru:'Золотистый' },
+  17: { zh:'起司猫',   en:'Cheese Cat',        ru:'Сырный кот' },
+  18: { zh:'矮脚猫',   en:'Munchkin',          ru:'Манчкин' },
+  19: { zh:'卷耳猫',   en:'American Curl',     ru:'Американский кёрл' },
+  20: { zh:'折耳猫',   en:'Scottish Fold',     ru:'Шотландская' },
+  21: { zh:'缅因猫',   en:'Maine Coon',        ru:'Мейн-кун' },
+  22: { zh:'挪威森林', en:'Norwegian Forest',  ru:'Норвежская лесная' },
+  23: { zh:'西伯利亚', en:'Siberian',          ru:'Сибирская' },
+  24: { zh:'阿比猫',   en:'Abyssinian',        ru:'Абиссинская' },
+  25: { zh:'索马里',   en:'Somali',            ru:'Сомали' },
+  26: { zh:'东方短毛', en:'Oriental Shorthair',ru:'Ориентальная' },
+  27: { zh:'柯尼斯',   en:'Cornish Rex',       ru:'Корниш-рекс' },
+  28: { zh:'德文卷',   en:'Devon Rex',         ru:'Девон-рекс' },
+  29: { zh:'塞尔凯克', en:'Selkirk Rex',       ru:'Селкирк-рекс' },
+  30: { zh:'孟买豹猫', en:'Bombay',            ru:'Бомбейская' },
+  31: { zh:'埃及猫',   en:'Egyptian Mau',      ru:'Египетский мау' },
+  32: { zh:'新加坡猫', en:'Singapura',         ru:'Сингапура' },
+  33: { zh:'日本短尾', en:'Japanese Bobtail',  ru:'Японский бобтейл' },
+  34: { zh:'巴厘猫',   en:'Balinese',          ru:'Балинезийская' },
+  35: { zh:'爪哇猫',   en:'Javanese',          ru:'Яванская' },
+  36: { zh:'拉邦猫',   en:'LaPerm',            ru:'Ла-перм' },
+  37: { zh:'波米拉',   en:'Burmilla',          ru:'Бурмилла' },
+  38: { zh:'曼基康',   en:'Munchkin',          ru:'Манчкин' },
+  39: { zh:'拿破仑',   en:'Napoleon',          ru:'Наполеон' },
+  40: { zh:'招财神猫', en:'Lucky Cat',         ru:'Кот удачи' },
+};
+function catName(lv) {
+  const e = CAT_NAMES[lv];
+  if (!e) return 'LV.' + lv;
+  return e[_lang] || e.zh;
+}
+
 // ═══════ 状态 ═══════
 const S = {
   grid: new Array(TOTAL).fill(null),  // grid[i] = null 或 lv 整数
@@ -306,9 +383,9 @@ const AI_AD_BLOCK_ID = '42657';            // 智能合成解锁激励视频广�
 
 // ═══════ 每日任务：3 个 Adsgram 任务广告单元 + 金币奖励 ═══════
 const DAILY_TASKS = [
-  { key: 'task-42653', blockId: 'task-42653', icon: '📺', desc: '接任务领 3000 金币', coins: 3000 },
-  { key: 'task-42654', blockId: 'task-42654', icon: '🎁', desc: '接任务领 5000 金币', coins: 5000 },
-  { key: 'task-42655', blockId: 'task-42655', icon: '💰', desc: '接任务领 8000 金币', coins: 8000 },
+  { key: 'task-42653', blockId: 'task-42653', icon: '📺', descKey: 'task_desc_1', coins: 3000 },
+  { key: 'task-42654', blockId: 'task-42654', icon: '🎁', descKey: 'task_desc_2', coins: 5000 },
+  { key: 'task-42655', blockId: 'task-42655', icon: '💰', descKey: 'task_desc_3', coins: 8000 },
 ];
 const TASK_DONE_KEY = 'cybermerge_daily_tasks';  // 存 { date, done: [taskKey] }，每日重置
 
@@ -466,7 +543,7 @@ function checkDailyReset() {
   // 跨 0 点自动关闭智能合成（今日不是解锁日 → 关）
   if (S.aiRunning && !isAiUnlockedToday()) {
     stopAiLoop();
-    toast('⏰ 新的一天到啦~智能合成已关闭','info');
+    toast(t('t_ai_daily_reset'),'info');
   }
 }
 function updateAiBtn() {
@@ -542,13 +619,13 @@ function toggleAiMerge(e) {
   if (!isAiUnlockedToday()) {
     // 未解锁今日：看一次激励视频广告（Adsgram 42657）才能开启智能合成
     if (S.adUsedToday >= adDailyLimit()) {
-      toast('今日广告次数已用完，明天再来~','warn');
+      toast(t('t_ad_limit'),'warn');
       return;
     }
     const lv = adRewardLv();
     let idx = -1; for (let i = 0; i < TOTAL; i++) if (S.grid[i] === null) { idx = i; break; }
     if (idx === -1) {
-      toast('猫窝满啦！先合一下腾位~','warn');
+      toast(t('t_grid_full'),'warn');
       return;
     }
 
@@ -562,19 +639,19 @@ function toggleAiMerge(e) {
       if (pet) { pet.classList.add('pet-spawn'); pet.addEventListener('animationend',()=>pet.classList.remove('pet-spawn'),{once:true}); }
       collect(lv);
       startAiLoop();
-      toast('🎬 看广告成功！智能合成已开启，获得 '+CATS[lv].name+' LV.'+lv,'success');
+      toast(t('t_ad_success_ai').replace('{name}', catName(lv)).replace('{lv}', lv),'success');
       ui();
       saveCloudNow();
     };
 
     try {
-      if (!window.Adsgram) { toast('广告系统未加载，请稍后再试','warn'); return; }
+      if (!window.Adsgram) { toast(t('t_ad_not_loaded'),'warn'); return; }
       const AdController = window.Adsgram.init({ blockId: AI_AD_BLOCK_ID });
       AdController.show()
         .then(() => unlockAfterAd())                                  // 看完广告 → 解锁 + 发奖励 + 存档
-        .catch(() => toast('广告未看完，无法开启智能合成','warn'));   // 中途关闭 / 失败
+        .catch(() => toast(t('t_ad_not_finished_ai'),'warn'));   // 中途关闭 / 失败
     } catch(_) {
-      toast('广告加载失败，请稍后再试','warn');
+      toast(t('t_ad_load_failed'),'warn');
     }
     return;
   }
@@ -1033,7 +1110,7 @@ function makePet(lv) {
     '<span class="pet-lv-badge">'+lv+'</span>' +
     '<div class="pet-tail-wag">' +
       '<div class="pet-head">' +
-        '<img class="pet-img" data-lv="'+lv+'" src="'+c.img+'" alt="'+c.name+'" draggable="false" style="--lv-scale:'+lvScale+'" />' +
+        '<img class="pet-img" data-lv="'+lv+'" src="'+c.img+'" alt="'+catName(lv)+'" draggable="false" style="--lv-scale:'+lvScale+'" />' +
       '</div>' +
     '</div>';
   return card;
@@ -1094,11 +1171,11 @@ function buy() {
   const lv = buyLevel();
   const price = lvPrice(lv);
   if (S.usdt < price) {
-    toast('❤ 金币不足！需 ' + fmtNum(price) + ' 金（看广告免费领）','error');
+    toast(t('t_no_coins').replace('{price}', fmtNum(price)),'error');
     return;
   }
   let idx = -1; for (let i = 0; i < TOTAL; i++) if (S.grid[i] === null) { idx = i; break; }
-  if (idx === -1) { toast('猫窝满啦！合一下腾位~','warn'); return; }
+  if (idx === -1) { toast(t('t_grid_full_buy'),'warn'); return; }
   S.usdt = parseFloat((S.usdt - price).toFixed(4));
   S.buyCount++;                  // 购买次数 +1，全场物价 +7%
   S.grid[idx] = lv;
@@ -1107,18 +1184,18 @@ function buy() {
   let pet = g.children[idx].querySelector('.pet-card');
   if (pet) { pet.classList.add('pet-spawn'); pet.addEventListener('animationend',()=>pet.classList.remove('pet-spawn'),{once:true}); }
   collect(lv);
-  toast('获得 '+CATS[lv].name+' LV.'+lv+'（下次涨价 7%）','success');
+  toast(t('t_got_cat').replace('{name}', catName(lv)).replace('{lv}', lv),'success');
   saveCloudNow();   // 买猫是核心动作，立即落库防丢档
 }
 
 // ═══════ 加速可产出（看 Adsgram 广告，成功看完才给猫）═══════
 function watchAd() {
   if (S.adUsedToday >= adDailyLimit()) {
-    toast('今日加速次数已用完，明日再来~','warn');
+    toast(t('t_ad_limit_accel'),'warn');
     return;
   }
   let idx = -1; for (let i = 0; i < TOTAL; i++) if (S.grid[i] === null) { idx = i; break; }
-  if (idx === -1) { toast('猫窝满啦！先合一下腾位~','warn'); return; }
+  if (idx === -1) { toast(t('t_grid_full'),'warn'); return; }
 
   // 成功看完广告后发放加速奖励并立即落库
   const grantReward = () => {
@@ -1130,22 +1207,22 @@ function watchAd() {
     let pet = g?.children[idx]?.querySelector('.pet-card');
     if (pet) { pet.classList.add('pet-spawn'); pet.addEventListener('animationend',()=>pet.classList.remove('pet-spawn'),{once:true}); }
     collect(lv);
-    toast('⚡ 加速成功！获得 '+CATS[lv].name+' LV.'+lv,'success');
+    toast(t('t_accel_success').replace('{name}', catName(lv)).replace('{lv}', lv),'success');
     saveCloudNow();   // 加速得猫也是核心动作，立即落库
   };
 
   // 接入 Adsgram 广告
   try {
     if (!window.Adsgram) {
-      toast('广告系统未加载，请稍后再试','warn');
+      toast(t('t_ad_not_loaded'),'warn');
       return;
     }
     const AdController = window.Adsgram.init({ blockId: ADSGRAM_BLOCK_ID });
     AdController.show()
       .then(() => grantReward())                                 // 成功看完 → 发奖励 + 存档
-      .catch(() => toast('广告未看完，无法获得奖励','warn'));    // 中途关闭 / 拉取失败
+      .catch(() => toast(t('t_ad_not_finished'),'warn'));    // 中途关闭 / 拉取失败
   } catch(_) {
-    toast('广告加载失败，请稍后再试','warn');
+    toast(t('t_ad_load_failed'),'warn');
   }
 }
 
@@ -1178,20 +1255,20 @@ function renderTasks() {
     item.innerHTML =
       '<span class="task-icon">' + task.icon + '</span>' +
       '<span class="task-info">' +
-        '<span class="task-desc">' + task.desc + '</span>' +
+        '<span class="task-desc">' + t(task.descKey) + '</span>' +
       '</span>' +
-      '<span class="task-reward">' + (done ? '✅ 已完成' : '▶ 领取') + '</span>';
+      '<span class="task-reward">' + (done ? t('t_task_done_label') : t('t_task_claim')) + '</span>';
     if (!done) item.addEventListener('click', () => doTask(task));
     list.appendChild(item);
   });
 }
 function doTask(task) {
   if (S.adUsedToday >= adDailyLimit()) {
-    toast('今日广告次数已用完，明天再来~','warn');
+    toast(t('t_ad_limit'),'warn');
     return;
   }
   try {
-    if (!window.Adsgram) { toast('广告系统未加载，请稍后再试','warn'); return; }
+    if (!window.Adsgram) { toast(t('t_ad_not_loaded'),'warn'); return; }
     const AdController = window.Adsgram.init({ blockId: task.blockId });
     AdController.show()
       .then(() => {
@@ -1200,13 +1277,13 @@ function doTask(task) {
         S.adUsedToday++;                     // 任务广告计入每日总次数
         markTaskDone(task.key);
         ui();
-        toast(task.icon + ' 任务完成！获得 ' + task.coins + ' 金币','success');
+        toast(t('t_task_done').replace('{icon}', task.icon).replace('{coins}', task.coins),'success');
         saveCloudNow();
         renderTasks();                     // 刷新任务列表（标记已完成）
       })
-      .catch(() => toast('广告未看完，无法获得奖励','warn'));
+      .catch(() => toast(t('t_ad_not_finished'),'warn'));
   } catch(_) {
-    toast('广告加载失败，请稍后再试','warn');
+    toast(t('t_ad_load_failed'),'warn');
   }
 }
 function openTasks() {
@@ -1286,7 +1363,7 @@ function up(e) {
       if(cl.parentNode) cl.remove();
       clearTimeout(safeKill);
     }, {once:true});
-    toast('品种不同，不能合体哦','warn');
+    toast(t('t_wrong_type'),'warn');
     return;
   }
   let nl = Math.min(sl+1, MAX_LV);
@@ -1304,7 +1381,7 @@ function up(e) {
     collect(nl);
     // 防刷铁律：合成无金币奖励（仅解锁图鉴 + 等级提升）
     audio.sfxMerge();                          // 🔔 合成成功音效
-    toast('🎉 合体！'+CATS[nl].name+' LV.'+nl,'success');
+    toast(t('t_merge_success').replace('{name}', catName(nl)).replace('{lv}', nl),'success');
     ui();
     saveCloudNow();   // 合成是核心动作，立即落库防丢档
   }, {once:true});
@@ -1428,10 +1505,10 @@ function btn(){
   document.getElementById('wd-invite-btn')?.addEventListener('click', () => {
     const inviteUrl = buildInviteLink();
     if (tg && tg.openTelegramLink) {
-      tg.openTelegramLink('https://t.me/share/url?url=' + encodeURIComponent(inviteUrl) + '&text=' + encodeURIComponent('快来 CyberMerge 合成猫咪，瓜分大奖池！🐱💰'));
+      tg.openTelegramLink('https://t.me/share/url?url=' + encodeURIComponent(inviteUrl) + '&text=' + encodeURIComponent(t('t_share_text')));
     } else {
-      try { navigator.clipboard?.writeText(inviteUrl); toast('📋 邀请链接已复制！去 Telegram 粘贴给好友吧~', 'success'); }
-      catch (_) { toast('🔗 邀请链接：' + inviteUrl, 'info'); }
+      try { navigator.clipboard?.writeText(inviteUrl); toast(t('t_invite_copied'), 'success'); }
+      catch (_) { toast(t('t_invite_link') + inviteUrl, 'info'); }
     }
     S.inviteCount++;
     saveCloudNow();   // 邀请是核心动作，立即落库
@@ -1444,14 +1521,14 @@ function btn(){
     const inviteUrl = buildInviteLink();
     // Telegram 内：走原生分享，弹出好友选择
     if (tg && tg.openTelegramLink) {
-      tg.openTelegramLink('https://t.me/share/url?url=' + encodeURIComponent(inviteUrl) + '&text=' + encodeURIComponent('快来 CyberMerge 合成猫咪，瓜分大奖池！🐱💰'));
+      tg.openTelegramLink('https://t.me/share/url?url=' + encodeURIComponent(inviteUrl) + '&text=' + encodeURIComponent(t('t_share_text')));
     } else {
       // 外部浏览器 fallback：复制链接 + toast 提示
       try {
         navigator.clipboard?.writeText(inviteUrl);
-        toast('📋 邀请链接已复制！去 Telegram 粘贴给好友吧~', 'success');
+        toast(t('t_invite_copied'), 'success');
       } catch (_) {
-        toast('🔗 邀请链接：' + inviteUrl, 'info');
+        toast(t('t_invite_link') + inviteUrl, 'info');
       }
     }
     S.inviteCount++;
@@ -1470,7 +1547,7 @@ function btn(){
   if (aiBtn) {
     aiBtn.addEventListener('click', (e)=>{ e.stopPropagation(); toggleAiMerge(e); });
   }
-  document.querySelector('.coin-btn')?.addEventListener('click',()=>toast('暗币系统即将开放！','info'));
+  document.querySelector('.coin-btn')?.addEventListener('click',()=>toast(t('t_coin_soon'),'info'));
   // ═══════ 系统设置面板 ═══════
   const settingsModal = document.getElementById('settings-modal');
   const openSettings = () => settingsModal?.classList.add('show');
@@ -1562,8 +1639,7 @@ function openPokedex() {
     const item = d('div', 'pd-item' + (unlocked ? '' : ' locked'));
     item.innerHTML =
       '<span class="pd-lv">LV.' + lv + '</span>' +
-      '<img src="' + c.img + '" alt="' + c.name + '" draggable="false" />' +
-      '<span class="pd-name">' + (unlocked ? c.name : '未解锁') + '</span>';
+      '<img src="' + c.img + '" alt="' + catName(lv) + '" draggable="false" />';
     grid.appendChild(item);
   }
   document.getElementById('ps-collected').textContent = collected.size;

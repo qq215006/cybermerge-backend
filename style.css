@@ -1793,23 +1793,6 @@
   box-shadow: 0 1px 3px rgba(180,30,30,0.3);
   z-index: 2;
 }
-.pd-name {
-  position: absolute;
-  bottom: 2px;
-  left: 2px;
-  right: 2px;
-  font-size: 8px;
-  font-weight: 700;
-  color: #5d4037;
-  text-align: center;
-  background: rgba(255,255,255,0.85);
-  border-radius: 6px;
-  padding: 1px 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  z-index: 2;
-}
 .pd-item.locked .pd-lv { display: none; }
 
 /* ═══════════════════════════════════════════
