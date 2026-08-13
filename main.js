@@ -296,6 +296,7 @@ const S = {
   aiTimer: null,                      // 智能合成循环定时器
   aiLock: false,                      // 互斥锁：防本次 tick 未跑完就重入
   wdAdUsed: 0,                        // 提现弹窗「看视频临时特权」今日已用次数（上限 3）
+  inviteCount: 0,                     // 邀请好友次数（云存档）
 };
 const AI_KEY = 'cybermerge_ai_unlock_day';  // 存最后一次看广告解锁智能合成的日期 "YYYY-MM-DD"
 const AI_TICK_MS = 180;                     // AI 循环周期（毫秒）：不要太快避免卡顿
@@ -493,6 +494,7 @@ function aiTick() {
         const ni = S.grid.indexOf(newLv); // 找到新等级在排序后的位置
         if (ni >= 0) boom(ni);
         collect(newLv);
+        saveCloud();
         merged = true;
         break;  // 每次 tick 只做一次合并，防止卡顿
       }
@@ -511,6 +513,7 @@ function aiTick() {
         const pet = g?.children[emptyIdx]?.querySelector('.pet-card');
         if (pet) { pet.classList.add('pet-spawn'); pet.addEventListener('animationend',()=>pet.classList.remove('pet-spawn'),{once:true}); }
         collect(lv);
+        saveCloud();
       }
     }
   } finally {
@@ -613,7 +616,50 @@ function twa() {
   } catch(_){}
 }
 
-// ═══════ 后端同步：Telegram 身份鉴权 + 拉取金币/用户信息（Netlify Functions）═══════
+// ═══════ 云存档：Telegram 鉴权 + 拉取/写回 MongoDB（Netlify Functions）═══════
+
+// 收集需要云端保存的完整存档
+function collectCloudData() {
+  const lsGet = (k, d) => { try { return localStorage.getItem(k) ?? d; } catch(_) { return d; } };
+  return {
+    coins: S.usdt,
+    grid: S.grid,
+    buyCount: S.buyCount,
+    adUsedToday: S.adUsedToday,
+    wdAdUsed: S.wdAdUsed,
+    pokedex: [...collected],
+    inviteCount: S.inviteCount,
+    aiUnlockDay: lsGet(AI_KEY, ''),
+    settings: {
+      lang: _lang,
+      music: lsGet('cybermerge_music', '1'),
+      sfx: lsGet('cybermerge_sfx', '1'),
+      wallet: wallet.address,
+    }
+  };
+}
+
+// 立即写回云端（不防抖）
+async function saveCloudNow() {
+  const initData = window.Telegram?.WebApp?.initData;
+  if (!initData) return;
+  try {
+    await fetch('/.netlify/functions/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'save', initData, data: collectCloudData() })
+    });
+  } catch(_) {}
+}
+
+// 防抖写回：3 秒内的多次变动合并成一次请求
+let _cloudTimer = null;
+function saveCloud() {
+  if (_cloudTimer) clearTimeout(_cloudTimer);
+  _cloudTimer = setTimeout(() => { saveCloudNow(); }, 3000);
+}
+
+// 初始化：向后端鉴权并恢复完整云存档（金币 / grid / 图鉴 / 设置等）
 async function syncBackend() {
   try {
     const initData = window.Telegram?.WebApp?.initData;
@@ -621,18 +667,55 @@ async function syncBackend() {
     const resp = await fetch('/.netlify/functions/auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ initData })
+      body: JSON.stringify({ action: 'login', initData })
     });
     const data = await resp.json();
-    if (data.success && data.user) {
-      // 用后端返回的金币覆盖本地金币（新用户默认 1000）
-      S.usdt = Number(data.user.coins) || 1000;
-      // 保存用户身份信息，供后续提现/绑定使用
-      try {
-        localStorage.setItem('cybermerge_user', JSON.stringify({ tgId: data.user.tgId, username: data.user.username }));
-      } catch(_) {}
-      ui();                                             // 刷新金币显示
+    if (!data.success || !data.user) return;
+    const u = data.user;
+
+    // 恢复金币
+    if (typeof u.coins === 'number') S.usdt = u.coins;
+
+    // 恢复 grid（16 格，null 或 lv）
+    if (Array.isArray(u.grid)) {
+      for (let i = 0; i < TOTAL; i++) {
+        const x = u.grid[i];
+        S.grid[i] = (typeof x === 'number' && x >= 1 && x <= MAX_LV) ? x : null;
+      }
+      for (let i = 0; i < TOTAL; i++) draw(i);
     }
+
+    // 恢复经济 / 进度字段
+    if (typeof u.buyCount === 'number') S.buyCount = u.buyCount;
+    if (typeof u.adUsedToday === 'number') S.adUsedToday = u.adUsedToday;
+    if (typeof u.wdAdUsed === 'number') S.wdAdUsed = u.wdAdUsed;
+    if (typeof u.inviteCount === 'number') S.inviteCount = u.inviteCount;
+
+    // 恢复图鉴
+    if (Array.isArray(u.pokedex)) {
+      collected.clear();
+      u.pokedex.forEach(lv => { if (typeof lv === 'number' && lv >= 1 && lv <= MAX_LV) collected.add(lv); });
+      savePokedex();
+      updatePokedexBadge();
+    }
+
+    // 恢复设置到 localStorage（语言 / 音乐 / 音效 / 钱包）
+    if (u.settings && typeof u.settings === 'object') {
+      const st = u.settings;
+      if (st.lang === 'zh' || st.lang === 'en' || st.lang === 'ru') {
+        _lang = st.lang;
+        try { localStorage.setItem('cybermerge_lang', st.lang); } catch(_) {}
+      }
+      try { if (st.music) localStorage.setItem('cybermerge_music', st.music); } catch(_) {}
+      try { if (st.sfx) localStorage.setItem('cybermerge_sfx', st.sfx); } catch(_) {}
+      if (st.wallet) saveWallet(st.wallet, 'cloud');
+      audio.sfxEnabled = (() => { try { return localStorage.getItem('cybermerge_sfx') === '1'; } catch(_) { return true; } })();
+    }
+
+    // 刷新界面（金币 + 钱包 + 语言）
+    ui();
+    refreshWalletUI();
+    applyI18n();
   } catch(_) {
     // 后端不可用（本地/未部署）时保持本地数据，不打断游戏
   }
@@ -747,6 +830,7 @@ function startTimer() {
   if (timerInterval) clearInterval(timerInterval);
   let earnAccum = 0;
   let floatTick = 0;                    // 100ms tick 计数，每 10 tick = 1 秒飘一次+产出
+  let saveTick = 0;                     // 每 100 tick（10 秒）触发一次云存档
   timerInterval = setInterval(() => {
     timerSec -= 0.1;
     if (timerSec < 0) timerSec = 999;
@@ -768,6 +852,13 @@ function startTimer() {
       floatIncome(earn);
       floatIncomeTop(earn);
       floatTick = 0;
+    }
+
+    // 每 10 秒自动写回一次云存档（覆盖金币持续产出）
+    saveTick++;
+    if (saveTick >= 100) {
+      saveTick = 0;
+      saveCloud();
     }
   }, 100);
 }
@@ -956,6 +1047,7 @@ function buy() {
   if (pet) { pet.classList.add('pet-spawn'); pet.addEventListener('animationend',()=>pet.classList.remove('pet-spawn'),{once:true}); }
   collect(lv);
   toast('获得 '+CATS[lv].name+' LV.'+lv+'（下次涨价 7%）','success');
+  saveCloud();
 }
 
 // ═══════ 加速可产出（不花金币，给 adRewardLv() 等级的猫）═══════
@@ -975,6 +1067,7 @@ function watchAd() {
   if (pet) { pet.classList.add('pet-spawn'); pet.addEventListener('animationend',()=>pet.classList.remove('pet-spawn'),{once:true}); }
   collect(lv);
   toast('⚡ 加速成功！获得 '+CATS[lv].name+' LV.'+lv,'success');
+  saveCloud();
 }
 
 // ═══════ 拖拽（2 只同等级合成升级）═══════
@@ -1035,6 +1128,7 @@ function up(e) {
       if(cl.parentNode) cl.remove();
       clearTimeout(safeKill);
       S.grid[sr]=null; S.grid[tgt]=sl; draw(sr); draw(tgt);
+      saveCloud();
     }, {once:true});
     return;
   }
@@ -1065,6 +1159,7 @@ function up(e) {
     audio.sfxMerge();                          // 🔔 合成成功音效
     toast('🎉 合体！'+CATS[nl].name+' LV.'+nl,'success');
     ui();
+    saveCloud();
   }, {once:true});
 }
 
@@ -1191,6 +1286,8 @@ function btn(){
       try { navigator.clipboard?.writeText(inviteUrl); toast('📋 邀请链接已复制！去 Telegram 粘贴给好友吧~', 'success'); }
       catch (_) { toast('🔗 邀请链接：' + inviteUrl, 'info'); }
     }
+    S.inviteCount++;
+    saveCloud();
   });
 
   document.getElementById('btn-merge')?.addEventListener('click',buy);
@@ -1210,6 +1307,8 @@ function btn(){
         toast('🔗 邀请链接：' + inviteUrl, 'info');
       }
     }
+    S.inviteCount++;
+    saveCloud();
   });
   document.getElementById('btn-ads')?.addEventListener('click',openPokedex);
   // TON 钱包链接按钮
@@ -1279,6 +1378,7 @@ function btn(){
     try { localStorage.setItem(MUSIC_KEY, (!on) ? '1' : '0'); } catch(_) {}
     if (!on) audio.startBgm(); else audio.stopBgm();   // 开→播 BGM；关→停 BGM
     toast(on ? t('t_music_off') : t('t_music_on'), 'info');
+    saveCloud();
   });
   sfxToggle?.addEventListener('click', () => {
     const on = sfxToggle.dataset.on === 'true';
@@ -1287,6 +1387,7 @@ function btn(){
     audio.sfxEnabled = !on;                             // 同步音效开关
     if (audio.sfxEnabled) audio.sfxMerge();             // 立即试听一下合成音
     toast(on ? t('t_sfx_off') : t('t_sfx_on'), 'info');
+    saveCloud();
   });
 
   // 语言切换：改 _lang → 持久化 → 高亮当前按钮 → 调 applyI18n() 真正切换全站文本
@@ -1299,7 +1400,10 @@ function btn(){
     langBtns.forEach(b => b.classList.toggle('lang-active', b.dataset.lang === lang));
     try { localStorage.setItem(LANG_KEY, lang); } catch(_) {}
     applyI18n();                                   // ← 核心：真正替换所有 [data-i18n] 元素文本
-    if (!silent) toast('🌍 Language: ' + ({zh:'中文', en:'English', ru:'Русский'})[lang], 'info');
+    if (!silent) {
+      toast('🌍 Language: ' + ({zh:'中文', en:'English', ru:'Русский'})[lang], 'info');
+      saveCloud();
+    }
   };
   const savedLang = (() => { try { return localStorage.getItem(LANG_KEY) || 'zh'; } catch(_) { return 'zh'; } })();
   applyLang(savedLang, true);                      // 初始化静默恢复，不弹 toast
@@ -1349,6 +1453,15 @@ function init(){
   applyI18n();
   // 初始化完成后，向后端鉴权并同步金币/用户信息（Telegram 环境下才会真正请求）
   syncBackend();
+  // 页面关闭/跳转前，用 sendBeacon 尽力做最后一次云存档（不阻塞关闭）
+  window.addEventListener('beforeunload', () => {
+    const initData = window.Telegram?.WebApp?.initData;
+    if (!initData) return;
+    try {
+      const payload = JSON.stringify({ action: 'save', initData, data: collectCloudData() });
+      navigator.sendBeacon('/.netlify/functions/auth', new Blob([payload], { type: 'application/json' }));
+    } catch(_) {}
+  });
 }
 
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init);

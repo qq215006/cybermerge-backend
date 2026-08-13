@@ -1,61 +1,147 @@
 import crypto from 'crypto';
+import { MongoClient } from 'mongodb';
 
-const BOT_TOKEN = process.env.BOT_TOKEN || '你的BotToken'; // 可以直接在这里填，或者在Netlify后台配环境变量
+// 安全：敏感配置一律从环境变量读取，代码里不出现任何明文密码
+const BOT_TOKEN = process.env.BOT_TOKEN || '你的BotToken';
+const MONGODB_URI = process.env.MONGODB_URI || '';
 
-// 模拟数据库（如果想持久化后面可以接MongoDB或Supabase，现在测试用内存）
-const dbUsers = {};
+const DB_NAME = 'cybermerge';
+const COLLECTION = 'users';
+const TOTAL = 16;
+const MAX_LV = 40;
+
+// 复用 MongoClient 连接（Netlify warm instance 内共享，避免每次冷启动都重连）
+let clientPromise = null;
+
+function getClient() {
+  if (!MONGODB_URI) throw new Error('MONGODB_URI 未配置');
+  if (!clientPromise) {
+    clientPromise = MongoClient.connect(MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 10000,
+    });
+  }
+  return clientPromise;
+}
+
+// Telegram initData 验真（HMAC-SHA256）
+function verifyInitData(initData) {
+  const urlParams = new URLSearchParams(initData);
+  const hash = urlParams.get('hash');
+  if (!hash) return { ok: false, error: 'missing hash' };
+  urlParams.delete('hash');
+
+  const dataCheckString = Array.from(urlParams.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, val]) => `${key}=${val}`)
+    .join('\n');
+
+  const secretKey = crypto.createHmac('sha256', 'WebAppData').update(BOT_TOKEN).digest();
+  const calculatedHash = crypto.createHmac('sha256', secretKey).update(dataCheckString).digest('hex');
+
+  if (calculatedHash !== hash) return { ok: false, error: 'invalid hash' };
+
+  let user = null;
+  try {
+    const userRaw = urlParams.get('user');
+    if (userRaw) user = JSON.parse(userRaw);
+  } catch (_) { /* user 字段非法则忽略 */ }
+
+  return { ok: true, user };
+}
 
 export const handler = async function (event, context) {
-    if (event.httpMethod !== 'POST') {
-        return { statusCode: 405, body: 'Method Not Allowed' };
+  if (event.httpMethod !== 'POST') {
+    return { statusCode: 405, body: 'Method Not Allowed' };
+  }
+
+  try {
+    const body = JSON.parse(event.body);
+    const { initData, action, data } = body;
+
+    if (!initData) {
+      return { statusCode: 401, body: JSON.stringify({ success: false, message: '无授权信息' }) };
     }
 
-    try {
-        const body = JSON.parse(event.body);
-        const { initData } = body;
+    const v = verifyInitData(initData);
+    if (!v.ok) {
+      return { statusCode: 403, body: JSON.stringify({ success: false, message: '验真失败' }) };
+    }
+    if (!v.user?.id) {
+      return { statusCode: 400, body: JSON.stringify({ success: false, message: 'invalid user' }) };
+    }
 
-        if (!initData) {
-            return { statusCode: 401, body: JSON.stringify({ success: false, message: '无授权信息' }) };
+    const tgId = String(v.user.id);
+    const client = await getClient();
+    const col = client.db(DB_NAME).collection(COLLECTION);
+
+    // 查找已有用户，没有则自动开户（送 1000 金币 + 空 grid）
+    let user = await col.findOne({ tgId });
+    if (!user) {
+      const newUser = {
+        tgId,
+        username: v.user.username || 'unknown',
+        coins: 1000,
+        grid: new Array(TOTAL).fill(null),
+        buyCount: 0,
+        adUsedToday: 0,
+        wdAdUsed: 0,
+        pokedex: [],
+        settings: { lang: 'zh', music: '1', sfx: '1', wallet: null },
+        aiUnlockDay: '',
+        inviteCount: 0,
+        createdAt: Date.now(),
+      };
+      await col.insertOne(newUser);
+      user = newUser;
+    }
+
+    // save 动作：把前端最新存档写回 MongoDB
+    if (action === 'save' && data && typeof data === 'object') {
+      const upd = { updatedAt: Date.now() };
+
+      if (typeof data.coins === 'number') upd.coins = data.coins;
+
+      // grid 规范化：补齐 16 格，非法等级置 null
+      if (Array.isArray(data.grid)) {
+        const g = [];
+        for (let i = 0; i < TOTAL; i++) {
+          const x = data.grid[i];
+          g.push((typeof x === 'number' && x >= 1 && x <= MAX_LV) ? x : null);
         }
+        upd.grid = g;
+      }
 
-        // Telegram 验真逻辑
-        const urlParams = new URLSearchParams(initData);
-        const hash = urlParams.get('hash');
-        urlParams.delete('hash');
+      if (typeof data.buyCount === 'number') upd.buyCount = data.buyCount;
+      if (typeof data.adUsedToday === 'number') upd.adUsedToday = data.adUsedToday;
+      if (typeof data.wdAdUsed === 'number') upd.wdAdUsed = data.wdAdUsed;
+      if (Array.isArray(data.pokedex)) upd.pokedex = data.pokedex.filter(x => typeof x === 'number');
+      if (typeof data.inviteCount === 'number') upd.inviteCount = data.inviteCount;
+      if (typeof data.aiUnlockDay === 'string') upd.aiUnlockDay = data.aiUnlockDay;
 
-        const paramsCheckString = Array.from(urlParams.entries())
-            .sort(([a], [b]) => a.localeCompare(b))
-            .map(([key, val]) => `${key}=${val}`)
-            .join('\n');
-
-        const secretKey = crypto.createHmac('sha256', 'WebAppData').update(BOT_TOKEN).digest();
-        const calculatedHash = crypto.createHmac('sha256', secretKey).update(paramsCheckString).digest('hex');
-
-        if (calculatedHash !== hash) {
-            return { statusCode: 403, body: JSON.stringify({ success: false, message: '验真失败' }) };
-        }
-
-        const userStr = urlParams.get('user');
-        const userData = JSON.parse(userStr);
-        const tgId = userData.id;
-
-        if (!dbUsers[tgId]) {
-            dbUsers[tgId] = {
-                tgId: tgId,
-                username: userData.username || 'unknown',
-                coins: 1000,
-                level: 1,
-                grid: [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-            };
-        }
-
-        return {
-            statusCode: 200,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ success: true, user: dbUsers[tgId] })
+      if (data.settings && typeof data.settings === 'object') {
+        upd.settings = {
+          lang: data.settings.lang || 'zh',
+          music: data.settings.music || '1',
+          sfx: data.settings.sfx || '1',
+          wallet: data.settings.wallet || null,
         };
+      }
 
-    } catch (err) {
-        return { statusCode: 500, body: JSON.stringify({ success: false, message: err.message }) };
+      await col.updateOne({ tgId }, { $set: upd });
+      user = await col.findOne({ tgId });
     }
+
+    // 去掉 MongoDB 自动生成的 _id，避免序列化问题
+    const { _id, ...safeUser } = user;
+
+    return {
+      statusCode: 200,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ success: true, user: safeUser })
+    };
+
+  } catch (err) {
+    return { statusCode: 500, body: JSON.stringify({ success: false, message: err.message }) };
+  }
 };
