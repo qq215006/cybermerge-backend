@@ -1663,17 +1663,15 @@ function btn(){
   applyToggleState(sfxToggle, SFX_KEY);
   // 初始化时同步 audio 状态（音效开关）
   audio.sfxEnabled = localStorage.getItem(SFX_KEY) === '1';
-  // 浏览器自动播放策略：首次用户交互时预初始化音频池
-  // （首次交互上下文内 play() 不会被 autoplay 策略拦截，后续音效都能立即发声）
+  // 浏览器自动播放策略：首次用户交互时启动 BGM
+  // （不 once：若 autoplay 被拦截 / 音频尚未就绪，后续交互会重试）
   const unlockAudio = () => {
-    audio.init();                              // 预创建所有 <audio> 元素并触发加载
-    // 如果用户之前开过 BGM，现在交互后启动
+    audio.init();
     if (localStorage.getItem(MUSIC_KEY) === '1') audio.startBgm();
-    document.removeEventListener('pointerdown', unlockAudio);
-    document.removeEventListener('keydown', unlockAudio);
   };
-  document.addEventListener('pointerdown', unlockAudio, { once: true });
-  document.addEventListener('keydown', unlockAudio, { once: true });
+  document.addEventListener('pointerdown', unlockAudio);
+  document.addEventListener('touchstart', unlockAudio);
+  document.addEventListener('keydown', unlockAudio);
   musicToggle?.addEventListener('click', () => {
     const on = musicToggle.dataset.on === 'true';
     musicToggle.dataset.on = (!on).toString();
@@ -1853,6 +1851,8 @@ function init(){
   refreshWalletUI();
   // 应用当前保存的语言（覆盖 HTML 默认中文文案）
   applyI18n();
+  // 预加载音频（提前创建 <audio> 元素并触发加载，首次交互即可秒播）
+  audio.init();
   // 拉取云端并与本地合并（等级/金币/图鉴以较高者为准）
   syncBackend();
   // 平缓云同步定时器：每 2 分钟同步一次（覆盖离线金币产出）
