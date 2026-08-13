@@ -114,7 +114,8 @@ const GRID_SIZE = 4;
 const TOTAL = 16;
 const MAX_LV = 40;
 const MERGE_NEED = 2;            // 2 只同级合 1 只（经典合成）
-const AD_DAILY_LIMIT = 10;       // 每日看广告次数上限
+const AD_BASE_LIMIT = 15;         // 每人每天基础广告次数
+const AD_INVITE_BONUS_MAX = 5;    // 邀请加成上限（每邀请1人+1，最多+5 → 封顶20）
 
 // ═══════ 数值模型（防刷铁律）═══════
 const EARN_BASE = 1;              // LV.1 基础算力 1/秒
@@ -440,6 +441,10 @@ function todayStr() {
   const day = String(d.getDate()).padStart(2, '0');
   return `${d.getFullYear()}-${m}-${day}`;
 }
+// 当前玩家每日广告上限 = 基础 15 + 邀请加成（每邀请1人+1，封顶+5，总封顶20）
+function adDailyLimit() {
+  return AD_BASE_LIMIT + Math.min(S.inviteCount || 0, AD_INVITE_BONUS_MAX);
+}
 function isAiUnlockedToday() {
   try { return localStorage.getItem(AI_KEY) === todayStr(); } catch(_) { return false; }
 }
@@ -536,6 +541,10 @@ function toggleAiMerge(e) {
   if (e) { e.preventDefault?.(); e.stopPropagation?.(); }
   if (!isAiUnlockedToday()) {
     // 未解锁今日：看一次激励视频广告（Adsgram 42657）才能开启智能合成
+    if (S.adUsedToday >= adDailyLimit()) {
+      toast('今日广告次数已用完，明天再来~','warn');
+      return;
+    }
     const lv = adRewardLv();
     let idx = -1; for (let i = 0; i < TOTAL; i++) if (S.grid[i] === null) { idx = i; break; }
     if (idx === -1) {
@@ -989,15 +998,15 @@ function ui() {
   if (adBtn) {
     const adLv = adRewardLv();
     const adCountEl = document.getElementById('ad-count');
-    if (adCountEl) adCountEl.textContent = (AD_DAILY_LIMIT - S.adUsedToday) + '/' + AD_DAILY_LIMIT;
+    if (adCountEl) adCountEl.textContent = (adDailyLimit() - S.adUsedToday) + '/' + adDailyLimit();
     document.getElementById('ad-lv').textContent = adLv;
-    if (!canAfford && S.adUsedToday < AD_DAILY_LIMIT) {
+    if (!canAfford && S.adUsedToday < adDailyLimit()) {
       adBtn.classList.add('ad-highlight');
     } else {
       adBtn.classList.remove('ad-highlight');
     }
     // 今日广告次数用完
-    if (S.adUsedToday >= AD_DAILY_LIMIT) {
+    if (S.adUsedToday >= adDailyLimit()) {
       adBtn.classList.add('btn-disabled');
     } else {
       adBtn.classList.remove('btn-disabled');
@@ -1104,7 +1113,7 @@ function buy() {
 
 // ═══════ 加速可产出（看 Adsgram 广告，成功看完才给猫）═══════
 function watchAd() {
-  if (S.adUsedToday >= AD_DAILY_LIMIT) {
+  if (S.adUsedToday >= adDailyLimit()) {
     toast('今日加速次数已用完，明日再来~','warn');
     return;
   }
@@ -1178,6 +1187,10 @@ function renderTasks() {
   });
 }
 function doTask(task) {
+  if (S.adUsedToday >= adDailyLimit()) {
+    toast('今日广告次数已用完，明天再来~','warn');
+    return;
+  }
   try {
     if (!window.Adsgram) { toast('广告系统未加载，请稍后再试','warn'); return; }
     const AdController = window.Adsgram.init({ blockId: task.blockId });
@@ -1185,6 +1198,7 @@ function doTask(task) {
       .then(() => {
         // 发金币奖励 + 标记完成 + 立即云存档
         S.usdt = parseFloat((S.usdt + task.coins).toFixed(4));
+        S.adUsedToday++;                     // 任务广告计入每日总次数
         markTaskDone(task.key);
         ui();
         toast(task.icon + ' 任务完成！获得 ' + task.coins + ' 金币','success');
