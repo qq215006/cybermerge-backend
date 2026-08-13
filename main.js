@@ -151,7 +151,7 @@ const AD_INVITE_BONUS_MAX = 5;    // 邀请加成上限（每邀请1人+1，最�
 const SECRET_SALT = 'CYBER_CAT_SECRET_2026';      // 前后端共同约定的签名盐
 const CLOUD_SYNC_MS = 2 * 60 * 1000;              // 距上次云同步超过 2 分钟才同步
 const LOCAL_SAVE_KEY = 'cybermerge_local_save';   // 本地实时存档 key
-const AUTH_ENDPOINT = '/api/auth';                 // 后端端点：Vercel 用 /api/auth；Netlify 用 /.netlify/functions/auth
+const AUTH_ENDPOINT = '/auth';                    // 后端端点：Cloudflare Pages Functions 用 /auth；Netlify 用 /.netlify/functions/auth
 
 // ═══════ 数值模型（防刷铁律）═══════
 const EARN_BASE = 1;              // LV.1 基础算力 1/秒
