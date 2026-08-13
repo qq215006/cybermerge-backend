@@ -660,12 +660,15 @@ function collectCloudData() {
 // 立即写回云端（不防抖）
 async function saveCloudNow() {
   const initData = getInitData();
+  const data = collectCloudData();
+  console.log('Syncing backend:', 'save', data, initData);
   try {
-    await fetch('/.netlify/functions/auth', {
+    const resp = await fetch('/.netlify/functions/auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'save', initData, data: collectCloudData() })
+      body: JSON.stringify({ action: 'save', initData, data })
     });
+    console.log('Syncing backend save resp:', resp.status, resp.statusText);
   } catch(_) {}
 }
 
@@ -682,11 +685,13 @@ async function syncBackend() {
     const initData = getInitData();                     // Telegram 环境用真实 initData，普通浏览器用测试数据
     // 提取邀请者 ID（通过 startapp 参数传入，被邀请的新用户才会有）
     const inviterId = window.Telegram?.WebApp?.initDataUnsafe?.start_param || '';
+    console.log('Syncing backend:', 'login', { inviterId }, initData);
     const resp = await fetch('/.netlify/functions/auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'login', initData, inviterId })
     });
+    console.log('Syncing backend login resp:', resp.status, resp.statusText);
     const data = await resp.json();
     if (!data.success || !data.user) return;
     const u = data.user;

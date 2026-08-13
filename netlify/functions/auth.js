@@ -45,7 +45,9 @@ function verifyInitData(initData) {
   try {
     const userRaw = urlParams.get('user');
     if (userRaw) user = JSON.parse(userRaw);
-  } catch (_) { /* user 字段非法则忽略 */ }
+  } catch (err) {
+    console.error('Auth verification failed: invalid user JSON:', err.message, 'userRaw:', urlParams.get('user'));
+  }
 
   return { ok: true, user };
 }
@@ -74,6 +76,7 @@ export const handler = async function (event, context) {
       v = verifyInitData(initData);
     }
     if (!v.ok) {
+      console.error('Auth verification failed:', v.error, 'initData:', initData);
       return { statusCode: 403, body: JSON.stringify({ success: false, message: '验真失败' }) };
     }
     if (!v.user?.id) {
@@ -165,6 +168,7 @@ export const handler = async function (event, context) {
     };
 
   } catch (err) {
+    console.error('Auth handler error:', err);
     return { statusCode: 500, body: JSON.stringify({ success: false, message: err.message }) };
   }
 };
