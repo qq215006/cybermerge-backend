@@ -68,7 +68,7 @@ const I18N = {
   withdraw_sub:    { zh:'再开7级，提现比例提升', en:'Open 7 more levels to boost withdrawal', ru:'Откройте ещё 7 уровней' },
   wd_pool_label:   { zh:'💰 本期鱼池（可提现）', en:'💰 Current Pool (Withdrawable)', ru:'💰 Текущий пул (к выводу)' },
   wd_rate_prefix:  { zh:'当前可提现比例：',   en:'Current withdrawal rate: ', ru:'Текущая ставка вывода: ' },
-  wd_ad_text:      { zh:'看视频，临时体验 20% 提现特权', en:'Watch ads for temporary 20% withdrawal', ru:'Смотрите видео — временный вывод 20%' },
+  wd_ad_text:      { zh:'看广告领 20% 特权', en:'Watch ad for 20% boost', ru:'Смотрите рекламу — вывод 20%' },
   wd_invite_text:  { zh:'邀请 3 名好友，直接跃升下一级比例！', en:'Invite 3 friends to jump to next tier!', ru:'Пригласите 3 друзей и перейдите на следующий уровень!' },
   wd_rate_label:   { zh:'提现',               en:'Withdraw',               ru:'Вывод' },
   wd_ms_dividend:  { zh:'每日分红',            en:'Daily Dividend',         ru:'Дневной дивиденд' },
@@ -421,7 +421,8 @@ const DAILY_TASKS = [
 const TASK_DONE_KEY = 'cybermerge_daily_tasks';  // 存 { date, done: [taskKey] }，每日重置
 
 // ═══════ 提现进度/创世分红：阶梯提现比例 + 里程碑 ═══════
-const WD_AD_LIMIT = 3;                      // 看视频临时特权每日上限 3 次
+const WD_AD_LIMIT = 3;                      // 看广告临时特权每日上限 3 次
+const WD_AD_BLOCK_ID = '42864';             // 提现 20% 特权激励视频广告位
 const WD_MILESTONES = [
   { lv: 10, rate: 1,   icon: null,               noteKey: null },
   { lv: 20, rate: 5,   icon: null,               noteKey: null },
@@ -1617,13 +1618,24 @@ function btn(){
   document.getElementById('btn-withdraw')?.addEventListener('click', openWithdraw);
   document.getElementById('withdraw-close')?.addEventListener('click', closeWithdraw);
   wdModal?.addEventListener('click', (e) => { if (e.target.id === 'withdraw-modal') closeWithdraw(); });
-  // 看视频临时体验 20% 提现特权（每日 3 次）
+  // 看广告领 20% 提现特权（每日 3 次）
   document.getElementById('wd-ad-btn')?.addEventListener('click', () => {
     if (S.wdAdUsed >= WD_AD_LIMIT) { toast(t('wd_ad_done'), 'warn'); return; }
-    S.wdAdUsed++;
-    const c = document.getElementById('wd-ad-count');
-    if (c) c.textContent = '(' + S.wdAdUsed + '/' + WD_AD_LIMIT + ')';
-    toast(t('wd_ad_ok'), 'success');
+    try {
+      if (!window.Adsgram) { toast(t('t_ad_not_loaded'), 'warn'); return; }
+      const AdController = window.Adsgram.init({ blockId: WD_AD_BLOCK_ID });
+      AdController.show()
+        .then(() => {
+          S.wdAdUsed++;
+          const c = document.getElementById('wd-ad-count');
+          if (c) c.textContent = '(' + S.wdAdUsed + '/' + WD_AD_LIMIT + ')';
+          toast(t('wd_ad_ok'), 'success');
+          saveCloudNow();
+        })
+        .catch(() => toast(t('t_ad_not_finished'), 'warn'));
+    } catch(_) {
+      toast(t('t_ad_load_failed'), 'warn');
+    }
   });
   // 邀请 3 名好友跃升下一级比例（复用邀请分享）
   document.getElementById('wd-invite-btn')?.addEventListener('click', () => {
