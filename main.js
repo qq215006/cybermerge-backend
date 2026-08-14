@@ -34,7 +34,7 @@ const I18N = {
   lb_loading:      { zh:'⏳ 排行榜加载中...', en:'⏳ Loading leaderboard...', ru:'⏳ Загрузка рейтинга...' },
   lb_invite_unit:  { zh:'邀请', en:'invites', ru:'пригл.' },
   // 底部按钮
-  ad_text:         { zh:'加速可产出',         en:'Boost',                  ru:'Буст' },
+  ad_text:         { zh:'广告加速',           en:'Ad Boost',              ru:'Реклама-буст' },
   task_title:      { zh:'每日任务',           en:'Task',                    ru:'Задания' },
   task_sub:        { zh:'Task / Earn',        en:'Task / Earn',            ru:'Задания / Доход' },
   buy_label:       { zh:'买 LV.',             en:'Buy LV.',               ru:'Купить LV.' },
@@ -218,6 +218,16 @@ function adRewardLv() {
 // 商店默认出售等级：始终卖能买到的最高级（让玩家直观看到目标）
 function buyLevel() {
   return shopMaxLv();
+}
+
+// 当前金币能买到的最高等级（用于买猫按钮上的悬浮猫咪展示，最高不超过商店可买等级）
+function affordableBuyLv() {
+  const maxLv = shopMaxLv();
+  let best = 1;
+  for (let lv = maxLv; lv >= 1; lv--) {
+    if (S.usdt >= lvPrice(lv)) { best = lv; break; }
+  }
+  return best;
 }
 
 // ═══════ 大数字格式化：K / M / B / T / Qa / Qi ═══════
@@ -1186,6 +1196,17 @@ function ui() {
   // 按钮上只显示「买 LV.x」（文案走 i18n），不显示金币数
   if (lvLabelEl) lvLabelEl.textContent = t('buy_label') + lv;
 
+  // 悬浮猫咪：按当前金币能买到的最高等级展示素材
+  const buyCatImg = document.getElementById('buy-cat-float');
+  if (buyCatImg) {
+    const catLv = affordableBuyLv();
+    const cat = CATS[catLv] || CATS[1];
+    if (buyCatImg.dataset.lv !== String(catLv)) {
+      buyCatImg.src = cat.img;
+      buyCatImg.dataset.lv = String(catLv);
+    }
+  }
+
   // 灰禁态：金币不够时按钮变灰
   if (mergeBtn) {
     if (canAfford) {
@@ -1640,6 +1661,11 @@ function btn(){
   });
 
   document.getElementById('btn-merge')?.addEventListener('click',buy);
+  // 点猫抓板区域的空格（爪垫）也能直接购买猫咪
+  document.getElementById('matrix-grid')?.addEventListener('click', (e) => {
+    const slot = e.target && e.target.closest ? e.target.closest('.matrix-slot') : null;
+    if (slot && slot.dataset.empty === 'true') buy();
+  });
   document.getElementById('btn-ad-reward')?.addEventListener('click',watchAd);
   document.getElementById('btn-invite')?.addEventListener('click', () => {
     // 邀请链接带上当前用户 tgId，被邀请者点进来后 start_param 会带上这个 ID
