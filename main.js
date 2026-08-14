@@ -411,12 +411,12 @@ const S = {
 };
 const AI_KEY = 'cybermerge_ai_unlock_day';  // 存最后一次签到解锁智能合成的日期 "YYYY-MM-DD"
 const AI_TICK_MS = 180;                     // AI 循环周期（毫秒）：不要太快避免卡顿
-const ADSGRAM_BLOCK_ID = '42820';          // Adsgram 激励视频广告1（加速可产出）
+const ADSGRAM_BLOCK_ID = '42861';          // Adsgram 激励视频广告（加速可产出）
 const AI_AD_BLOCK_ID = '42821';            // 预留：激励视频广告2（签到已改免费，暂不占用此广告位）
 
 // ═══════ 每日任务：1 个 Adsgram 任务广告单元 + 金币奖励 ═══════
 const DAILY_TASKS = [
-  { key: 'task-42822', blockId: 'task-42822', icon: '📺', descKey: 'task_desc_1', coins: 10000 },
+  { key: 'task-42862', blockId: 'task-42862', icon: '📺', descKey: 'task_desc_1', coins: 10000 },
 ];
 const TASK_DONE_KEY = 'cybermerge_daily_tasks';  // 存 { date, done: [taskKey] }，每日重置
 
@@ -533,8 +533,8 @@ async function connectWallet() {
 }
 
 function todayStr() {
-  // 统一使用上海时区（UTC+8），与后端离线结算/每日重置的 0点 保持一致
-  return new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 10);
+  // 每日重置改到「早上8点」：8点(上海)=UTC 0点，所以直接用 UTC 日期
+  return new Date(Date.now()).toISOString().slice(0, 10);
 }
 // 当前玩家每日广告上限 = 基础 15 + 邀请加成（每邀请1人+1，封顶+5，总封顶20）
 function adDailyLimit() {
