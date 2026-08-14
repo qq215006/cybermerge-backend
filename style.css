@@ -1397,7 +1397,12 @@
   overflow: hidden;
 }
 .bottom-btn-red-main:active { border-bottom-width: 2px; }
-.bottom-btn-red-main.btn-disabled { filter: grayscale(0.6) brightness(0.65); }
+.bottom-btn-red-main.btn-disabled { filter: none; opacity: 1; }
+.bottom-btn-red-main.btn-disabled .bb-coin-icon,
+.bottom-btn-red-main.btn-disabled .bb-lv-label {
+  filter: grayscale(0.7) brightness(0.62);
+  opacity: 0.6;
+}
 
 /* 金币文字+价格的包裹器：竖向，左对齐，flex 1占满剩余空间 */
 .bb-coin-text-wrap {

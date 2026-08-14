@@ -619,6 +619,7 @@ function aiTick() {
         const ni = S.grid.indexOf(newLv); // 找到新等级在排序后的位置
         if (ni >= 0) boom(ni);
         collect(newLv);
+        audio.sfxMerge();                 // 🔔 智能合成成功音效
         saveLocal();
         merged = true;
         break;  // 每次 tick 只做一次合并，防止卡顿
