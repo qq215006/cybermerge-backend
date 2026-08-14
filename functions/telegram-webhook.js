@@ -47,13 +47,11 @@ async function replyStart(token, chatId, firstName) {
       ],
     },
   };
-  const res = await fetch(url, {
+  await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
-  const data = await res.json().catch(() => null);
-  return { status: res.status, data };
 }
 
 export async function onRequestPost(context) {
@@ -76,22 +74,12 @@ export async function onRequestPost(context) {
   // 只处理 /start（text.startsWith 兼容 /start <payload> 深链参数）
   const msg = update?.message;
   const text = msg?.text;
-  console.log('telegram update:', JSON.stringify({ text, chatId: msg?.chat?.id, firstName: msg?.from?.first_name }));
   if (msg && typeof text === 'string' && text.startsWith('/start')) {
     const firstName = msg?.from?.first_name || 'Player';
     try {
-      const result = await replyStart(token, msg.chat.id, firstName);
-      console.log('sendMessage result:', JSON.stringify(result));
-      return new Response(JSON.stringify({ ok: true, sendMessage: result }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      await replyStart(token, msg.chat.id, firstName);
     } catch (err) {
       console.error('sendMessage failed:', err);
-      return new Response(JSON.stringify({ ok: true, sendMessage: { error: String(err) } }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      });
     }
   }
 
