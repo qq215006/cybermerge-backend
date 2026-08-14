@@ -8,6 +8,8 @@
  *   - 可购买最高等级：maxUnlocked - 4（最低 1）
  *   - 金币不够 → 商店按钮变灰 + 高亮绿色「看广告免费领」按钮
  */
+import { TonConnectUI, toUserFriendlyAddress } from '@tonconnect/ui';
+
 (function(){
 'use strict';
 
@@ -485,65 +487,50 @@ function refreshWalletUI() {
     txt.textContent = t('wallet_connect');        // 未连接：显示当前语言的"链接钱包"
   }
 }
-// 尝试自动识别 TON 钱包（依次：Tonkeeper / TON Connect / Telegram Wallet / OpenMask）
-async function autoDetectTonWallet() {
-  // 1. Tonkeeper 注入
-  if (window.tonkeeper && typeof window.tonkeeper.sendTransaction === 'function') {
-    try {
-      const acct = await window.tonkeeper.getAccount();
-      if (acct && acct.address) return { address: acct.address, provider: 'tonkeeper' };
-    } catch(_) {}
-  }
-  // 2. TON Connect (window.tonconnect)
-  if (window.tonconnect && typeof window.tonconnect.connect === 'function') {
-    try {
-      const r = await window.tonconnect.connect();
-      if (r && r.account && r.account.address) return { address: r.account.address, provider: 'tonconnect' };
-    } catch(_) {}
-  }
-  // 3. Telegram 内置钱包（Telegram WebApp 用户 initData 能拿到 sender，但拿不到链上地址）
-  //    走后端 /api/wallet/auto?tg_id=xxx 解析 Telegram Stars / TON Pay 等绑定状态
-  if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
-    try {
-      const tgId = tg.initDataUnsafe.user.id;
-      const resp = await fetch('/api/wallet/auto?tg_id=' + tgId);
-      if (resp.ok) {
-        const data = await resp.json();
-        if (data && data.address) return { address: data.address, provider: data.provider || 'telegram' };
+// ═══════ TON Connect 钱包连接 ═══════
+let tonConnectUI = null;
+let _walletRestoring = true;
+
+function initTonConnect() {
+  try {
+    tonConnectUI = new TonConnectUI({
+      manifestUrl: window.location.origin + '/tonconnect-manifest.json',
+      restoreConnection: true,
+    });
+    // 锁定 TON 主网（chain id -239），避免误连测试网
+    tonConnectUI.setConnectionNetwork('-239');
+    tonConnectUI.connectionRestored.then(() => { _walletRestoring = false; }).catch(() => { _walletRestoring = false; });
+    tonConnectUI.onStatusChange(w => {
+      if (w && w.account) {
+        const friendly = toUserFriendlyAddress(w.account.address);
+        saveWallet(friendly, w.device?.appName || 'tonconnect');
+        refreshWalletUI();
+        if (!_walletRestoring) {
+          toast(t('t_wallet_ok') + shortAddr(friendly), 'success');
+        }
+      } else {
+        clearWallet();
+        refreshWalletUI();
       }
-    } catch(_) {}
-  }
-  // 4. OpenMask / MyTonWallet 注入（同样 window.ton 协议）
-  if (window.ton && typeof window.ton.sendTransaction === 'function') {
-    try {
-      const acct = await window.ton.getAccount();
-      if (acct && acct.address) return { address: acct.address, provider: 'openmask' };
-    } catch(_) {}
-  }
-  return null;
+    });
+  } catch(_) {}
 }
-// 链接钱包流程：自动识别 → 缓存 → UI 刷新
+
+// 链接钱包：打开 TON Connect 弹窗（用户选钱包授权后，onStatusChange 自动保存地址）
 async function connectWallet() {
   if (wallet.address) {
     // 已连接：toast 提示当前地址
     toast(t('t_wallet_linked') + shortAddr(wallet.address), 'info');
     return;
   }
-  toast(t('t_detecting'), 'info');
-  const r = await autoDetectTonWallet();
-  if (r) {
-    saveWallet(r.address, r.provider);
-    refreshWalletUI();
-    toast(t('t_wallet_ok') + shortAddr(r.address) + '（' + r.provider + '）', 'success');
-  } else {
-    // 没识别到 → 跳转 Tonkeeper 安装页 + 提示
-    const installUrl = 'https://tonkeeper.com/';
-    if (tg && tg.openTelegramLink) {
-      tg.openTelegramLink('https://t.me/share/url?url=' + encodeURIComponent(installUrl));
-    } else {
-      try { navigator.clipboard?.writeText(installUrl); } catch(_) {}
-      toast(t('t_no_wallet'), 'info');
-    }
+  if (!tonConnectUI) {
+    toast(t('t_ad_not_loaded'), 'warn');
+    return;
+  }
+  try {
+    await tonConnectUI.openModal();
+  } catch(_) {
+    toast(t('t_no_wallet'), 'info');
   }
 }
 
@@ -1131,9 +1118,9 @@ function startTimer() {
     // timer-rate 不再每 tick 覆盖 —— 它的文案由 data-i18n 持久管理，applyI18n() 时切换
     ui();
 
-    // 每 1 秒（10 个 100ms tick）：飘数字 + 本地存档（金币产出实时写 localStorage，不碰网络）
+    // 每 500ms（5 个 100ms tick）：飘数字 + 本地存档（金币产出实时写 localStorage，不碰网络）
     floatTick++;
-    if (floatTick >= 10) {
+    if (floatTick >= 5) {
       if (earn > 0) {
         floatIncome(earn);
         floatIncomeTop(earn);
@@ -1170,6 +1157,10 @@ function floatIncomeTop(amount) {
   el.addEventListener('animationend', () => el.remove(), { once: true });
 }
 
+// 金币数字「呼吸」pop 节流状态（避免每 100ms 高频动画）
+let _lastCoinPop = 0;
+let _lastCoinVal = null;
+
 // ═══════ UI：顶栏余额 + 中间按钮（金币 / 拟买等级 / 灰禁 / 广告按钮）═══════
 function ui() {
   // 等级横排：LV40招财猫头像 + 当前等级 + 当前金币 + 进度条（按 40 级满级算比例）
@@ -1179,7 +1170,21 @@ function ui() {
   const progBarFill = document.getElementById('prog-bar-fill');
   const progCurLv = document.getElementById('prog-cur-lv');
   if (levelLvEl) levelLvEl.textContent = 'Lv.' + userLv;
-  if (levelCoinsEl) levelCoinsEl.textContent = fmtNum(S.usdt) + ' ' + t('level_coins_suf');
+  if (levelCoinsEl) {
+    levelCoinsEl.textContent = fmtNum(S.usdt) + ' ' + t('level_coins_suf');
+    // 金币增加时做一次「呼吸」scale pop（节流 100ms，用 Web Animations 不额外建图层）
+    const now = Date.now();
+    if (_lastCoinVal !== null && S.usdt > _lastCoinVal && now - _lastCoinPop >= 100) {
+      try {
+        levelCoinsEl.animate(
+          [{ transform: 'scale(1)' }, { transform: 'scale(1.08)' }, { transform: 'scale(1)' }],
+          { duration: 150, easing: 'ease-out' }
+        );
+      } catch(_) {}
+      _lastCoinPop = now;
+    }
+    _lastCoinVal = S.usdt;
+  }
   if (progCurLv) progCurLv.textContent = userLv;
   if (progBarFill) {
     const pct = Math.min(100, (userLv / 40) * 100);
@@ -1661,11 +1666,6 @@ function btn(){
   });
 
   document.getElementById('btn-merge')?.addEventListener('click',buy);
-  // 点猫抓板区域的空格（爪垫）也能直接购买猫咪
-  document.getElementById('matrix-grid')?.addEventListener('click', (e) => {
-    const slot = e.target && e.target.closest ? e.target.closest('.matrix-slot') : null;
-    if (slot && slot.dataset.empty === 'true') buy();
-  });
   document.getElementById('btn-ad-reward')?.addEventListener('click',watchAd);
   document.getElementById('btn-invite')?.addEventListener('click', () => {
     // 邀请链接带上当前用户 tgId，被邀请者点进来后 start_param 会带上这个 ID
@@ -1899,27 +1899,69 @@ function closePokedex() {
   document.getElementById('pokedex-modal')?.classList.remove('show');
 }
 
-// ═══════ 启动 ═══════
-function init(){
-  loadPokedex(); updatePokedexBadge();
-  twa(); grid(); btn(); ev(); updateAiBtn(); startTimer();
-  // 先用本地实时存档恢复（秒开显示上次进度），云端稍后异步合并
-  applyStateToS(loadLocal());
-  ui();
-  // 心心老虎机位：初始占位 0（外接显示位，由 window.setTimerNum(amount) 外部调用更新）
-  setTimerNum(0);
-  // TON 钱包：从 localStorage 恢复绑定状态，刷新按钮 UI
-  loadWallet();
-  refreshWalletUI();
-  // 应用当前保存的语言（覆盖 HTML 默认中文文案）
-  applyI18n();
-  // 预加载音频（提前创建 <audio> 元素并触发加载，首次交互即可秒播）
-  audio.init();
-  // 拉取云端并与本地合并（等级/金币/图鉴以较高者为准）
-  syncBackend();
-  // 平缓云同步定时器：每 2 分钟同步一次（覆盖离线金币产出）
-  startCloudSyncTimer();
-  // 关闭/切后台兜底：带签名 keepalive 抢救存档（避免弹「确认离开」框）
+// ═══════ 启动加载：预加载音乐 + 猫咪图片 ═══════
+function collectAssetUrls() {
+  const urls = [];
+  for (let lv = 1; lv <= MAX_LV; lv++) {
+    if (CATS[lv] && CATS[lv].img) urls.push(CATS[lv].img);
+  }
+  urls.push('/sounds/bgm.mp3', '/sounds/merge.mp3', '/sounds/merge_combo.mp3');
+  return urls;
+}
+
+function preloadAssets(onProgress, onDone) {
+  const urls = collectAssetUrls();
+  let done = 0;
+  const total = urls.length;
+  if (!total) { onProgress(1); onDone(); return; }
+
+  const markDone = () => {
+    done++;
+    onProgress(Math.min(1, done / total));
+    if (done >= total) onDone();
+  };
+
+  urls.forEach(url => {
+    const isAudio = /\.(mp3|m4a|ogg|wav)$/i.test(url);
+    let settled = false;
+    const settle = () => { if (!settled) { settled = true; markDone(); } };
+    if (isAudio) {
+      const a = new Audio();
+      a.preload = 'auto';
+      a.src = url;
+      a.addEventListener('canplaythrough', settle, { once: true });
+      a.addEventListener('error', settle, { once: true });
+      setTimeout(settle, 12000);   // 兜底：超时也算完成，避免卡启动页
+      a.load();
+    } else {
+      const img = new Image();
+      img.onload = settle;
+      img.onerror = settle;
+      setTimeout(settle, 12000);
+      img.src = url;
+    }
+  });
+}
+
+function updateSplash(pct) {
+  const fill = document.getElementById('splash-fill');
+  const percent = document.getElementById('splash-percent');
+  const p = Math.round(pct * 100);
+  if (fill) fill.style.width = p + '%';
+  if (percent) percent.textContent = p + '%';
+}
+
+function hideSplash(onDone) {
+  const splash = document.getElementById('splash');
+  if (!splash) { if (onDone) onDone(); return; }
+  let called = false;
+  const finish = () => { if (called) return; called = true; if (onDone) onDone(); };
+  splash.classList.add('splash-hide');
+  splash.addEventListener('transitionend', () => { splash.remove(); finish(); }, { once: true });
+  setTimeout(() => { splash.remove(); finish(); }, 700);
+}
+
+function setupBeaconSave() {
   const beaconSave = async () => {
     try {
       const initData = getInitData();
@@ -1939,6 +1981,38 @@ function init(){
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') beaconSave();
   });
+}
+
+// ═══════ 启动 ═══════
+function init(){
+  loadPokedex(); updatePokedexBadge();
+  twa(); grid(); btn(); ev(); updateAiBtn();
+  // 先用本地实时存档恢复（秒开显示上次进度），云端稍后异步合并
+  applyStateToS(loadLocal());
+  ui();
+  // 心心老虎机位：初始占位 0（外接显示位，由 window.setTimerNum(amount) 外部调用更新）
+  setTimerNum(0);
+  // TON 钱包：从 localStorage 恢复绑定状态，刷新按钮 UI
+  loadWallet();
+  refreshWalletUI();
+  // TON Connect：初始化连接器（会自动恢复上次连接的钱包）
+  initTonConnect();
+  // 应用当前保存的语言（覆盖 HTML 默认中文文案）
+  applyI18n();
+
+  // 启动加载页：预加载音乐 + 猫咪图片，进度 100% 才进入（规避刚打开没音乐）
+  preloadAssets(
+    updateSplash,
+    () => {
+      audio.init();               // 资源已就绪，音乐可立即播放
+      hideSplash(() => {
+        startTimer();
+        syncBackend();
+        startCloudSyncTimer();
+        setupBeaconSave();
+      });
+    }
+  );
 }
 
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init);

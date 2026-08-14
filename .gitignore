@@ -21,6 +21,8 @@ package/
 *.jpeg
 *.jpg
 *.png.bak
+# 启动加载海报（入库，供 Cloudflare 部署使用）
+!public/poster.jpg
 
 # 日志
 *.log

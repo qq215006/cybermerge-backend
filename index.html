@@ -18,6 +18,17 @@
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
+  <!-- ═══════════ 启动加载页（预加载音乐/资源，规避刚打开没音乐） ═══════════ -->
+  <div id="splash">
+    <img class="splash-bg" src="/poster.jpg" alt="" />
+    <div class="splash-vignette"></div>
+    <div class="splash-box">
+      <div class="splash-title">🐱 CyberMerge</div>
+      <div class="splash-bar"><div class="splash-fill" id="splash-fill"></div></div>
+      <div class="splash-percent" id="splash-percent">0%</div>
+    </div>
+  </div>
+
   <!-- 房间背景装饰层 -->
   <div id="room-bg">
     <!-- 左：窗户 + 窗帘 -->

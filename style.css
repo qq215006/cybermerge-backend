@@ -1052,12 +1052,12 @@
   font-size: 22px;
   line-height: 1;
   pointer-events: none;
-  color: #ff1744;                     /* 正红 */
-  -webkit-text-stroke: 1.2px #fff;    /* 白描边，即使在红色按钮上也清晰 */
+  color: #ff0000;                     /* 纯红 */
+  -webkit-text-stroke: 1px #fff;      /* 白描边，即使在红色按钮上也清晰 */
   text-shadow:
     0 2px 4px rgba(0,0,0,0.28),
-    0 0 10px rgba(255,23,68,0.7),
-    0 0 20px rgba(255,100,130,0.45);
+    0 0 10px rgba(255,0,0,0.75),
+    0 0 18px rgba(255,0,0,0.45);
   white-space: nowrap;
   animation: incomeFloat 1.35s cubic-bezier(.2,.8,.3,1) forwards;
   will-change: transform, opacity;
@@ -1083,11 +1083,11 @@
   font-size: 15px;                   /* 顶部空间小，比中间按钮的小一号 */
   line-height: 1;
   pointer-events: none;
-  color: #ff1744;                    /* 正红 */
+  color: #ff0000;                    /* 纯红 */
   -webkit-text-stroke: 1px #fff;     /* 白描边 */
   text-shadow:
     0 1px 3px rgba(0,0,0,0.28),
-    0 0 8px rgba(255,23,68,0.7);
+    0 0 8px rgba(255,0,0,0.7);
   white-space: nowrap;
   animation: incomeFloatTop 1.35s cubic-bezier(.2,.8,.3,1) forwards;
   will-change: transform, opacity;
@@ -1608,10 +1608,10 @@
 }
 .screen-shake { animation: screenShake 0.5s ease-out; }
 
-/* GPU 合成层 */
-#app, #board-frame, #matrix-grid, .matrix-slot, .pet-card,
-.pet-dragging, #top-bar, #bottom-bar, .pet-head, .pet-tail-wag,
-.float-heart {
+/* GPU 合成层：只提升拖拽中的克隆猫。之前给 #app/#board-frame/#matrix-grid/
+   .matrix-slot/.pet-card 等大量元素都加 will-change + translateZ(0)，
+   会导致合成图层过多、移动端拖动/合成卡顿。 */
+.pet-dragging {
   will-change: transform;
   transform: translateZ(0);
   backface-visibility: hidden;
@@ -2622,3 +2622,75 @@
   -webkit-tap-highlight-color: transparent;
 }
 .offline-claim:active { transform: scale(0.97); }
+
+/* ═══════════════════════════════════════════
+   启动加载页（海报 + 进度条 + 百分比）
+   ═══════════════════════════════════════════ */
+#splash {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #1a1a1a;
+  transition: opacity 0.5s ease;
+}
+#splash.splash-hide {
+  opacity: 0;
+  pointer-events: none;
+}
+.splash-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.splash-vignette {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.55) 100%);
+}
+.splash-box {
+  position: relative;
+  z-index: 2;
+  width: 78%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.splash-title {
+  font-size: 26px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+}
+.splash-bar {
+  width: 100%;
+  height: 12px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.22);
+  border: 1px solid rgba(255,255,255,0.5);
+  overflow: hidden;
+}
+.splash-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #ffd54f 0%, #ff9800 100%);
+  border-radius: 6px;
+  transition: width 0.2s ease;
+}
+.splash-percent {
+  font-size: 22px;
+  font-weight: 900;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.85);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
