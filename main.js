@@ -2,10 +2,10 @@
  * CyberMerge — 萌猫合成大作战
  * 防刷经济模型：成本绝对压制收益
  *   - 算力公式：P_n = 1 × 1.8^(n-1)  （跨级倍率 1.8 < 2，强制不能"1+1>2"）
- *   - 购买成本：Cost = 100 × 2.2^(targetLevel-1) × 1.07^buyCount
+ *   - 购买成本：Cost = 100 × 2.2^(targetLevel-1) × 1.03^inflateCount
  *       · 跨级倍率 2.2 > 1.8（成本涨得比算力快 → 永远无法靠商店追赶）
- *       · 每次购买全场物价 ×1.07（买得越多越贵）
- *   - 可购买最高等级：maxUnlocked - 4（最低 1）
+ *       · 每天前5次购买不涨物价，之后每次 +3%
+ *   - 商店最高可买 36 级（36级以上全靠合成）
  *   - 金币不够 → 商店按钮变灰 + 高亮绿色「看广告免费领」按钮
  */
 (function(){
@@ -171,18 +171,20 @@ const EARN_BASE = 1;              // LV.1 基础算力 1/秒
 const EARN_RATIO = 1.8;          // 算力跨级倍率（严格 < 2，确保 1+1 < 2）
 const PRICE_BASE = 100;          // 商店底价 100 金币
 const PRICE_LV_RATIO = 2.2;      // 跨级成本倍率（> 1.8，成本永远跑赢收益）
-const PRICE_INFLATE = 1.07;      // 每次购买全场物价通胀 7%
+const PRICE_INFLATE = 1.03;      // 每次购买全场物价通胀 3%
 const BUY_LV_GAP = 4;            // 可购最高等级 = maxUnlocked - 4
-const AD_LV_GAP = 2;             // 广告领取等级 = maxUnlocked - 2
+const AD_LV_GAP = 5;             // 广告领取等级 = maxUnlocked - 5
+const SHOP_MAX_LV = 36;          // 商店最高可买等级（36级以上全靠合成）
+const DAILY_FREE_BUYS = 5;       // 每天前5次购买不涨物价
 
 // 第 n 级猫的每秒产出算力 P_n = 1 × 1.8^(n-1)
 function lvEarnPerSec(lv) {
   return EARN_BASE * Math.pow(EARN_RATIO, lv - 1);
 }
 
-// 商店购买成本 Cost = 100 × 2.2^(lv-1) × 1.07^buyCount
+// 商店购买成本 Cost = 100 × 2.2^(lv-1) × 1.03^inflateCount
 function lvPrice(lv) {
-  return Math.floor(PRICE_BASE * Math.pow(PRICE_LV_RATIO, lv - 1) * Math.pow(PRICE_INFLATE, S.buyCount));
+  return Math.floor(PRICE_BASE * Math.pow(PRICE_LV_RATIO, lv - 1) * Math.pow(PRICE_INFLATE, S.inflateCount));
 }
 
 // 场上猫咪每秒总产出（不含堆叠）
@@ -213,12 +215,12 @@ function maxUnlockedLv() {
   return max;
 }
 
-// 商店可购买最高等级 = maxUnlocked - 4，最低 1
+// 商店可购买最高等级 = min(maxUnlocked - 4, 36)，最低 1
 function shopMaxLv() {
-  return Math.max(1, maxUnlockedLv() - BUY_LV_GAP);
+  return Math.max(1, Math.min(maxUnlockedLv() - BUY_LV_GAP, SHOP_MAX_LV));
 }
 
-// 广告可领取等级 = maxUnlocked - 2，最低 2
+// 广告可领取等级 = maxUnlocked - 5，最低 2
 function adRewardLv() {
   return Math.max(2, maxUnlockedLv() - AD_LV_GAP);
 }
@@ -411,7 +413,8 @@ const S = {
   grid: new Array(TOTAL).fill(null),  // grid[i] = null 或 lv 整数
   usdt: 1000,                         // 总金币（= 自有金币 + 服务端 bonusCoins）
   bonusCoins: 0,                      // 服务端发放的奖励（邀请奖励 + 离线产出），前端不直接修改
-  buyCount: 0,                        // 历史总购买次数（驱动 7% 通胀）
+  buyCount: 0,                        // 历史总购买次数
+  inflateCount: 0,                    // 累计通胀次数（每天前5次免费，之后每次+3%）
   adUsedToday: 0,                     // 今日已用广告次数
   aiRunning: false,                   // 智能合成是否运行中
   aiTimer: null,                      // 智能合成循环定时器
@@ -422,6 +425,22 @@ const S = {
   divCats: [],                        // 场上40级猫的剩余分红次数数组 [4,3,2]
   weekAdCount: 0,                     // 本周看广告次数（后端统计，用于分红贡献）
 };
+const BUY_DAY_KEY = 'cybermerge_buy_day';  // 今日购买次数（每日重置）
+
+// 记录一次购买：每天前5次不涨物价，之后每次 inflateCount+1
+function recordBuy() {
+  S.buyCount++;
+  const today = todayStr();
+  let count = 0;
+  try {
+    const raw = localStorage.getItem(BUY_DAY_KEY);
+    const obj = raw ? JSON.parse(raw) : null;
+    if (obj && obj.date === today) count = obj.count;
+  } catch(_) {}
+  count++;
+  try { localStorage.setItem(BUY_DAY_KEY, JSON.stringify({ date: today, count })); } catch(_) {}
+  if (count > DAILY_FREE_BUYS) S.inflateCount++;
+}
 const AI_KEY = 'cybermerge_ai_unlock_day';  // 存最后一次签到解锁智能合成的日期 "YYYY-MM-DD"
 const AI_TICK_MS = 180;                     // AI 循环周期（毫秒）：不要太快避免卡顿
 const ADSGRAM_BLOCK_ID = '42861';          // Adsgram 激励视频广告（加速可产出）
@@ -633,7 +652,7 @@ function aiTick() {
       const emptyIdx = S.grid.findIndex(x => x === null);
       if (emptyIdx >= 0) {
         S.usdt = parseFloat((S.usdt - price).toFixed(4));
-        S.buyCount++;
+        recordBuy();
         S.grid[emptyIdx] = lv;
         draw(emptyIdx);
         const pet = g?.children[emptyIdx]?.querySelector('.pet-card');
@@ -757,6 +776,7 @@ function collectCloudData() {
     bonusCoins: S.bonusCoins,
     grid: S.grid,
     buyCount: S.buyCount,
+    inflateCount: S.inflateCount,
     adUsedToday: S.adUsedToday,
     wdAdUsed: S.wdAdUsed,
     divCats: S.divCats,
@@ -801,6 +821,7 @@ function buildSignString(tgId, data, timestamp) {
     data.bonusCoins ?? 0,
     grid,
     data.buyCount ?? 0,
+    data.inflateCount ?? 0,
     data.adUsedToday ?? 0,
     data.wdAdUsed ?? 0,
     pokedex,
@@ -865,6 +886,7 @@ function applyStateToS(obj) {
     for (let i = 0; i < TOTAL; i++) draw(i);
   }
   if (typeof obj.buyCount === 'number') S.buyCount = obj.buyCount;
+  if (typeof obj.inflateCount === 'number') S.inflateCount = obj.inflateCount;
   if (typeof obj.adUsedToday === 'number') S.adUsedToday = obj.adUsedToday;
   if (typeof obj.wdAdUsed === 'number') S.wdAdUsed = obj.wdAdUsed;
   if (Array.isArray(obj.divCats)) S.divCats = obj.divCats.map(x => Number(x) || 0);
@@ -921,6 +943,7 @@ async function syncBackend() {
 
     // 进度计数：取较大者（每日/累计计数只增不减）
     S.buyCount = Math.max(S.buyCount, Number(u.buyCount) || 0, (local && typeof local.buyCount === 'number') ? local.buyCount : 0);
+    S.inflateCount = Math.max(S.inflateCount, Number(u.inflateCount) || 0, (local && typeof local.inflateCount === 'number') ? local.inflateCount : 0);
     S.adUsedToday = Math.max(S.adUsedToday, Number(u.adUsedToday) || 0, (local && typeof local.adUsedToday === 'number') ? local.adUsedToday : 0);
     S.wdAdUsed = Math.max(S.wdAdUsed, Number(u.wdAdUsed) || 0, (local && typeof local.wdAdUsed === 'number') ? local.wdAdUsed : 0);
     if (typeof u.inviteCount === 'number') S.inviteCount = u.inviteCount;
@@ -1325,7 +1348,7 @@ function buy() {
   let idx = -1; for (let i = 0; i < TOTAL; i++) if (S.grid[i] === null) { idx = i; break; }
   if (idx === -1) { toast(t('t_grid_full_buy'),'warn'); return; }
   S.usdt = parseFloat((S.usdt - price).toFixed(4));
-  S.buyCount++;                  // 购买次数 +1，全场物价 +7%
+  recordBuy();                   // 购买计数（前5次免费，之后+3%通胀）
   S.grid[idx] = lv;
   draw(idx);
   ui();

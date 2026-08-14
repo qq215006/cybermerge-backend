@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
   bonus_coins   DOUBLE PRECISION DEFAULT 0,
   grid          JSONB DEFAULT '[]'::jsonb,
   buy_count     INTEGER DEFAULT 0,
+  inflate_count INTEGER DEFAULT 0,
   ad_used_today INTEGER DEFAULT 0,
   wd_ad_used    INTEGER DEFAULT 0,
   pokedex       JSONB DEFAULT '[]'::jsonb,
@@ -27,6 +28,7 @@ CREATE TABLE IF NOT EXISTS users (
 ALTER TABLE users ADD COLUMN IF NOT EXISTS last_earn_at BIGINT DEFAULT 0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS bonus_coins DOUBLE PRECISION DEFAULT 0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS max_level INTEGER DEFAULT 0;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS inflate_count INTEGER DEFAULT 0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS ref_code TEXT UNIQUE;
 -- 回填已有用户的 max_level（避免老用户暂时显示 0 级）
 UPDATE users SET max_level = COALESCE((SELECT max(elem::int) FROM jsonb_array_elements_text(pokedex) elem), 0);
