@@ -200,3 +200,126 @@ BEGIN
   );
 END;
 $$ LANGUAGE plpgsql;
+
+-- ═══════════════════════════════════════════════════════════
+-- 每周分红系统（广告收益 50% 注入 → 40级用户按贡献瓜分）
+-- ═══════════════════════════════════════════════════════════
+
+-- 奖池表
+CREATE TABLE IF NOT EXISTS pools (
+  id           SERIAL PRIMARY KEY,
+  week_key     TEXT UNIQUE,                 -- 周标识，如 "2026-W33"
+  amount_usdt  DOUBLE PRECISION DEFAULT 0,  -- 本期注入的 USD₮
+  status       TEXT DEFAULT 'open',         -- open / settled
+  created_at   BIGINT DEFAULT 0,
+  settled_at   BIGINT DEFAULT 0
+);
+
+-- 用户新增字段：本周看广告次数 + 40级猫剩余分红次数数组 [4,3,2]（与场上40级猫数量对齐）
+ALTER TABLE users ADD COLUMN IF NOT EXISTS week_ad_count INTEGER DEFAULT 0;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS div_cats JSONB DEFAULT '[]'::jsonb;
+
+-- 分红账本
+CREATE TABLE IF NOT EXISTS dividend_records (
+  id           SERIAL PRIMARY KEY,
+  week_key     TEXT,
+  tg_id        TEXT,
+  contribution DOUBLE PRECISION DEFAULT 0,  -- 贡献值（邀请 + 本周看广告）
+  share        DOUBLE PRECISION DEFAULT 0,  -- 占比
+  amount_usdt  DOUBLE PRECISION DEFAULT 0,  -- 分到的 USD₮
+  created_at   BIGINT DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_dividend_week ON dividend_records (week_key);
+CREATE INDEX IF NOT EXISTS idx_dividend_user ON dividend_records (tg_id);
+
+-- 结算 RPC：算占比 → 记账 → 40级猫分红次数-1 → 剩余0次的猫回收
+-- div_cats 为数组 [4,3,2]，与场上40级猫数量对齐（每只猫剩余分红次数）
+CREATE OR REPLACE FUNCTION settle_dividend(p_week_key text, p_amount_usdt double precision)
+RETURNS json AS $$
+DECLARE
+  total_contrib double precision := 0;
+  rec  RECORD;
+  cat  RECORD;
+  contrib double precision;
+  share double precision;
+  amt double precision;
+  new_cnt int;
+  grid_new jsonb;
+  div_new jsonb;
+  recycle_count int;
+  found_pos bigint;
+  i int;
+  cnt int := 0;
+BEGIN
+  -- 1. 记录本期奖池
+  INSERT INTO pools (week_key, amount_usdt, status, created_at, settled_at)
+  VALUES (p_week_key, p_amount_usdt, 'settled', (extract(epoch from now())*1000)::bigint, (extract(epoch from now())*1000)::bigint)
+  ON CONFLICT (week_key) DO UPDATE
+    SET amount_usdt = EXCLUDED.amount_usdt,
+        status = 'settled',
+        settled_at = (extract(epoch from now())*1000)::bigint;
+
+  -- 2. 总贡献 = Σ(邀请人数 + 本周看广告次数)，只统计有40级猫的用户
+  SELECT COALESCE(SUM(COALESCE(invite_count,0) + COALESCE(week_ad_count,0)), 0)
+  INTO total_contrib
+  FROM users
+  WHERE div_cats IS NOT NULL AND jsonb_array_length(div_cats) > 0;
+
+  IF total_contrib <= 0 THEN
+    RETURN json_build_object('ok', false, 'reason', 'no contributors', 'count', 0);
+  END IF;
+
+  -- 3. 遍历每个有40级猫的用户
+  FOR rec IN
+    SELECT tg_id, grid, div_cats,
+           COALESCE(invite_count,0) AS invite_count,
+           COALESCE(week_ad_count,0) AS week_ad_count
+    FROM users
+    WHERE div_cats IS NOT NULL AND jsonb_array_length(div_cats) > 0
+  LOOP
+    contrib := rec.invite_count + rec.week_ad_count;
+    share := contrib / total_contrib;
+    amt := round((p_amount_usdt * share)::numeric, 6);
+
+    -- 记账
+    INSERT INTO dividend_records (week_key, tg_id, contribution, share, amount_usdt, created_at)
+    VALUES (p_week_key, rec.tg_id, contrib, share, amt, (extract(epoch from now())*1000)::bigint);
+
+    -- 只有分到钱（share>0）才扣分红次数（拿到钱才扣）
+    IF share > 0 THEN
+      grid_new := rec.grid;
+      div_new := '[]'::jsonb;
+      recycle_count := 0;
+
+      -- 每只猫剩余分红次数 -1；<=0 的回收
+      FOR cat IN SELECT (value)::int AS c FROM jsonb_array_elements(rec.div_cats) LOOP
+        new_cnt := cat.c - 1;
+        IF new_cnt <= 0 THEN
+          recycle_count := recycle_count + 1;
+        ELSE
+          div_new := div_new || to_jsonb(new_cnt);
+        END IF;
+      END LOOP;
+
+      -- 回收：把 grid 里前 recycle_count 个 40 级猫置空
+      FOR i IN 1..recycle_count LOOP
+        SELECT ord::bigint INTO found_pos
+        FROM jsonb_array_elements_text(grid_new) WITH ORDINALITY AS arr(val, ord)
+        WHERE val = '40'
+        ORDER BY ord ASC
+        LIMIT 1;
+        IF found_pos IS NOT NULL THEN
+          grid_new := jsonb_set(grid_new, ARRAY[(found_pos - 1)::text], 'null'::jsonb);
+        END IF;
+      END LOOP;
+
+      UPDATE users SET grid = grid_new, div_cats = div_new, week_ad_count = 0
+      WHERE tg_id = rec.tg_id;
+    END IF;
+
+    cnt := cnt + 1;
+  END LOOP;
+
+  RETURN json_build_object('ok', true, 'count', cnt, 'totalContrib', total_contrib);
+END;
+$$ LANGUAGE plpgsql;

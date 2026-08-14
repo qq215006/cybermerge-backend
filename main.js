@@ -408,6 +408,7 @@ const S = {
   wdAdUsed: 0,                        // 提现弹窗「看视频临时特权」今日已用次数（上限 3）
   inviteCount: 0,                     // 邀请好友次数（云存档）
   refCode: '',                        // 我的随机邀请码（后端生成，用于邀请链接，隐藏 TG ID）
+  divCats: [],                        // 场上40级猫的剩余分红次数数组 [4,3,2]
 };
 const AI_KEY = 'cybermerge_ai_unlock_day';  // 存最后一次签到解锁智能合成的日期 "YYYY-MM-DD"
 const AI_TICK_MS = 180;                     // AI 循环周期（毫秒）：不要太快避免卡顿
@@ -601,6 +602,7 @@ function aiTick() {
         const newLv = Math.min(lv + 1, MAX_LV);
         S.grid[idx1] = null;
         S.grid[idx2] = newLv;
+        if (newLv === MAX_LV) S.divCats.push(4);  // 合成出40级猫：记分红资格
         sortGrid();                       // 合成后自动降序：最高等级排第一位
         const ni = S.grid.indexOf(newLv); // 找到新等级在排序后的位置
         if (ni >= 0) boom(ni);
@@ -744,6 +746,7 @@ function collectCloudData() {
     buyCount: S.buyCount,
     adUsedToday: S.adUsedToday,
     wdAdUsed: S.wdAdUsed,
+    divCats: S.divCats,
     pokedex: [...collected],
     aiUnlockDay: lsGet(AI_KEY, ''),
     settings: {
@@ -778,6 +781,7 @@ function loadLocal() {
 function buildSignString(tgId, data, timestamp) {
   const grid = Array.isArray(data.grid) ? data.grid.map(x => (x === null || x === undefined) ? '' : x).join(',') : '';
   const pokedex = Array.isArray(data.pokedex) ? data.pokedex.join(',') : '';
+  const divCats = Array.isArray(data.divCats) ? JSON.stringify(data.divCats) : '[]';
   return [
     tgId,
     data.coins ?? 0,
@@ -788,6 +792,7 @@ function buildSignString(tgId, data, timestamp) {
     data.wdAdUsed ?? 0,
     pokedex,
     data.aiUnlockDay ?? '',
+    divCats,
     timestamp,
     SECRET_SALT,
   ].join('|');
@@ -849,6 +854,7 @@ function applyStateToS(obj) {
   if (typeof obj.buyCount === 'number') S.buyCount = obj.buyCount;
   if (typeof obj.adUsedToday === 'number') S.adUsedToday = obj.adUsedToday;
   if (typeof obj.wdAdUsed === 'number') S.wdAdUsed = obj.wdAdUsed;
+  if (Array.isArray(obj.divCats)) S.divCats = obj.divCats.map(x => Number(x) || 0);
   if (Array.isArray(obj.pokedex)) {
     collected.clear();
     obj.pokedex.forEach(lv => { if (typeof lv === 'number' && lv >= 1 && lv <= MAX_LV) collected.add(lv); });
@@ -1506,6 +1512,7 @@ function up(e) {
     if(cl.parentNode) cl.remove();
     clearTimeout(safeKill);
     S.grid[sr]=null; S.grid[tgt]=nl;          // 完成合成
+    if (nl === MAX_LV) S.divCats.push(4);     // 合成出40级猫：记一次分红资格（剩余4次）
     sortGrid();                                // 自动排序：最高等级排第一个
     const ni = S.grid.indexOf(nl);             // 找新等级排序后的位置
     if (ni >= 0) boom(ni);                     // 在正确位置触发合成闪光
