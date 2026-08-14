@@ -41,11 +41,13 @@ async function replyStart(token, chatId, firstName) {
       ],
     },
   };
-  await fetch(url, {
+  const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
+  const data = await res.json().catch(() => null);
+  return { status: res.status, data };
 }
 
 export async function onRequestPost(context) {
@@ -70,9 +72,17 @@ export async function onRequestPost(context) {
   if (msg && typeof text === 'string' && text.startsWith('/start')) {
     const firstName = msg?.from?.first_name || 'Player';
     try {
-      await replyStart(token, msg.chat.id, firstName);
+      const result = await replyStart(token, msg.chat.id, firstName);
+      return new Response(JSON.stringify({ ok: true, sendMessage: result }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
     } catch (err) {
       console.error('sendMessage failed:', err);
+      return new Response(JSON.stringify({ ok: true, sendMessage: { error: String(err) } }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
   }
 
