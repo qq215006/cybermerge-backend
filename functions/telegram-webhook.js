@@ -51,7 +51,8 @@ async function replyStart(token, chatId, firstName) {
 }
 
 export async function onRequestPost(context) {
-  const token = context.env?.BOT_TOKEN || process.env.BOT_TOKEN || '';
+  const rawToken = context.env?.BOT_TOKEN || process.env.BOT_TOKEN || '';
+  const token = typeof rawToken === 'string' ? rawToken.trim() : '';
   if (!token) {
     return new Response(JSON.stringify({ ok: false, message: 'BOT_TOKEN not configured' }), {
       status: 500,
