@@ -81,6 +81,7 @@ export async function onRequestPost(context) {
     const firstName = msg?.from?.first_name || 'Player';
     try {
       const result = await replyStart(token, msg.chat.id, firstName);
+      console.log('sendMessage result:', JSON.stringify(result));
       return new Response(JSON.stringify({ ok: true, sendMessage: result }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
