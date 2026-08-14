@@ -41,10 +41,10 @@ const I18N = {
   pokedex_btn:     { zh:'猫咪图鉴',           en:'Pedia',                   ru:'Сбор' },
   pokedex_count:   { zh:'已收集',             en:'Collected',              ru:'Собрано' },
   pokedex_unit:    { zh:'只猫咪',             en:'cats',                   ru:'котов' },
-  // 智能签到按钮（每日签到解锁智能合成 + 离线产出，0点重置）
-  ai_on:           { zh:'⚡ 智能签到 ON',     en:'⚡ Check-in ON',       ru:'⚡ Чек-ин ВКЛ' },
-  ai_off:          { zh:'⚡ 智能签到 OFF',    en:'⚡ Check-in OFF',      ru:'⚡ Чек-ин ВЫКЛ' },
-  ai_locked:       { zh:'⚡ 智能签到',        en:'⚡ Check-in',          ru:'⚡ Чек-ин' },
+  // 签到合成按钮（每日免费签到开启智能合成 + 离线产出，0点重置）
+  ai_on:           { zh:'⚡ 合成中',          en:'⚡ Merging',           ru:'⚡ Слияние' },
+  ai_off:          { zh:'⚡ 合成关',          en:'⚡ Merge OFF',         ru:'⚡ Слияние ВЫКЛ' },
+  ai_locked:       { zh:'⚡ 签到合成',        en:'⚡ Check-in & Merge',  ru:'⚡ Чек-ин и слияние' },
   // 离线收益弹窗
   offline_title:   { zh:'🎁 离线收益',        en:'🎁 Offline Earnings',  ru:'🎁 Офлайн-доход' },
   offline_desc:    { zh:'你离开期间累计产出', en:'Earned while you were away', ru:'Заработано за время офлайн' },
@@ -57,7 +57,7 @@ const I18N = {
   lang_label:      { zh:'🌍 语言 Language',    en:'🌍 Language',            ru:'🌍 Язык' },
   rules_label:     { zh:'📖 游戏规则',         en:'📖 Game Rules',          ru:'📖 Правила игры' },
   rules_text: {
-    zh: '• 拖动相同等级的猫咪可合成更高一级<br>• 商店购买猫咪消耗金币，每次购买全场物价+7%<br>• 看广告可加速产出并免费领猫咪<br>• 智能签到后自动合成并离线产出（每日解锁）<br>• 邀请好友 + 完成任务墙赚额外金币<br>• 链接 TON 钱包后可提现鱼池收益',
+    zh: '• 拖动相同等级的猫咪可合成更高一级<br>• 商店购买猫咪消耗金币，每次购买全场物价+7%<br>• 看广告可加速产出并免费领猫咪<br>• 签到合成后自动运行并离线产出（每日免费开启）<br>• 邀请好友 + 完成任务墙赚额外金币<br>• 链接 TON 钱包后可提现鱼池收益',
     en: '• Drag same-level cats to merge into a higher level<br>• Buying cats costs coins; each purchase raises all prices by 7%<br>• Watch ads to boost output and get free cats<br>• Auto Merge + offline earnings run after daily check-in<br>• Invite friends + complete tasks to earn extra coins<br>• Connect TON wallet to withdraw pool earnings',
     ru: '• Перетаскивайте котов одного уровня, чтобы объединить их<br>• Покупка котов стоит монеты; каждая покупка повышает все цены на 7%<br>• Смотрите рекламу для ускорения и бесплатных котов<br>• Автослияние и офлайн-доход после ежедневного чек-ина<br>• Приглашайте друзей + выполняйте задания для бонусов<br>• Подключите TON-кошелек для вывода из пула'
   },
@@ -89,14 +89,13 @@ const I18N = {
   wd_ad_ok:         { zh:'✅ 20% 提现特权已激活（临时）', en:'✅ 20% withdrawal boost activated (temporary)', ru:'✅ Временный вывод 20% активирован' },
   wd_ad_done:       { zh:'⚠️ 今日特权次数已用完 (3/3)', en:'⚠️ Daily boost used up (3/3)', ru:'⚠️ Дневной лимит исчерпан (3/3)' },
   // 通用/广告/合成/购买/任务/邀请 toast（补齐三语，替换原硬编码中文）
-  t_ai_daily_reset: { zh:'⏰ 新的一天到啦~智能签到已关闭', en:'⏰ New day! Check-in turned off', ru:'⏰ Новый день! Чек-ин выключен' },
+  t_ai_daily_reset: { zh:'⏰ 新的一天到啦~签到合成已关闭', en:'⏰ New day! Auto merge turned off', ru:'⏰ Новый день! Автослияние выключено' },
+  t_ai_checkin_ok:  { zh:'✅ 签到成功！智能合成已开启', en:'✅ Checked in! Auto merge ON', ru:'✅ Чек-ин выполнен! Автослияние ВКЛ' },
   t_ad_limit:       { zh:'今日广告次数已用完，明天再来~', en:'Daily ad limit reached, come back tomorrow~', ru:'Дневной лимит рекламы исчерпан, завтра~' },
   t_ad_limit_accel: { zh:'今日加速次数已用完，明日再来~', en:'Daily boost limit reached, come back tomorrow~', ru:'Дневной лимит буста исчерпан, завтра~' },
   t_grid_full:      { zh:'猫窝满啦！先合一下腾位~', en:'Nest is full! Merge first to make room~', ru:'Гнездо заполнено! Сначала объедините~' },
   t_grid_full_buy:  { zh:'猫窝满啦！合一下腾位~', en:'Nest is full! Merge to make room~', ru:'Гнездо заполнено! Объедините~' },
-  t_ad_success_ai:  { zh:'🎬 看广告成功！智能签到已开启，获得 {name} LV.{lv}', en:'🎬 Ad done! Check-in ON, got {name} LV.{lv}', ru:'🎬 Реклама просмотрена! Чек-ин ВКЛ, получен {name} LV.{lv}' },
   t_ad_not_loaded:  { zh:'广告系统未加载，请稍后再试', en:'Ad system not loaded, try again later', ru:'Рекламная система не загружена, повторите позже' },
-  t_ad_not_finished_ai: { zh:'广告未看完，无法开启智能签到', en:'Ad not finished, cannot enable check-in', ru:'Реклама не досмотрена, чек-ин недоступен' },
   t_ad_load_failed: { zh:'广告加载失败，请稍后再试', en:'Ad failed to load, try again later', ru:'Не удалось загрузить рекламу, повторите позже' },
   t_ad_not_finished:{ zh:'广告未看完，无法获得奖励', en:'Ad not finished, no reward', ru:'Реклама не досмотрена, награды нет' },
   t_no_coins:       { zh:'❤ 金币不足！需 {price} 金（看广告免费领）', en:'❤ Not enough coins! Need {price} coins (watch ad for free)', ru:'❤ Не хватает монет! Нужно {price} монет (смотрите рекламу)' },
@@ -410,10 +409,10 @@ const S = {
   inviteCount: 0,                     // 邀请好友次数（云存档）
   refCode: '',                        // 我的随机邀请码（后端生成，用于邀请链接，隐藏 TG ID）
 };
-const AI_KEY = 'cybermerge_ai_unlock_day';  // 存最后一次看广告解锁智能合成的日期 "YYYY-MM-DD"
+const AI_KEY = 'cybermerge_ai_unlock_day';  // 存最后一次签到解锁智能合成的日期 "YYYY-MM-DD"
 const AI_TICK_MS = 180;                     // AI 循环周期（毫秒）：不要太快避免卡顿
 const ADSGRAM_BLOCK_ID = '42820';          // Adsgram 激励视频广告1（加速可产出）
-const AI_AD_BLOCK_ID = '42821';            // 激励视频广告2（智能签到解锁，每日一次，0点重置）
+const AI_AD_BLOCK_ID = '42821';            // 预留：激励视频广告2（签到已改免费，暂不占用此广告位）
 
 // ═══════ 每日任务：1 个 Adsgram 任务广告单元 + 金币奖励 ═══════
 const DAILY_TASKS = [
@@ -632,49 +631,18 @@ function aiTick() {
   }
 }
 
-// 点击智能合成按钮：未解锁→看激励视频广告解锁→开；已解锁→开关切换
+// 点击签到合成按钮：免费签到开启/关闭智能合成（不看广告）
 function toggleAiMerge(e) {
   if (e) { e.preventDefault?.(); e.stopPropagation?.(); }
   if (!isAiUnlockedToday()) {
-    // 未解锁今日：看一次激励视频广告（Adsgram 42821）才能开启智能合成
-    if (S.adUsedToday >= adDailyLimit()) {
-      toast(t('t_ad_limit'),'warn');
-      return;
-    }
-    const lv = adRewardLv();
-    let idx = -1; for (let i = 0; i < TOTAL; i++) if (S.grid[i] === null) { idx = i; break; }
-    if (idx === -1) {
-      toast(t('t_grid_full'),'warn');
-      return;
-    }
-
-    const unlockAfterAd = () => {
-      S.adUsedToday++;
-      setAiUnlockedToday();
-      // 解锁奖励（1只 LV.X 猫）+ 开启智能合成
-      S.grid[idx] = lv;
-      draw(idx);
-      const pet = g?.children[idx]?.querySelector('.pet-card');
-      if (pet) { pet.classList.add('pet-spawn'); pet.addEventListener('animationend',()=>pet.classList.remove('pet-spawn'),{once:true}); }
-      collect(lv);
-      startAiLoop();
-      toast(t('t_ad_success_ai').replace('{name}', catName(lv)).replace('{lv}', lv),'success');
-      ui();
-      saveCloudNow();
-    };
-
-    try {
-      if (!window.Adsgram) { toast(t('t_ad_not_loaded'),'warn'); return; }
-      const AdController = window.Adsgram.init({ blockId: AI_AD_BLOCK_ID });
-      AdController.show()
-        .then(() => unlockAfterAd())                                  // 看完广告 → 解锁 + 发奖励 + 存档
-        .catch(() => toast(t('t_ad_not_finished_ai'),'warn'));   // 中途关闭 / 失败
-    } catch(_) {
-      toast(t('t_ad_load_failed'),'warn');
-    }
+    // 免费签到：直接解锁今天的智能合成
+    setAiUnlockedToday();
+    startAiLoop();
+    toast(t('t_ai_checkin_ok'),'success');
+    saveLocal();
     return;
   }
-  // 已解锁 → 切换开关
+  // 已签到 → 切换开关
   if (S.aiRunning) stopAiLoop();
   else startAiLoop();
 }
