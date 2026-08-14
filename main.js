@@ -1444,6 +1444,9 @@ function openTasks() {
 }
 function closeTasks() {
   document.getElementById('task-modal')?.classList.remove('show');
+  // 关闭时清空任务列表，移除 <adsgram-task> 组件，避免它留在 DOM 里后台重试弹错误
+  const list = document.getElementById('task-list');
+  if (list) list.innerHTML = '';
 }
 
 // ═══════ 拖拽（2 只同等级合成升级）═══════
