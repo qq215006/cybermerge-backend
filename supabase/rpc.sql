@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
   ad_used_today INTEGER DEFAULT 0,
   wd_ad_used    INTEGER DEFAULT 0,
   pokedex       JSONB DEFAULT '[]'::jsonb,
+  max_level     INTEGER DEFAULT 0,  -- 冗余最高等级字段，用于提升排行榜查询性能
   settings      JSONB DEFAULT '{}'::jsonb,
   ai_unlock_day TEXT DEFAULT '',
   invite_count  INTEGER DEFAULT 0,
@@ -24,6 +25,11 @@ CREATE TABLE IF NOT EXISTS users (
 -- 兼容已存在的旧 users 表（补充新字段）
 ALTER TABLE users ADD COLUMN IF NOT EXISTS last_earn_at BIGINT DEFAULT 0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS bonus_coins DOUBLE PRECISION DEFAULT 0;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS max_level INTEGER DEFAULT 0;
+-- 回填已有用户的 max_level（避免老用户暂时显示 0 级）
+UPDATE users SET max_level = COALESCE((SELECT max(elem::int) FROM jsonb_array_elements_text(pokedex) elem), 0);
+-- 排行榜排序索引（空间换时间）
+CREATE INDEX IF NOT EXISTS idx_users_max_level ON users (max_level DESC);
 
 -- ── 邀请事件表 ───────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS invites (
@@ -96,7 +102,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- ── RPC 2：全球等级榜（按图鉴最高解锁等级降序，金币为 coins + bonus_coins 总额）──
+-- ── RPC 2：全球等级榜（按 max_level 降序，金币为 coins + bonus_coins 总额）──
 CREATE OR REPLACE FUNCTION get_leaderboard(p_tg_id text)
 RETURNS json AS $$
 DECLARE
@@ -105,14 +111,16 @@ DECLARE
   my_rank int := 0;
   lb_list json;
 BEGIN
-  SELECT COALESCE((SELECT max(elem::int) FROM jsonb_array_elements_text(pokedex) elem), 0),
+  -- 查询自己的数据（直接读冗余 max_level，不再解析 pokedex）
+  SELECT COALESCE(max_level, 0),
          COALESCE(coins, 0) + COALESCE(bonus_coins, 0)
   INTO my_lv, my_coins
   FROM users WHERE tg_id = p_tg_id;
 
+  -- 计算自己的排名
   SELECT COUNT(*) + 1 INTO my_rank FROM users
-  WHERE COALESCE((SELECT max(elem::int) FROM jsonb_array_elements_text(pokedex) elem), 0) > my_lv
-     OR (COALESCE((SELECT max(elem::int) FROM jsonb_array_elements_text(pokedex) elem), 0) = my_lv
+  WHERE COALESCE(max_level, 0) > my_lv
+     OR (COALESCE(max_level, 0) = my_lv
          AND COALESCE(coins, 0) + COALESCE(bonus_coins, 0) > my_coins);
 
   -- 前 100 名 + 自己（即使掉出前 100，也固定把自己显示在列表里）
@@ -124,11 +132,11 @@ BEGIN
     SELECT
       tg_id,
       username,
-      COALESCE((SELECT max(elem::int) FROM jsonb_array_elements_text(pokedex) elem), 0) AS lv,
+      COALESCE(max_level, 0) AS lv,
       COALESCE(coins, 0) + COALESCE(bonus_coins, 0) AS coins,
       ROW_NUMBER() OVER (
         ORDER BY
-          COALESCE((SELECT max(elem::int) FROM jsonb_array_elements_text(pokedex) elem), 0) DESC,
+          COALESCE(max_level, 0) DESC,
           COALESCE(coins, 0) + COALESCE(bonus_coins, 0) DESC
       ) AS rn,
       (tg_id = p_tg_id) AS is_me
