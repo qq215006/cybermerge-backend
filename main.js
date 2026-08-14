@@ -8,8 +8,6 @@
  *   - 可购买最高等级：maxUnlocked - 4（最低 1）
  *   - 金币不够 → 商店按钮变灰 + 高亮绿色「看广告免费领」按钮
  */
-import { TonConnectUI, toUserFriendlyAddress } from '@tonconnect/ui';
-
 (function(){
 'use strict';
 
@@ -490,9 +488,13 @@ function refreshWalletUI() {
 // ═══════ TON Connect 钱包连接 ═══════
 let tonConnectUI = null;
 let _walletRestoring = true;
+let _toFriendly = null;
 
-function initTonConnect() {
+async function initTonConnect() {
   try {
+    // 动态引入 @tonconnect/ui：只在需要时加载，避免拖慢首屏（减小初始 bundle）
+    const { TonConnectUI, toUserFriendlyAddress } = await import('@tonconnect/ui');
+    _toFriendly = toUserFriendlyAddress;
     tonConnectUI = new TonConnectUI({
       manifestUrl: window.location.origin + '/tonconnect-manifest.json',
       restoreConnection: true,
@@ -502,7 +504,7 @@ function initTonConnect() {
     tonConnectUI.connectionRestored.then(() => { _walletRestoring = false; }).catch(() => { _walletRestoring = false; });
     tonConnectUI.onStatusChange(w => {
       if (w && w.account) {
-        const friendly = toUserFriendlyAddress(w.account.address);
+        const friendly = _toFriendly(w.account.address);
         saveWallet(friendly, w.device?.appName || 'tonconnect');
         refreshWalletUI();
         if (!_walletRestoring) {
@@ -1929,7 +1931,7 @@ function preloadAssets(onProgress, onDone) {
       const a = new Audio();
       a.preload = 'auto';
       a.src = url;
-      a.addEventListener('canplaythrough', settle, { once: true });
+      a.addEventListener('canplay', settle, { once: true });   // canplay 比 canplaythrough 快，避免进度条卡住
       a.addEventListener('error', settle, { once: true });
       setTimeout(settle, 12000);   // 兜底：超时也算完成，避免卡启动页
       a.load();
