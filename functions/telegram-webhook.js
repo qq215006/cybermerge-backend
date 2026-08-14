@@ -12,10 +12,16 @@
 const GAME_URL = 'https://t.me/CyberCatMergeBot/app';
 const COMMUNITY_URL = 'https://t.me/lcz8com';
 
+// HTML 转义：防止用户昵称里的 & < > 破坏 parse_mode=HTML
+function escapeHtml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 // 欢迎文案（HTML 解析模式，避免 Markdown 转义坑）
 function welcomeText(firstName) {
+  const name = escapeHtml(firstName);
   return [
-    `Hey ${firstName}, welcome to the <b>CyberCat</b> universe! 🌌🐾`,
+    `Hey ${name}, welcome to the <b>CyberCat</b> universe! 🌌🐾`,
     '',
     'Your empty factory is waiting for its first feline worker. Are you ready to merge, upgrade, and claim your share of the massive $USDT pool?',
     '',
@@ -70,6 +76,7 @@ export async function onRequestPost(context) {
   // 只处理 /start（text.startsWith 兼容 /start <payload> 深链参数）
   const msg = update?.message;
   const text = msg?.text;
+  console.log('telegram update:', JSON.stringify({ text, chatId: msg?.chat?.id, firstName: msg?.from?.first_name }));
   if (msg && typeof text === 'string' && text.startsWith('/start')) {
     const firstName = msg?.from?.first_name || 'Player';
     try {
