@@ -75,6 +75,17 @@ const I18N = {
   wd_ms_reached:   { zh:'已达成',              en:'Reached',                ru:'Достигнуто' },
   wd_ms_current:   { zh:'当前阶段',            en:'Current',                ru:'Текущий' },
   wd_ms_locked:    { zh:'未解锁',              en:'Locked',                 ru:'Заблокировано' },
+  // 个人中心
+  profile_title:   { zh:'👤 个人中心',         en:'👤 Profile',             ru:'👤 Профиль' },
+  profile_coins:   { zh:'总金币',              en:'Total Coins',           ru:'Всего монет' },
+  profile_earn:    { zh:'每秒产出',            en:'Earn / sec',            ru:'Доход / сек' },
+  profile_invite:  { zh:'邀请人数',            en:'Invites',               ru:'Приглашения' },
+  profile_weekad:  { zh:'本周看广告',          en:'Ads this week',         ru:'Реклама за неделю' },
+  profile_divcats: { zh:'40级猫分红',          en:'LV.40 Dividends',       ru:'Дивиденды LV.40' },
+  profile_rate:    { zh:'提现比例',            en:'Withdraw Rate',         ru:'Ставка вывода' },
+  profile_ref:     { zh:'邀请码',              en:'Invite Code',           ru:'Код приглашения' },
+  profile_copy:    { zh:'复制邀请码',          en:'Copy Invite Code',      ru:'Копировать код' },
+  profile_copied:  { zh:'✅ 邀请码已复制',     en:'✅ Invite code copied', ru:'✅ Код скопирован' },
   // toast
   t_music_on:      { zh:'🎵 背景音乐已开启',   en:'🎵 Background music ON',  ru:'🎵 Фоновая музыка ВКЛ' },
   t_music_off:     { zh:'🎵 背景音乐已关闭',   en:'🎵 Background music OFF', ru:'🎵 Фоновая музыка ВЫКЛ' },
@@ -409,6 +420,7 @@ const S = {
   inviteCount: 0,                     // 邀请好友次数（云存档）
   refCode: '',                        // 我的随机邀请码（后端生成，用于邀请链接，隐藏 TG ID）
   divCats: [],                        // 场上40级猫的剩余分红次数数组 [4,3,2]
+  weekAdCount: 0,                     // 本周看广告次数（后端统计，用于分红贡献）
 };
 const AI_KEY = 'cybermerge_ai_unlock_day';  // 存最后一次签到解锁智能合成的日期 "YYYY-MM-DD"
 const AI_TICK_MS = 180;                     // AI 循环周期（毫秒）：不要太快避免卡顿
@@ -912,6 +924,8 @@ async function syncBackend() {
     S.wdAdUsed = Math.max(S.wdAdUsed, Number(u.wdAdUsed) || 0, (local && typeof local.wdAdUsed === 'number') ? local.wdAdUsed : 0);
     if (typeof u.inviteCount === 'number') S.inviteCount = u.inviteCount;
     if (typeof u.refCode === 'string' && u.refCode) S.refCode = u.refCode;
+    if (Array.isArray(u.divCats)) S.divCats = u.divCats.map(x => Number(x) || 0);
+    if (typeof u.weekAdCount === 'number') S.weekAdCount = u.weekAdCount;
 
     // aiUnlockDay：取较新日期
     const localDay = (local && typeof local.aiUnlockDay === 'string') ? local.aiUnlockDay : '';
@@ -1594,6 +1608,23 @@ function renderWithdrawPanel() {
   if (adCount) adCount.textContent = '(' + S.wdAdUsed + '/' + WD_AD_LIMIT + ')';
 }
 
+// ═══════ 个人中心：渲染玩家全部数据 ═══════
+function renderProfile() {
+  const userLv = Math.max(1, maxUnlockedLv());
+  const divCount = S.divCats.length;
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set('pf-lv', 'Lv.' + userLv);
+  set('pf-coins', fmtNum(S.usdt));
+  set('pf-earn', fmtNum(totalEarnPerSec()));
+  set('pf-invite', String(S.inviteCount || 0));
+  set('pf-weekad', String(S.weekAdCount || 0));
+  set('pf-divcats', divCount + ' 只' + (divCount > 0 ? '（剩余 ' + S.divCats.join('/') + ' 次）' : ''));
+  set('pf-rate', withdrawRate(userLv) + '%');
+  set('pf-ref', S.refCode || '-');
+  const avatar = document.getElementById('pf-avatar');
+  if (avatar) avatar.src = '/cats/LV.' + userLv + '.png';
+}
+
 // ═══════ 按钮 ═══════
 function btn(){
   // 全球等级榜按钮：打开弹窗并拉取真实排行榜（按等级）
@@ -1625,6 +1656,21 @@ function btn(){
   document.getElementById('btn-withdraw')?.addEventListener('click', openWithdraw);
   document.getElementById('withdraw-close')?.addEventListener('click', closeWithdraw);
   wdModal?.addEventListener('click', (e) => { if (e.target.id === 'withdraw-modal') closeWithdraw(); });
+
+  // 个人中心：点顶部等级/头像区域打开
+  const pfModal = document.getElementById('profile-modal');
+  const openProfile = () => { renderProfile(); pfModal?.classList.add('show'); };
+  const closeProfile = () => pfModal?.classList.remove('show');
+  document.querySelector('.level-info')?.addEventListener('click', openProfile);
+  document.getElementById('profile-close')?.addEventListener('click', closeProfile);
+  pfModal?.addEventListener('click', (e) => { if (e.target.id === 'profile-modal') closeProfile(); });
+  document.getElementById('pf-copy-ref')?.addEventListener('click', () => {
+    if (!S.refCode) { toast('暂无邀请码', 'warn'); return; }
+    const link = buildInviteLink();
+    try { navigator.clipboard?.writeText(link); toast(t('profile_copied'), 'success'); }
+    catch(_) { toast(t('profile_ref') + ': ' + link, 'info'); }
+  });
+
   // 看广告领 20% 提现特权（每日 3 次）
   document.getElementById('wd-ad-btn')?.addEventListener('click', () => {
     if (S.wdAdUsed >= WD_AD_LIMIT) { toast(t('wd_ad_done'), 'warn'); return; }

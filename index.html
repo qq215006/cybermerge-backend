@@ -254,6 +254,34 @@
     </div>
   </div>
 
+  <!-- ═══════════ 个人中心弹窗 ═══════════ -->
+  <div id="profile-modal" class="profile-modal">
+    <div class="profile-content">
+      <div class="profile-header">
+        <span class="profile-title" data-i18n="profile_title">👤 个人中心</span>
+        <button id="profile-close" class="profile-close">✕</button>
+      </div>
+      <div class="profile-body">
+        <div class="profile-hero">
+          <img id="pf-avatar" class="profile-avatar" src="/cats/LV.1.png" alt="avatar" />
+          <div class="profile-hero-text">
+            <span class="profile-lv" id="pf-lv">Lv.1</span>
+          </div>
+        </div>
+        <div class="profile-stats">
+          <div class="profile-stat"><span class="ps-label" data-i18n="profile_coins">总金币</span><span class="ps-value" id="pf-coins">0</span></div>
+          <div class="profile-stat"><span class="ps-label" data-i18n="profile_earn">每秒产出</span><span class="ps-value" id="pf-earn">0</span></div>
+          <div class="profile-stat"><span class="ps-label" data-i18n="profile_invite">邀请人数</span><span class="ps-value" id="pf-invite">0</span></div>
+          <div class="profile-stat"><span class="ps-label" data-i18n="profile_weekad">本周看广告</span><span class="ps-value" id="pf-weekad">0</span></div>
+          <div class="profile-stat"><span class="ps-label" data-i18n="profile_divcats">40级猫分红</span><span class="ps-value" id="pf-divcats">0 只</span></div>
+          <div class="profile-stat"><span class="ps-label" data-i18n="profile_rate">提现比例</span><span class="ps-value" id="pf-rate">0%</span></div>
+          <div class="profile-stat"><span class="ps-label" data-i18n="profile_ref">邀请码</span><span class="ps-value" id="pf-ref">-</span></div>
+        </div>
+        <button id="pf-copy-ref" class="pf-copy-btn" data-i18n="profile_copy">复制邀请码</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ═══════════ 全球等级榜弹窗 ═══════════ -->
   <div id="leaderboard-modal" class="leaderboard-modal">
     <div class="leaderboard-content">
