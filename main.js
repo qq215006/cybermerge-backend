@@ -225,19 +225,16 @@ function adRewardLv() {
   return Math.max(2, maxUnlockedLv() - AD_LV_GAP);
 }
 
-// 商店默认出售等级：始终卖能买到的最高级（让玩家直观看到目标）
+// 商店出售等级：先补买场上最低等级（低于 -4 目标时）往上合，打平后再买目标级
 function buyLevel() {
-  return shopMaxLv();
-}
-
-// 当前金币能买到的最高等级（用于买猫按钮上的悬浮猫咪展示，最高不超过商店可买等级）
-function affordableBuyLv() {
-  const maxLv = shopMaxLv();
-  let best = 1;
-  for (let lv = maxLv; lv >= 1; lv--) {
-    if (S.usdt >= lvPrice(lv)) { best = lv; break; }
+  const targetLv = shopMaxLv();
+  let minLv = null;
+  for (let i = 0; i < TOTAL; i++) {
+    const lv = S.grid[i];
+    if (lv && (minLv === null || lv < minLv)) minLv = lv;
   }
-  return best;
+  if (minLv !== null && minLv < targetLv) return minLv;
+  return targetLv;
 }
 
 // ═══════ 大数字格式化：K / M / B / T / Qa / Qi ═══════
@@ -1213,10 +1210,10 @@ function ui() {
   // 按钮上只显示「买 LV.x」（文案走 i18n），不显示金币数
   if (lvLabelEl) lvLabelEl.textContent = t('buy_label') + lv;
 
-  // 悬浮猫咪：按当前金币能买到的最高等级展示素材
+  // 悬浮猫咪：按即将购买的等级展示素材
   const buyCatImg = document.getElementById('buy-cat-float');
   if (buyCatImg) {
-    const catLv = affordableBuyLv();
+    const catLv = buyLevel();
     const cat = CATS[catLv] || CATS[1];
     if (buyCatImg.dataset.lv !== String(catLv)) {
       buyCatImg.src = cat.img;
