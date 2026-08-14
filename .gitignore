@@ -12,6 +12,7 @@ data/
 .env.local
 .env.*
 !.env.example
+.dev.vars
 
 # 误生成的 npm 缓存/包目录
 .npm/

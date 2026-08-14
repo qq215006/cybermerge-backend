@@ -113,9 +113,7 @@ const I18N = {
   t_locked:         { zh:'未解锁', en:'Locked', ru:'Заблокировано' },
   t_share_text:     { zh:'快来 CyberMerge 合成猫咪，瓜分大奖池！🐱💰', en:'Come to CyberMerge, merge cats and win the big pool! 🐱💰', ru:'Заходи в CyberMerge, объединяй котов и выигрывай призы! 🐱💰' },
   // 每日任务描述
-  task_desc_1:      { zh:'接任务领 3000 金币', en:'Take task for 3000 coins', ru:'Задание на 3000 монет' },
-  task_desc_2:      { zh:'接任务领 5000 金币', en:'Take task for 5000 coins', ru:'Задание на 5000 монет' },
-  task_desc_3:      { zh:'接任务领 8000 金币', en:'Take task for 8000 coins', ru:'Задание на 8000 монет' },
+  task_desc_1:      { zh:'接任务领 10000 金币', en:'Take task for 10000 coins', ru:'Задание на 10000 монет' },
 };
 
 // 当前语言（默认中文，可被 localStorage 覆盖）
@@ -413,14 +411,12 @@ const S = {
 };
 const AI_KEY = 'cybermerge_ai_unlock_day';  // 存最后一次看广告解锁智能合成的日期 "YYYY-MM-DD"
 const AI_TICK_MS = 180;                     // AI 循环周期（毫秒）：不要太快避免卡顿
-const ADSGRAM_BLOCK_ID = '42720';          // Adsgram 激励视频广告单元 ID（加速可产出）
-const AI_AD_BLOCK_ID = '42727';            // 智能合成解锁激励视频广告单元 ID（每日一次，0点重置）
+const ADSGRAM_BLOCK_ID = '42820';          // Adsgram 激励视频广告1（加速可产出）
+const AI_AD_BLOCK_ID = '42821';            // 激励视频广告2（智能签到解锁，每日一次，0点重置）
 
-// ═══════ 每日任务：3 个 Adsgram 任务广告单元 + 金币奖励 ═══════
+// ═══════ 每日任务：1 个 Adsgram 任务广告单元 + 金币奖励 ═══════
 const DAILY_TASKS = [
-  { key: 'task-42723', blockId: 'task-42723', icon: '📺', descKey: 'task_desc_1', coins: 3000 },
-  { key: 'task-42725', blockId: 'task-42725', icon: '🎁', descKey: 'task_desc_2', coins: 5000 },
-  { key: 'task-42726', blockId: 'task-42726', icon: '💰', descKey: 'task_desc_3', coins: 8000 },
+  { key: 'task-42822', blockId: 'task-42822', icon: '📺', descKey: 'task_desc_1', coins: 10000 },
 ];
 const TASK_DONE_KEY = 'cybermerge_daily_tasks';  // 存 { date, done: [taskKey] }，每日重置
 
@@ -639,7 +635,7 @@ function aiTick() {
 function toggleAiMerge(e) {
   if (e) { e.preventDefault?.(); e.stopPropagation?.(); }
   if (!isAiUnlockedToday()) {
-    // 未解锁今日：看一次激励视频广告（Adsgram 42727）才能开启智能合成
+    // 未解锁今日：看一次激励视频广告（Adsgram 42821）才能开启智能合成
     if (S.adUsedToday >= adDailyLimit()) {
       toast(t('t_ad_limit'),'warn');
       return;
@@ -1410,42 +1406,46 @@ function renderTasks() {
   if (!list) return;
   list.innerHTML = '';
   DAILY_TASKS.forEach(task => {
-    const done = isTaskDone(task.key);
-    const item = d('button', 'task-item' + (done ? ' task-done' : ''));
-    item.type = 'button';
-    item.innerHTML =
-      '<span class="task-icon">' + task.icon + '</span>' +
-      '<span class="task-info">' +
-        '<span class="task-desc">' + t(task.descKey) + '</span>' +
-      '</span>' +
-      '<span class="task-reward">' + (done ? t('t_task_done_label') : t('t_task_claim')) + '</span>';
-    if (!done) item.addEventListener('click', () => doTask(task));
-    list.appendChild(item);
+    // 已完成的任务：渲染为静态「已完成」条目
+    if (isTaskDone(task.key)) {
+      const item = d('div', 'task-item task-done');
+      item.innerHTML =
+        '<span class="task-icon">' + task.icon + '</span>' +
+        '<span class="task-info">' +
+          '<span class="task-desc">' + t(task.descKey) + '</span>' +
+        '</span>' +
+        '<span class="task-reward">' + t('t_task_done_label') + '</span>';
+      list.appendChild(item);
+      return;
+    }
+    // 未完成：使用 Adsgram Task Web Component（任务广告不能走 init/show）
+    const el = d('adsgram-task', 'task-adsgram');
+    el.setAttribute('data-block-id', task.blockId);
+    el.innerHTML =
+      '<span slot="reward" class="task-reward-slot">+ ' + task.coins + ' ' + t('level_coins_suf') + '</span>' +
+      '<span slot="button" class="task-go-btn">' + t('t_task_claim') + '</span>' +
+      '<span slot="claim" class="task-claim-btn">' + t('t_task_claim') + '</span>' +
+      '<span slot="done" class="task-done-btn">' + t('t_task_done_label') + '</span>';
+    bindTaskAd(el, task);
+    list.appendChild(el);
   });
 }
-function doTask(task) {
-  if (S.adUsedToday >= adDailyLimit()) {
-    toast(t('t_ad_limit'),'warn');
-    return;
-  }
-  try {
-    if (!window.Adsgram) { toast(t('t_ad_not_loaded'),'warn'); return; }
-    const AdController = window.Adsgram.init({ blockId: task.blockId });
-    AdController.show()
-      .then(() => {
-        // 发金币奖励 + 标记完成 + 立即云存档
-        S.usdt = parseFloat((S.usdt + task.coins).toFixed(4));
-        S.adUsedToday++;                     // 任务广告计入每日总次数
-        markTaskDone(task.key);
-        ui();
-        toast(t('t_task_done').replace('{icon}', task.icon).replace('{coins}', task.coins),'success');
-        saveCloudNow();   // 广告奖励后立即云同步
-        renderTasks();                     // 刷新任务列表（标记已完成）
-      })
-      .catch(() => toast(t('t_ad_not_finished'),'warn'));
-  } catch(_) {
-    toast(t('t_ad_load_failed'),'warn');
-  }
+// 任务广告通过 <adsgram-task> 的「reward」事件发奖（不是 init/show）
+function bindTaskAd(el, task) {
+  const grant = () => {
+    // 发金币奖励 + 标记完成 + 立即云存档
+    S.usdt = parseFloat((S.usdt + task.coins).toFixed(4));
+    S.adUsedToday++;                     // 任务广告计入每日总次数
+    markTaskDone(task.key);
+    ui();
+    toast(t('t_task_done').replace('{icon}', task.icon).replace('{coins}', task.coins),'success');
+    saveCloudNow();   // 广告奖励后立即云同步
+    renderTasks();                     // 刷新任务列表（标记已完成）
+  };
+  el.addEventListener('reward', grant);
+  el.addEventListener('onError', () => toast(t('t_ad_load_failed'),'warn'));
+  el.addEventListener('onBannerNotFound', () => toast(t('t_ad_not_finished'),'warn'));
+  el.addEventListener('onTooLongSession', () => toast(t('t_ad_not_loaded'),'warn'));
 }
 function openTasks() {
   renderTasks();
