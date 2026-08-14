@@ -408,6 +408,7 @@ const S = {
   aiLock: false,                      // 互斥锁：防本次 tick 未跑完就重入
   wdAdUsed: 0,                        // 提现弹窗「看视频临时特权」今日已用次数（上限 3）
   inviteCount: 0,                     // 邀请好友次数（云存档）
+  refCode: '',                        // 我的随机邀请码（后端生成，用于邀请链接，隐藏 TG ID）
 };
 const AI_KEY = 'cybermerge_ai_unlock_day';  // 存最后一次看广告解锁智能合成的日期 "YYYY-MM-DD"
 const AI_TICK_MS = 180;                     // AI 循环周期（毫秒）：不要太快避免卡顿
@@ -742,12 +743,11 @@ function twa() {
   } catch(_){}
 }
 
-// ═══════ 邀请裂变：生成带邀请者 TG ID 的短链 ═══════
-const INVITE_BASE_URL = 'https://t.me/CyberCatMergeBot/app?startapp=';  // 邀请短链前缀（startapp 后接邀请者 tgId）
+// ═══════ 邀请裂变：生成带随机邀请码 refCode 的短链 ═══════
+const INVITE_BASE_URL = 'https://t.me/CyberCatMergeBot/app?startapp=';  // 邀请短链前缀（startapp 后接随机邀请码 refCode）
 
 function buildInviteLink() {
-  const myId = tg?.initDataUnsafe?.user?.id;
-  return INVITE_BASE_URL + (myId ? myId : '');
+  return INVITE_BASE_URL + (S.refCode || '');
 }
 
 // 普通浏览器调试：initData 为空时填充伪造测试数据（配合后端 ALLOW_TEST_AUTH=true 测试模式）
@@ -936,6 +936,7 @@ async function syncBackend() {
     S.adUsedToday = Math.max(S.adUsedToday, Number(u.adUsedToday) || 0, (local && typeof local.adUsedToday === 'number') ? local.adUsedToday : 0);
     S.wdAdUsed = Math.max(S.wdAdUsed, Number(u.wdAdUsed) || 0, (local && typeof local.wdAdUsed === 'number') ? local.wdAdUsed : 0);
     if (typeof u.inviteCount === 'number') S.inviteCount = u.inviteCount;
+    if (typeof u.refCode === 'string' && u.refCode) S.refCode = u.refCode;
 
     // aiUnlockDay：取较新日期
     const localDay = (local && typeof local.aiUnlockDay === 'string') ? local.aiUnlockDay : '';
