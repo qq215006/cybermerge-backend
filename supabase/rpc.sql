@@ -115,22 +115,26 @@ BEGIN
      OR (COALESCE((SELECT max(elem::int) FROM jsonb_array_elements_text(pokedex) elem), 0) = my_lv
          AND COALESCE(coins, 0) + COALESCE(bonus_coins, 0) > my_coins);
 
+  -- 前 100 名 + 自己（即使掉出前 100，也固定把自己显示在列表里）
   SELECT COALESCE(json_agg(json_build_object(
     'rank', rn, 'username', username, 'lv', lv, 'coins', coins, 'isMe', is_me
   ) ORDER BY rn), '[]'::json)
   INTO lb_list
   FROM (
-    SELECT row_number() OVER (ORDER BY max_lv DESC, total_coins DESC) AS rn,
-           username, max_lv AS lv, total_coins AS coins, (tg_id = p_tg_id) AS is_me
-    FROM (
-      SELECT tg_id, username,
-             COALESCE(coins, 0) + COALESCE(bonus_coins, 0) AS total_coins,
-             COALESCE((SELECT max(elem::int) FROM jsonb_array_elements_text(pokedex) elem), 0) AS max_lv
-      FROM users
-      ORDER BY max_lv DESC, total_coins DESC
-      LIMIT 100
-    ) s
-  ) t;
+    SELECT
+      tg_id,
+      username,
+      COALESCE((SELECT max(elem::int) FROM jsonb_array_elements_text(pokedex) elem), 0) AS lv,
+      COALESCE(coins, 0) + COALESCE(bonus_coins, 0) AS coins,
+      ROW_NUMBER() OVER (
+        ORDER BY
+          COALESCE((SELECT max(elem::int) FROM jsonb_array_elements_text(pokedex) elem), 0) DESC,
+          COALESCE(coins, 0) + COALESCE(bonus_coins, 0) DESC
+      ) AS rn,
+      (tg_id = p_tg_id) AS is_me
+    FROM users
+  ) t
+  WHERE rn <= 100 OR tg_id = p_tg_id;
 
   RETURN json_build_object(
     'list', lb_list,
@@ -163,18 +167,21 @@ BEGIN
   ) ORDER BY rn), '[]'::json)
   INTO ib_list
   FROM (
-    SELECT row_number() OVER (ORDER BY cnt DESC) AS rn,
-           username, cnt, (inviter_tg_id = p_tg_id) AS is_me
+    SELECT
+      inviter_tg_id,
+      username,
+      cnt,
+      ROW_NUMBER() OVER (ORDER BY cnt DESC) AS rn,
+      (inviter_tg_id = p_tg_id) AS is_me
     FROM (
       SELECT i.inviter_tg_id, u.username, COUNT(*) AS cnt
       FROM invites i
       LEFT JOIN users u ON u.tg_id = i.inviter_tg_id
       WHERE i.rewarded = true AND i.rewarded_at >= p_day_start
       GROUP BY i.inviter_tg_id, u.username
-      ORDER BY cnt DESC
-      LIMIT 100
     ) s
-  ) t;
+  ) t
+  WHERE rn <= 100;
 
   RETURN json_build_object(
     'list', ib_list,

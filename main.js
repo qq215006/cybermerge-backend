@@ -29,7 +29,7 @@ const I18N = {
   lb_my_rank:      { zh:'我的排名',          en:'My Rank',                ru:'Мой рейтинг' },
   lb_tab_global:   { zh:'🌍 全球排行',       en:'🌍 Global',              ru:'🌍 Мировой' },
   lb_tab_invite:   { zh:'👥 邀请榜',          en:'👥 Invites',            ru:'👥 Приглашения' },
-  lb_empty:        { zh:'🏆 排行榜数据接入中，敬请期待', en:'🏆 Leaderboard data loading...', ru:'🏆 Данные рейтинга загружаются...' },
+  lb_empty:        { zh:'🏆 暂无上榜数据，快去合成升级吧！', en:'🏆 No ranking yet. Merge cats to rank up!', ru:'🏆 Пока нет рейтинга. Объединяйте котов!' },
   lb_empty_invite: { zh:'👥 今日暂无邀请，快去邀请好友冲榜吧！', en:'👥 No invites today. Invite friends to rank!', ru:'👥 Пока нет приглашений сегодня. Пригласите друзей!' },
   lb_loading:      { zh:'⏳ 排行榜加载中...', en:'⏳ Loading leaderboard...', ru:'⏳ Загрузка рейтинга...' },
   lb_invite_unit:  { zh:'邀请', en:'invites', ru:'пригл.' },
