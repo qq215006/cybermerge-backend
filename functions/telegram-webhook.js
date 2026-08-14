@@ -9,7 +9,7 @@
  *      curl "https://api.telegram.org/bot<BOT_TOKEN>/setWebhook?url=https://<你的Pages域名>/telegram-webhook"
  */
 
-const GAME_URL = 'https://t.me/CyberCatMergeBot/app';
+const GAME_URL = 'https://lcz8.com';          // web_app 按钮必须用直连 HTTPS 域名，不能用 t.me 跳转
 const COMMUNITY_URL = 'https://t.me/lcz8com';
 
 // HTML 转义：防止用户昵称里的 & < > 破坏 parse_mode=HTML
