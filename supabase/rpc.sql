@@ -29,6 +29,8 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS last_earn_at BIGINT DEFAULT 0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS bonus_coins DOUBLE PRECISION DEFAULT 0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS max_level INTEGER DEFAULT 0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS inflate_count INTEGER DEFAULT 0;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS buy_day TEXT DEFAULT '';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS buy_count_today INTEGER DEFAULT 0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS ref_code TEXT UNIQUE;
 -- 回填已有用户的 max_level（避免老用户暂时显示 0 级）
 UPDATE users SET max_level = COALESCE((SELECT max(elem::int) FROM jsonb_array_elements_text(pokedex) elem), 0);
@@ -651,19 +653,39 @@ DECLARE
   v_grid jsonb;
   v_price double precision;
   v_idx int;
+  v_inflate_count int;
+  v_buy_count int;
+  v_buy_day text;
+  v_buy_count_today int;
+  v_today text;
 BEGIN
   IF p_level < 1 OR p_level > 35 THEN
     RETURN json_build_object('ok', false, 'reason', 'level out of range');
   END IF;
 
-  v_price := 100 * power(1.5, p_level);
+  v_today := to_char(now() AT TIME ZONE 'UTC', 'YYYY-MM-DD');
 
-  SELECT coins, grid INTO v_coins, v_grid
+  SELECT coins, grid, COALESCE(inflate_count, 0), COALESCE(buy_count, 0), buy_day, COALESCE(buy_count_today, 0)
+    INTO v_coins, v_grid, v_inflate_count, v_buy_count, v_buy_day, v_buy_count_today
   FROM users WHERE tg_id = p_tg_id FOR UPDATE;
 
   IF NOT FOUND THEN
     RETURN json_build_object('ok', false, 'reason', 'user not found');
   END IF;
+
+  -- 每日购买计数（UTC 0点 = 上海 8点 跨天重置）
+  IF v_buy_day IS DISTINCT FROM v_today THEN
+    v_buy_day := v_today;
+    v_buy_count_today := 0;
+  END IF;
+
+  -- 通胀：每天前 5 次免费，第 6 次起每次 +10%（×1.1）
+  IF v_buy_count_today >= 5 THEN
+    v_inflate_count := v_inflate_count + 1;
+  END IF;
+
+  -- 购买成本：100 × 2.2^(level-1) × 1.1^inflate_count（跨级倍率 2.2 > 算力倍率 1.8，成本压过收益）
+  v_price := 100 * power(2.2, p_level - 1) * power(1.1, v_inflate_count);
 
   IF v_coins < v_price THEN
     RETURN json_build_object('ok', false, 'reason', 'insufficient coins', 'price', v_price);
@@ -678,15 +700,20 @@ BEGIN
   END IF;
 
   v_grid := jsonb_set(v_grid, ARRAY[v_idx::text], to_jsonb(p_level));
+  v_buy_count := v_buy_count + 1;
+  v_buy_count_today := v_buy_count_today + 1;
 
   UPDATE users
   SET coins = coins - v_price,
       grid = v_grid,
-      buy_count = COALESCE(buy_count, 0) + 1,
+      buy_count = v_buy_count,
+      inflate_count = v_inflate_count,
+      buy_day = v_buy_day,
+      buy_count_today = v_buy_count_today,
       max_level = GREATEST(COALESCE(max_level, 0), p_level)
   WHERE tg_id = p_tg_id;
 
-  RETURN json_build_object('ok', true, 'level', p_level, 'price', v_price, 'grid', v_grid);
+  RETURN json_build_object('ok', true, 'level', p_level, 'price', v_price, 'grid', v_grid, 'inflate_count', v_inflate_count, 'buy_count', v_buy_count);
 END;
 $$ LANGUAGE plpgsql;
 
@@ -718,8 +745,8 @@ BEGIN
   v_grid := jsonb_set(v_grid, ARRAY[p_grid_index::text], 'null'::jsonb);
 
   IF p_cat_level < 35 THEN
-    -- 34级及以下：金币 = 购买价 50% = 100 * 1.5^level * 0.5
-    v_reward_coins := 100 * power(1.5, p_cat_level) * 0.5;
+    -- 34级及以下：金币 = 购买价 50% = 100 * 2.2^(level-1) * 0.5
+    v_reward_coins := 100 * power(2.2, p_cat_level - 1) * 0.5;
     UPDATE users SET grid = v_grid, coins = coins + v_reward_coins
     WHERE tg_id = p_tg_id;
     RETURN json_build_object('ok', true, 'type', 'coins', 'reward', v_reward_coins, 'grid', v_grid);

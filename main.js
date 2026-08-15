@@ -224,9 +224,9 @@ const WITHDRAW_MIN_USDT = 10;                  // 最低可提现 internal_usdt
 // ═══════ 数值模型（防刷铁律：价格由后端 buy_cat RPC 定价，前端不算价）═══════
 const EARN_BASE = 1;              // LV.1 基础算力 1/秒
 const EARN_RATIO = 1.8;          // 算力跨级倍率（严格 < 2，确保 1+1 < 2）
-const BUY_LV_GAP = 4;            // 可购最高等级 = maxUnlocked - 4
+const BUY_LV_GAP = 1;            // 可购最高等级 = maxUnlocked - 1
 const AD_LV_GAP = 5;             // 广告领取等级 = maxUnlocked - 5
-const SHOP_MAX_LV = 35;          // 商店最高可买等级（35级以上全靠合成/回收站变现）
+const SHOP_MAX_LV = 34;          // 商店最高可买 34 级（35级以上全靠合成/回收站变现）
 
 // 第 n 级猫的每秒产出算力 P_n = 1 × 1.8^(n-1)
 function lvEarnPerSec(lv) {
@@ -261,7 +261,7 @@ function maxUnlockedLv() {
   return max;
 }
 
-// 商店可购买最高等级 = min(maxUnlocked - 4, 36)，最低 1
+// 商店可购买最高等级 = min(maxUnlocked - 1, 34)，最低 1
 function shopMaxLv() {
   return Math.max(1, Math.min(maxUnlockedLv() - BUY_LV_GAP, SHOP_MAX_LV));
 }
@@ -271,7 +271,7 @@ function adRewardLv() {
   return Math.max(2, maxUnlockedLv() - AD_LV_GAP);
 }
 
-// 商店出售等级：先补买场上最低等级（低于 -4 目标时）往上合，打平后再买目标级
+// 商店出售等级：先补买场上最低等级（低于目标时）往上合，打平后再买目标级
 function buyLevel() {
   const targetLv = shopMaxLv();
   let minLv = null;
@@ -283,9 +283,9 @@ function buyLevel() {
   return targetLv;
 }
 
-// 商店锁定：历史最高等级达到 35 后锁定（35 级以上全靠合成/回收站变现）
+// 商店永不锁死：始终可按 shopMaxLv() 购买，保证 35 级后仍能买 32/33/34 级继续合成升级
 function shopLocked() {
-  return maxUnlockedLv() >= SHOP_MAX_LV;
+  return false;
 }
 
 // ═══════ 大数字格式化：K / M / B / T / Qa / Qi ═══════
@@ -793,8 +793,9 @@ function aiTick() {
   S.aiLock = true;
   try {
     // ① 从高等级到低等级扫一遍：找到有 2 只同级就合成
+    // 40 级是满级，不能再合成（否则会把两只 40 级猫“合”成一只，白亏一只）
     let merged = false;
-    for (let lv = MAX_LV; lv >= 1; lv--) {
+    for (let lv = MAX_LV - 1; lv >= 1; lv--) {
       let idx1 = -1, idx2 = -1;
       for (let i = 0; i < TOTAL; i++) {
         if (S.grid[i] !== lv) continue;
@@ -838,6 +839,8 @@ async function aiBuyCat() {
     const r = await callRpc('buy_cat', { level: lv });
     if (r && r.ok) {
       if (typeof r.price === 'number') S.usdt = parseFloat((S.usdt - r.price).toFixed(4));
+      if (typeof r.inflate_count === 'number') S.inflateCount = r.inflate_count;
+      if (typeof r.buy_count === 'number') S.buyCount = r.buy_count;
       applyGridFromRpc(r.grid);
       collect(lv);
       ui();
@@ -1742,7 +1745,7 @@ function setupCatTreeAutoReset() {
   }, { passive: true });
 }
 
-// ═══════ 购买（扣金币 + buyCount++ 触发通胀）═══════
+// ═══════ 购买（后端定价：含 2.2 成本 + 通胀，前端同步返回的计数）═══════
 async function buy() {
   if (shopLocked()) { toast(t('t_shop_locked'), 'warn'); return; }
   const lv = buyLevel();
@@ -1761,6 +1764,8 @@ async function buy() {
 
   // 一切以 RPC 返回为准：price 来自后端，grid 来自后端，前端不算价
   if (typeof r.price === 'number') S.usdt = parseFloat((S.usdt - r.price).toFixed(4));
+  if (typeof r.inflate_count === 'number') S.inflateCount = r.inflate_count;
+  if (typeof r.buy_count === 'number') S.buyCount = r.buy_count;
   applyGridFromRpc(r.grid);
   collect(lv);
   ui();
