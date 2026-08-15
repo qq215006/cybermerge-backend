@@ -764,19 +764,20 @@ BEGIN
     RETURN json_build_object('ok', false, 'reason', 'user not found');
   END IF;
 
-  -- 每日购买计数（UTC 0点 = 上海 8点 跨天重置）
+  -- 每日购买计数 + 通胀计数（UTC 0点 = 上海 8点 跨天重置）
   IF v_buy_day IS DISTINCT FROM v_today THEN
     v_buy_day := v_today;
     v_buy_count_today := 0;
+    v_inflate_count := 0;   -- 第二天通胀重置
   END IF;
 
-  -- 通胀：每天前 5 次免费，第 6 次起每次 +10%（×1.1）
+  -- 通胀：每天前 5 次免费，第 6 次起每次 +10%（×1.1），单日封顶 5 倍
   IF v_buy_count_today >= 5 THEN
     v_inflate_count := v_inflate_count + 1;
   END IF;
 
-  -- 购买成本：100 × 2.2^(level-1) × 1.1^inflate_count（跨级倍率 2.2 > 算力倍率 1.8，成本压过收益）
-  v_price := 100 * power(2.2, p_level - 1) * power(1.1, v_inflate_count);
+  -- 购买成本：100 × 2.2^(level-1) × min(1.1^inflate_count, 5)（跨级倍率 2.2 > 算力倍率 1.8，成本压过收益）
+  v_price := 100 * power(2.2, p_level - 1) * LEAST(power(1.1, v_inflate_count), 5.0);
 
   IF v_coins < v_price THEN
     RETURN json_build_object('ok', false, 'reason', 'insufficient coins', 'price', v_price);

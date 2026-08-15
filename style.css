@@ -1228,44 +1228,6 @@
   width: 100%;
 }
 
-/* 中间列：加速收益小按钮 + 买猫大按钮（纵向，权重 1，与左右 1.2 对齐） */
-.bottom-btn-group-mid {
-  flex: 1 0 0;
-}
-.bottom-btn-group-mid .bottom-btn-red-main {
-  flex: 1 0 auto;
-  height: auto;
-  min-height: 0;
-  align-self: stretch;
-}
-.ad-boost-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  width: 100%;
-  min-height: 28px;
-  padding: 4px 6px;
-  border-radius: 12px;
-  background: linear-gradient(180deg, #ffe082 0%, #ffb300 55%, #ff8f00 100%);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 900;
-  border: 2px solid #fff;
-  border-bottom: 3px solid #e65100;
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  text-shadow: 0 1px 1px rgba(0,0,0,0.25);
-  box-shadow: 0 2px 6px rgba(255,152,0,0.35);
-  font-family: inherit;
-  line-height: 1.1;
-}
-.ad-boost-btn .ab-icon { font-size: 13px; }
-.ad-boost-btn .ab-text { flex-shrink: 0; }
-.ad-boost-btn b { color: #fff9c4; }
-.ad-boost-btn:active { transform: translateY(1px); border-bottom-width: 1px; }
-
 /* ── 加速可产出按钮（左侧顶部，金币不够时高亮脉冲） —— 加大：高至少40px iPhone看得见 */
 .ad-reward-btn {
   width: 100%;

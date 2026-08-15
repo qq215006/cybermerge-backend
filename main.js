@@ -710,6 +710,7 @@ function resetDailyCountersIfNewDay() {
   S.adUsedToday = 0;
   S.wdAdUsed = 0;
   S.boostAdUsed = 0;
+  S.inflateCount = 0;   // 通胀每日重置
 }
 
 // ═══════ 赛季（7天一个赛季，每周一 08:00 北京时间重置，从第0赛季开始）═══════
@@ -1507,10 +1508,6 @@ function ui() {
     }
   }
 
-  // 加速收益广告按钮：显示今日剩余次数
-  const boostCountEl = document.getElementById('boost-count');
-  if (boostCountEl) boostCountEl.textContent = '(' + S.boostAdUsed + '/' + BOOST_AD_LIMIT + ')';
-
   // 智能合成按钮：跨 0 点检测 + 文案状态刷新
   checkDailyReset();
   updateAiBtn();
@@ -1804,7 +1801,16 @@ async function buy() {
 
   if (!r || r.ok === false) {
     if (r && r.reason === 'insufficient coins') {
-      toast('金币不足，观看广告后领取加速收益立马到账', 'warn');
+      if (S.boostAdUsed >= BOOST_AD_LIMIT) {
+        toast('今日权益已用完', 'warn');
+      } else {
+        confirmAd({
+          icon: '⚡',
+          title: '观看广告后领取加速收益立马到账',
+          desc: '当前加速收益：' + fmtNum(totalEarnPerSec() * 3) + ' ' + t('level_coins_suf') + '（今日剩余 ' + (BOOST_AD_LIMIT - S.boostAdUsed) + ' 次）',
+          onOk: boostAd
+        });
+      }
     } else if (r && r.reason === 'grid full') {
       toast(t('t_grid_full_buy'), 'warn');
     } else {
@@ -2854,7 +2860,6 @@ function btn(){
   });
 
   document.getElementById('btn-merge')?.addEventListener('click',buy);
-  document.getElementById('btn-ad-boost')?.addEventListener('click', boostAd);
   // 推特赚金：点击生成 9:16 海报 → 预览 → 分享 X
   document.getElementById('btn-twitter')?.addEventListener('click', openPoster);
   document.getElementById('poster-close')?.addEventListener('click', closePoster);
