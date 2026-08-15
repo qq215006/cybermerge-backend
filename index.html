@@ -98,7 +98,7 @@
     </header>
 
     <!-- ═══════════ S1 赛季大奖池横幅 ═══════════ -->
-    <section id="season-banner" class="season-banner shrink-0 mx-2 mt-1">
+    <section id="season-banner" class="season-banner shrink-0 mt-1">
       <div class="season-banner-left">
         <span class="season-banner-title" id="season-banner-title">🏆 S1 赛季瓜分</span>
         <span class="season-banner-countdown" id="season-countdown-banner">0天 0时 0分 0秒</span>
@@ -110,7 +110,7 @@
     </section>
 
     <!-- ═══════════ 快捷功能小圆标（横排居中） ═══════════ -->
-    <nav id="quick-actions" class="quick-actions shrink-0 mx-2 mt-1">
+    <nav id="quick-actions" class="quick-actions shrink-0 mt-1">
       <button id="btn-leaderboard" class="quick-action" type="button">🏆 <span data-i18n="quick_leaderboard">全球天梯</span></button>
       <button id="btn-community" class="quick-action" type="button">📢 <span data-i18n="quick_community">官方社区</span></button>
       <button id="btn-invite" class="quick-action" type="button">💌 <span data-i18n="quick_invite">邀请赚U</span></button>
@@ -118,98 +118,37 @@
     </nav>
 
     <!-- ═══════════ 核心游戏区 ═══════════ -->
-    <main id="game-area" class="flex-1 flex flex-col items-center justify-center px-2 min-h-0">
+    <main id="game-area" class="flex-1 flex flex-col items-center justify-center min-h-0">
       <!-- 猫抓板上方悬浮小喇叭：全服喜讯排队滚动播报 -->
       <div id="broadcast-bar" class="broadcast-bar">
-        <span class="broadcast-icon">📢</span>
         <div class="broadcast-track"><span class="broadcast-text" id="broadcast-text"></span></div>
       </div>
 
-      <!-- 猫爬架：一根弯曲柱 + 16 个猫盘，可上下滚动 -->
+      <!-- 猫爬架：4 根横杆，每根 4 个猫盘，向下滚动 -->
       <div id="board-frame">
-        <svg class="cattree-svg" viewBox="0 0 320 2400" preserveAspectRatio="none">
-          <!-- 枝干：先画，在主干背后 -->
-          <g stroke="#9a6a3a" stroke-width="22" stroke-linecap="round" fill="none">
-            <path d="M135,2210 C 105,2200 80,2190 55,2183"/>
-            <path d="M135,1930 C 105,1920 80,1910 55,1903"/>
-            <path d="M135,1510 C 105,1500 80,1490 55,1483"/>
-            <path d="M135,1230 C 105,1220 80,1210 55,1203"/>
-            <path d="M135,810  C 105,800  80,790  55,783"/>
-            <path d="M135,530  C 105,520  80,510  55,503"/>
-            <path d="M185,2070 C 215,2060 240,2050 265,2043"/>
-            <path d="M185,1790 C 215,1780 240,1770 265,1763"/>
-            <path d="M185,1370 C 215,1360 240,1350 265,1343"/>
-            <path d="M185,1090 C 215,1080 240,1070 265,1063"/>
-            <path d="M185,670  C 215,660  240,650  265,643"/>
-            <path d="M185,390  C 215,380  240,370  265,363"/>
-          </g>
-          <!-- 枝干：麻绳缠绕细缝 -->
-          <g stroke="#7a4e28" stroke-width="22" stroke-dasharray="0.5 1.5" fill="none" opacity="0.6">
-            <path d="M135,2210 C 105,2200 80,2190 55,2183"/>
-            <path d="M135,1930 C 105,1920 80,1910 55,1903"/>
-            <path d="M135,1510 C 105,1500 80,1490 55,1483"/>
-            <path d="M135,1230 C 105,1220 80,1210 55,1203"/>
-            <path d="M135,810  C 105,800  80,790  55,783"/>
-            <path d="M135,530  C 105,520  80,510  55,503"/>
-            <path d="M185,2070 C 215,2060 240,2050 265,2043"/>
-            <path d="M185,1790 C 215,1780 240,1770 265,1763"/>
-            <path d="M185,1370 C 215,1360 240,1350 265,1343"/>
-            <path d="M185,1090 C 215,1080 240,1070 265,1063"/>
-            <path d="M185,670  C 215,660  240,650  265,643"/>
-            <path d="M185,390  C 215,380  240,370  265,363"/>
-          </g>
-          <!-- 主干：后画，盖在枝干根部上 -->
-          <polyline points="160,2380 135,2210 185,2070 135,1930 185,1790 160,1650 135,1510 185,1370 135,1230 185,1090 160,950 135,810 185,670 135,530 185,390 160,250"
-                fill="none" stroke="#9a6a3a" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
-          <!-- 主干：麻绳一圈圈细缝 -->
-          <polyline points="160,2380 135,2210 185,2070 135,1930 185,1790 160,1650 135,1510 185,1370 135,1230 185,1090 160,950 135,810 185,670 135,530 185,390 160,250"
-                fill="none" stroke="#7a4e28" stroke-width="42" stroke-dasharray="0.7 2" stroke-linejoin="round" opacity="0.6"/>
-        </svg>
+        <div class="cattree-bar" data-bar="0"></div>
+        <div class="cattree-bar" data-bar="1"></div>
+        <div class="cattree-bar" data-bar="2"></div>
+        <div class="cattree-bar" data-bar="3"></div>
         <div id="matrix-grid"></div>
       </div>
 
-      <!-- 动态空投层（网格两侧边缘随机生成补给箱） -->
-      <div id="airdrop-layer"></div>
     </main>
 
-    <!-- ═══════════ 底部导航栏 ═══════════ -->
-    <nav id="bottom-bar" class="
-      flex items-end justify-between
-      px-3 pb-[calc(env(safe-area-inset-bottom,8px)+8px)]
-      shrink-0
-      gap-2
-    ">
-      <!-- 左：每日签到（开启智能合成） + 推特赚金 -->
-      <div class="bottom-btn-group bottom-btn-group-left">
-        <button id="btn-daily-checkin" class="ai-merge-btn">🎯 每日签到</button>
-        <button id="btn-twitter" class="bottom-btn bottom-btn-yellow">
-          <div class="bb-cat-icon"></div>
-          <div class="bb-center">
-            <span class="bb-title" data-i18n="twitter_btn">推特赚金</span>
-            <span class="bb-sub" data-i18n="twitter_sub">X / Share</span>
-          </div>
-        </button>
-      </div>
-
-      <!-- 中：买猫 / 官方回收站（拖拽时变身） -->
-      <button id="btn-merge" class="bottom-btn bottom-btn-red bottom-btn-red-main">
+    <!-- ═══════════ 底部导航栏（4 个圆形透明气泡按钮） ═══════════ -->
+    <nav id="bottom-bar">
+      <button id="btn-daily-checkin" class="ai-merge-btn bubble-btn" type="button">⚡</button>
+      <button id="btn-twitter" class="bubble-btn bubble-twitter" type="button">🐦</button>
+      <button id="btn-merge" class="bubble-btn bubble-buy" type="button">
         <img id="buy-cat-float" class="buy-cat-float" src="/cats_new/LV.1.png" alt="" draggable="false" />
-        <span class="bb-coin-icon" id="bb-coin-icon">❤️</span>
-        <span class="bb-lv-label" id="bb-lv-label">买 LV.1</span>
+        <span id="bb-coin-icon" class="bb-coin-icon">❤️</span>
       </button>
-
-      <!-- 右：猫咪图鉴 -->
-      <div class="bottom-btn-group">
-        <button id="btn-ads" class="bottom-btn bottom-btn-yellow">
-          <div class="bb-cat-icon bb-cat-icon-right"></div>
-          <div class="bb-center">
-            <span class="bb-title" data-i18n="pokedex_btn">猫咪图鉴</span>
-            <span class="bb-sub" id="pokedex-count">0/40</span>
-          </div>
-        </button>
-      </div>
+      <button id="btn-ads" class="bubble-btn bubble-pokedex" type="button">🐾</button>
     </nav>
   </div>
+
+  <!-- ═══════════ 动态空投层（body 直接子级，脱离 #app 的 z-index 2，确保 TG 内也可见） ═══════════ -->
+  <div id="airdrop-layer"></div>
 
   <!-- ═══════════ 猫咪图鉴弹窗 ═══════════ -->
   <div id="pokedex-modal" class="pokedex-modal">
