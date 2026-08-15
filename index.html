@@ -31,6 +31,8 @@
 
   <!-- 房间背景装饰层 -->
   <div id="room-bg">
+    <!-- 动态视频背景（静音循环自动播放，铺满整屋） -->
+    <video class="bg-video" src="/bg.mp4" poster="/poster.jpg" autoplay muted loop playsinline webkit-playsinline></video>
     <!-- 左：窗户 + 窗帘 -->
     <div class="room-window">
       <div class="window-frame">
@@ -76,7 +78,7 @@
   ">
 
     <!-- ═══════════ 顶部区域 ═══════════ -->
-    <header id="top-bar" class="shrink-0 px-2 pt-2">
+    <header id="top-bar" class="shrink-0 pt-1">
       <!-- 第一层：HUD 个人数据总览（整条通栏为全局热区，点击从右侧滑出个人中心） -->
       <div class="hud-panel" id="hud-panel">
         <div class="hud-profile">
@@ -96,7 +98,7 @@
     </header>
 
     <!-- ═══════════ S1 赛季大奖池横幅 ═══════════ -->
-    <section id="season-banner" class="season-banner shrink-0 mx-2 mt-2">
+    <section id="season-banner" class="season-banner shrink-0 mx-2 mt-1">
       <div class="season-banner-left">
         <span class="season-banner-title" id="season-banner-title">🏆 S1 赛季瓜分</span>
         <span class="season-banner-countdown" id="season-countdown-banner">0天 0时 0分 0秒</span>
@@ -108,7 +110,7 @@
     </section>
 
     <!-- ═══════════ 快捷功能小圆标（横排居中） ═══════════ -->
-    <nav id="quick-actions" class="quick-actions shrink-0 mx-2 mt-2">
+    <nav id="quick-actions" class="quick-actions shrink-0 mx-2 mt-1">
       <button id="btn-leaderboard" class="quick-action" type="button">🏆 <span data-i18n="quick_leaderboard">全球天梯</span></button>
       <button id="btn-community" class="quick-action" type="button">📢 <span data-i18n="quick_community">官方社区</span></button>
       <button id="btn-invite" class="quick-action" type="button">💌 <span data-i18n="quick_invite">邀请赚U</span></button>
@@ -123,15 +125,47 @@
         <div class="broadcast-track"><span class="broadcast-text" id="broadcast-text"></span></div>
       </div>
 
-      <!-- 网格：奶白色卡片 + 粉橙色爪印圆盘 -->
+      <!-- 猫爬架：一根弯曲柱 + 16 个猫盘，可上下滚动 -->
       <div id="board-frame">
-        <div id="matrix-grid" class="
-          grid grid-cols-4 grid-rows-4
-          w-full max-w-[320px]
-          aspect-square
-          relative gap-[11px]
-        ">
-        </div>
+        <svg class="cattree-svg" viewBox="0 0 320 2400" preserveAspectRatio="none">
+          <!-- 枝干：先画，在主干背后 -->
+          <g stroke="#9a6a3a" stroke-width="22" stroke-linecap="round" fill="none">
+            <path d="M135,2210 C 105,2200 80,2190 55,2183"/>
+            <path d="M135,1930 C 105,1920 80,1910 55,1903"/>
+            <path d="M135,1510 C 105,1500 80,1490 55,1483"/>
+            <path d="M135,1230 C 105,1220 80,1210 55,1203"/>
+            <path d="M135,810  C 105,800  80,790  55,783"/>
+            <path d="M135,530  C 105,520  80,510  55,503"/>
+            <path d="M185,2070 C 215,2060 240,2050 265,2043"/>
+            <path d="M185,1790 C 215,1780 240,1770 265,1763"/>
+            <path d="M185,1370 C 215,1360 240,1350 265,1343"/>
+            <path d="M185,1090 C 215,1080 240,1070 265,1063"/>
+            <path d="M185,670  C 215,660  240,650  265,643"/>
+            <path d="M185,390  C 215,380  240,370  265,363"/>
+          </g>
+          <!-- 枝干：麻绳缠绕细缝 -->
+          <g stroke="#7a4e28" stroke-width="22" stroke-dasharray="0.5 1.5" fill="none" opacity="0.6">
+            <path d="M135,2210 C 105,2200 80,2190 55,2183"/>
+            <path d="M135,1930 C 105,1920 80,1910 55,1903"/>
+            <path d="M135,1510 C 105,1500 80,1490 55,1483"/>
+            <path d="M135,1230 C 105,1220 80,1210 55,1203"/>
+            <path d="M135,810  C 105,800  80,790  55,783"/>
+            <path d="M135,530  C 105,520  80,510  55,503"/>
+            <path d="M185,2070 C 215,2060 240,2050 265,2043"/>
+            <path d="M185,1790 C 215,1780 240,1770 265,1763"/>
+            <path d="M185,1370 C 215,1360 240,1350 265,1343"/>
+            <path d="M185,1090 C 215,1080 240,1070 265,1063"/>
+            <path d="M185,670  C 215,660  240,650  265,643"/>
+            <path d="M185,390  C 215,380  240,370  265,363"/>
+          </g>
+          <!-- 主干：后画，盖在枝干根部上 -->
+          <polyline points="160,2380 135,2210 185,2070 135,1930 185,1790 160,1650 135,1510 185,1370 135,1230 185,1090 160,950 135,810 185,670 135,530 185,390 160,250"
+                fill="none" stroke="#9a6a3a" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- 主干：麻绳一圈圈细缝 -->
+          <polyline points="160,2380 135,2210 185,2070 135,1930 185,1790 160,1650 135,1510 185,1370 135,1230 185,1090 160,950 135,810 185,670 135,530 185,390 160,250"
+                fill="none" stroke="#7a4e28" stroke-width="42" stroke-dasharray="0.7 2" stroke-linejoin="round" opacity="0.6"/>
+        </svg>
+        <div id="matrix-grid"></div>
       </div>
 
       <!-- 动态空投层（网格两侧边缘随机生成补给箱） -->

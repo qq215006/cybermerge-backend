@@ -365,46 +365,46 @@ window.setTimerNum = setTimerNum;
 // ═══════ 40 级真实猫咪图鉴 ═══════
 const CATS = [
   null,
-  { img:'/cats/LV.1.png',  name:'小奶猫' },
-  { img:'/cats/LV.2.png',  name:'狸花猫' },
-  { img:'/cats/LV.3.png',  name:'橘猫' },
-  { img:'/cats/LV.4.png',  name:'三花猫' },
-  { img:'/cats/LV.5.png',  name:'奶牛猫' },
-  { img:'/cats/LV.6.png',  name:'黑猫' },
-  { img:'/cats/LV.7.png',  name:'白猫' },
-  { img:'/cats/LV.8.png',  name:'暹罗猫' },
-  { img:'/cats/LV.9.png',  name:'波斯猫' },
-  { img:'/cats/LV.10.png', name:'英短猫' },
-  { img:'/cats/LV.11.png', name:'美短猫' },
-  { img:'/cats/LV.12.png', name:'布偶猫' },
-  { img:'/cats/LV.13.png', name:'金吉拉' },
-  { img:'/cats/LV.14.png', name:'蓝猫' },
-  { img:'/cats/LV.15.png', name:'银渐层' },
-  { img:'/cats/LV.16.png', name:'金渐层' },
-  { img:'/cats/LV.17.png', name:'起司猫' },
-  { img:'/cats/LV.18.png', name:'矮脚猫' },
-  { img:'/cats/LV.19.png', name:'卷耳猫' },
-  { img:'/cats/LV.20.png', name:'折耳猫' },
-  { img:'/cats/LV.21.png', name:'缅因猫' },
-  { img:'/cats/LV.22.png', name:'挪威森林' },
-  { img:'/cats/LV.23.png', name:'西伯利亚' },
-  { img:'/cats/LV.24.png', name:'阿比猫' },
-  { img:'/cats/LV.25.png', name:'索马里' },
-  { img:'/cats/LV.26.png', name:'东方短毛' },
-  { img:'/cats/LV.27.png', name:'柯尼斯' },
-  { img:'/cats/LV.28.png', name:'德文卷' },
-  { img:'/cats/LV.29.png', name:'塞尔凯克' },
-  { img:'/cats/LV.30.png', name:'孟买豹猫' },
-  { img:'/cats/LV.31.png', name:'埃及猫' },
-  { img:'/cats/LV.32.png', name:'新加坡猫' },
-  { img:'/cats/LV.33.png', name:'日本短尾' },
-  { img:'/cats/LV.34.png', name:'巴厘猫' },
-  { img:'/cats/LV.35.png', name:'爪哇猫' },
-  { img:'/cats/LV.36.png', name:'拉邦猫' },
-  { img:'/cats/LV.37.png', name:'波米拉' },
-  { img:'/cats/LV.38.png', name:'曼基康' },
-  { img:'/cats/LV.39.png', name:'拿破仑' },
-  { img:'/cats/LV.40.png', name:'招财神猫' },
+  { img:'/cats_new/LV.1.png',  name:'小奶猫' },
+  { img:'/cats_new/LV.2.png',  name:'狸花猫' },
+  { img:'/cats_new/LV.3.png',  name:'橘猫' },
+  { img:'/cats_new/LV.4.png',  name:'三花猫' },
+  { img:'/cats_new/LV.5.png',  name:'奶牛猫' },
+  { img:'/cats_new/LV.6.png',  name:'黑猫' },
+  { img:'/cats_new/LV.7.png',  name:'白猫' },
+  { img:'/cats_new/LV.8.png',  name:'暹罗猫' },
+  { img:'/cats_new/LV.9.png',  name:'波斯猫' },
+  { img:'/cats_new/LV.10.png', name:'英短猫' },
+  { img:'/cats_new/LV.11.png', name:'美短猫' },
+  { img:'/cats_new/LV.12.png', name:'布偶猫' },
+  { img:'/cats_new/LV.13.png', name:'金吉拉' },
+  { img:'/cats_new/LV.14.png', name:'蓝猫' },
+  { img:'/cats_new/LV.15.png', name:'银渐层' },
+  { img:'/cats_new/LV.16.png', name:'金渐层' },
+  { img:'/cats_new/LV.17.png', name:'起司猫' },
+  { img:'/cats_new/LV.18.png', name:'矮脚猫' },
+  { img:'/cats_new/LV.19.png', name:'卷耳猫' },
+  { img:'/cats_new/LV.20.png', name:'折耳猫' },
+  { img:'/cats_new/LV.21.png', name:'缅因猫' },
+  { img:'/cats_new/LV.22.png', name:'挪威森林' },
+  { img:'/cats_new/LV.23.png', name:'西伯利亚' },
+  { img:'/cats_new/LV.24.png', name:'阿比猫' },
+  { img:'/cats_new/LV.25.png', name:'索马里' },
+  { img:'/cats_new/LV.26.png', name:'东方短毛' },
+  { img:'/cats_new/LV.27.png', name:'柯尼斯' },
+  { img:'/cats_new/LV.28.png', name:'德文卷' },
+  { img:'/cats_new/LV.29.png', name:'塞尔凯克' },
+  { img:'/cats_new/LV.30.png', name:'孟买豹猫' },
+  { img:'/cats_new/LV.31.png', name:'埃及猫' },
+  { img:'/cats_new/LV.32.png', name:'新加坡猫' },
+  { img:'/cats_new/LV.33.png', name:'日本短尾' },
+  { img:'/cats_new/LV.34.png', name:'巴厘猫' },
+  { img:'/cats_new/LV.35.png', name:'爪哇猫' },
+  { img:'/cats_new/LV.36.png', name:'拉邦猫' },
+  { img:'/cats_new/LV.37.png', name:'波米拉' },
+  { img:'/cats_new/LV.38.png', name:'曼基康' },
+  { img:'/cats_new/LV.39.png', name:'拿破仑' },
+  { img:'/cats_new/LV.40.png', name:'招财神猫' },
 ];
 
 // ═══════ 猫咪名称三语（catName() 按当前语言返回，缺省回退中文）═══════
@@ -496,7 +496,7 @@ const WD_MILESTONES = [
   { lv: 10, rate: 1,   icon: null,               noteKey: null },
   { lv: 20, rate: 5,   icon: null,               noteKey: null },
   { lv: 27, rate: 20,  icon: null,               noteKey: null },
-  { lv: 40, rate: 100, icon: '/cats/LV.40.png',  noteKey: 'wd_ms_dividend' },  // 终极信仰：财神猫
+  { lv: 40, rate: 100, icon: '/cats_new/LV.40.png',  noteKey: 'wd_ms_dividend' },  // 终极信仰：财神猫
 ];
 // 根据当前等级返回提现比例（%）
 function withdrawRate(lv) {
@@ -1209,6 +1209,8 @@ async function syncBackend() {
     refreshWalletUI();
     applyI18n();
   }
+
+  autoScrollCatTree();   // 云端/本地存档加载后自动滚动到猫的位置
 }
 
 // ═══════ Toast ═══════
@@ -1449,13 +1451,13 @@ function ui() {
   if (usdtEl) usdtEl.textContent = '$' + (Number(S.internalUsdt) || 0).toFixed(2);
   // HUD 昵称 / 邀请数 / 广告贡献度
   const nameEl = document.getElementById('hud-name');
-  if (nameEl) nameEl.textContent = S.username || 'Player';
+  if (nameEl) nameEl.textContent = [...(S.username || 'Player')].slice(0, 6).join('');
   const inviteEl = document.getElementById('hud-invite');
   if (inviteEl) inviteEl.textContent = String(S.inviteCount || 0);
   const adcontEl = document.getElementById('hud-adcont');
   if (adcontEl) adcontEl.textContent = String(S.adContribution || 0);
   const avatarEl = document.getElementById('hud-avatar');
-  if (avatarEl) avatarEl.src = '/cats/LV.' + userLv + '.png';
+  if (avatarEl) avatarEl.src = '/cats_new/LV.' + userLv + '.png';
   if (progCurLv) progCurLv.textContent = userLv;
   if (progBarFill) {
     const pct = Math.min(100, (userLv / 40) * 100);
@@ -1518,7 +1520,7 @@ function ui() {
 }
 
 function makePet(lv) {
-  let c = CATS[lv] || { img:'/cats/LV.40.png', name:'神秘喵·'+lv };
+  let c = CATS[lv] || { img:'/cats_new/LV.40.png', name:'神秘喵·'+lv };
   let card = d('div','pet-card');
   card.dataset.level = lv;
   let d1 = (Math.random()*2).toFixed(2)+'s';
@@ -1527,12 +1529,17 @@ function makePet(lv) {
   card.style.setProperty('--breathe-delay', d1);
   card.style.setProperty('--head-delay',   d2);
   card.style.setProperty('--tail-delay',  d3);
-  let lvScale = Math.min(1.0 + (lv - 1) * 0.04, 1.8).toFixed(3);
+  // 身体轻微摇摆：随机节奏，让猫更自然
+  card.style.setProperty('--sway-dur', (3.5 + Math.random() * 3).toFixed(2) + 's');
+  card.style.setProperty('--sway-delay', (Math.random() * 2).toFixed(2) + 's');
+  let lvScale = 1.0;   // 猫咪统一大小，等级用 LV 标签区分
   card.innerHTML =
-    '<span class="pet-lv-badge">'+lv+'</span>' +
-    '<div class="pet-tail-wag">' +
-      '<div class="pet-head">' +
-        '<img class="pet-img" data-lv="'+lv+'" src="'+c.img+'" alt="'+catName(lv)+'" draggable="false" style="--lv-scale:'+lvScale+'" />' +
+    '<div class="pet-mover">' +
+      '<span class="pet-lv-badge">'+lv+'</span>' +
+      '<div class="pet-tail-wag">' +
+        '<div class="pet-head">' +
+          '<img class="pet-img" data-lv="'+lv+'" src="'+c.img+'" alt="'+catName(lv)+'" draggable="false" style="--lv-scale:'+lvScale+'" />' +
+        '</div>' +
       '</div>' +
     '</div>';
   return card;
@@ -1565,7 +1572,7 @@ function makeNewbieLock() {
   card.innerHTML =
     '<span class="pet-lv-badge">35</span>' +
     '<div class="newbie-lock-inner">' +
-      '<img class="pet-img newbie-lock-img" src="/cats/LV.35.png" alt="锁定的35级猫" draggable="false" />' +
+      '<img class="pet-img newbie-lock-img" src="/cats_new/LV.35.png" alt="锁定的35级猫" draggable="false" />' +
       '<span class="newbie-crown">👑</span>' +
       '<span class="newbie-lock-icon">🔒</span>' +
       '<span class="newbie-progress">99%</span>' +
@@ -1640,11 +1647,77 @@ function sortGrid() {
   S.grid = cats;
   // 全量重绘（保持视觉与数据一致）
   for (let i = 0; i < TOTAL; i++) draw(i);
+  autoScrollCatTree();   // 合成排序后自动滚动
 }
 
 function grid() {
   g = document.getElementById('matrix-grid'); if(!g) return;
-  g.innerHTML=''; for(let i=0;i<TOTAL;i++){ let s=d('div','matrix-slot'); s.dataset.index=i; g.appendChild(s); } all();
+  g.innerHTML='';
+  for(let i=0;i<TOTAL;i++){ let s=d('div','matrix-slot'); s.dataset.index=i; g.appendChild(s); }
+  requestAnimationFrame(() => { placeCats(); all(); });
+}
+
+// ═══════ 16 只猫站在一根弯曲猫爬架的猫盘上（垂直长条，间距大、参差错开） ═══════
+function placeCats() {
+  if(!g) return;
+  const size = 92;
+  // 16 个猫盘坐标（相对 matrix-grid 320×2400，x/y 为猫盘中心，对齐弯曲柱子）
+  const dishes = [
+    { x: 160, y: 2350 },   // 底座（中）
+    { x:  55, y: 2160 },   // 左（枝干末端）
+    { x: 265, y: 2020 },   // 右
+    { x:  55, y: 1880 },   // 左
+    { x: 265, y: 1740 },   // 右
+    { x: 160, y: 1650 },   // 中
+    { x:  55, y: 1460 },   // 左
+    { x: 265, y: 1320 },   // 右
+    { x:  55, y: 1180 },   // 左
+    { x: 265, y: 1040 },   // 右
+    { x: 160, y:  950 },   // 中
+    { x:  55, y:  760 },   // 左
+    { x: 265, y:  620 },   // 右
+    { x:  55, y:  480 },   // 左
+    { x: 265, y:  340 },   // 右
+    { x: 160, y:  250 },   // 顶部（中）
+  ];
+  for (let i = 0; i < TOTAL; i++) {
+    const s = g.children[i];
+    if (!s) continue;
+    const d = dishes[i] || dishes[dishes.length - 1];
+    s.style.left = (d.x - size / 2).toFixed(1) + 'px';
+    s.style.top = (d.y - size / 2).toFixed(1) + 'px';
+  }
+
+  // 默认自动滚动到合适位置
+  autoScrollCatTree();
+}
+
+// ═══════ 猫爬架自动滚动：有猫跟随最上面的猫，无猫显示顶部3盘；顶端不超过喇叭 ═══════
+function autoScrollCatTree() {
+  const ga = document.getElementById('game-area');
+  if (!ga || !g) return;
+  // 找最上面有猫的盘（最小 offsetTop）
+  let topY = Infinity;
+  for (let i = 0; i < TOTAL; i++) {
+    if (S.grid[i] !== null && g.children[i]) {
+      const y = g.children[i].offsetTop;
+      if (y < topY) topY = y;
+    }
+  }
+  if (topY === Infinity) {
+    // 无猫：显示顶部 3 盘（LV.14/15/16 完整可见），第3盘底部抬高，避免被底部「每日签到」按钮遮挡
+    const top3 = g.children[13];
+    if (top3) {
+      // 用视口坐标换算滚动内容坐标（offsetTop 会漏掉喇叭/容器顶部偏移，导致第3盘被底部按钮压住）
+      const gaRect = ga.getBoundingClientRect();
+      const r = top3.getBoundingClientRect();
+      const bottomInContent = r.bottom - gaRect.top + ga.scrollTop;
+      ga.scrollTop = Math.max(0, bottomInContent - ga.clientHeight + 32);
+    }
+  } else {
+    // 有猫：滚动让最上面的猫出现在喇叭下方
+    ga.scrollTop = Math.max(0, topY - 8);
+  }
 }
 
 // ═══════ 购买（扣金币 + buyCount++ 触发通胀）═══════
@@ -1671,6 +1744,7 @@ async function buy() {
   ui();
   toast(t('t_got_cat').replace('{name}', catName(lv)).replace('{lv}', lv), 'success');
   saveLocal();
+  autoScrollCatTree();   // 买猫后自动滚动到新猫位置
 }
 
 // ═══════ 加速可产出（看 Adsgram 广告，成功看完才给猫）═══════
@@ -1694,6 +1768,7 @@ function watchAd() {
     collect(lv);
     toast(t('t_accel_success').replace('{name}', catName(lv)).replace('{lv}', lv),'success');
     saveCloudNow();   // 广告奖励后立即云同步
+    autoScrollCatTree();   // 广告得猫后自动滚动
   };
 
   // 接入 Adsgram 广告
@@ -1826,6 +1901,7 @@ async function doRecycle(index, level) {
   }
   ui();
   saveLocal();
+  autoScrollCatTree();   // 回收后自动滚动
 }
 
 // ═══════ 新人 35 级猫（99% 锁 → 看广告解锁）═══════
@@ -1841,6 +1917,7 @@ async function claimNewbieCat() {
   collect(35);
   ui();
   saveLocal();
+  autoScrollCatTree();   // 新人猫后自动滚动
 }
 
 // ═══════ S1 奖池横幅：轮询 global_stats + CountUp 平滑滚动 ═══════
@@ -2189,7 +2266,7 @@ function renderProfile() {
   set('pf-rate', withdrawRate(userLv) + '%');
   set('pf-ref', S.refCode || '-');
   const avatar = document.getElementById('pf-avatar');
-  if (avatar) avatar.src = '/cats/LV.' + userLv + '.png';
+  if (avatar) avatar.src = '/cats_new/LV.' + userLv + '.png';
   const walletBtn = document.querySelector('#pf-connect-wallet span');
   if (walletBtn) walletBtn.textContent = wallet.address ? shortAddr(wallet.address) : t('profile_wallet');
 }

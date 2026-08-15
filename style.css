@@ -111,6 +111,17 @@
     );
 }
 
+/* 动态视频背景：铺满房间，覆盖静态 CSS 房间作为主背景 */
+.bg-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 2;
+  pointer-events: none;
+}
+
 /* 地板（底部木纹）——颜色调成暖橘棕，避免和爪盘色差大 */
 #room-bg::after {
   content: '';
@@ -768,29 +779,16 @@
 #board-frame {
   width: 100%;
   max-width: 375px;
-  padding: 12px;
-  border-radius: 28px;
-  background: linear-gradient(180deg, #fffdf6 0%, #fef1dd 60%, #fde3c0 100%);
-  border: 2.5px solid #d9b686;
-  border-bottom: 6px solid #b4884b;
-  box-shadow:
-    inset 0 2px 0 rgba(255,255,255,0.95),
-    inset 0 -3px 8px rgba(140,90,30,0.12),
-    0 10px 28px rgba(120,70,20,0.18),
-    0 0 0 2px rgba(255,255,255,0.4) inset;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
   position: relative;
-  /* 木纹边角点缀：上下两条横线装饰 */
 }
 #board-frame::before, #board-frame::after {
-  content: '';
-  position: absolute;
-  left: 10%; right: 10%;
-  height: 3px;
-  border-radius: 3px;
-  background: rgba(140,90,30,0.08);
+  content: none;
 }
-#board-frame::before { top: 6px; }
-#board-frame::after { bottom: 6px; }
 
 #game-area {
   padding: 4px 4px 2px;
@@ -798,80 +796,105 @@
   flex: 1 1 auto;
   min-height: 0;
   max-height: 100%;
-  justify-content: flex-start !important;   /* 覆盖 tailwind 的 justify-center，布局从上往下排 */
+  justify-content: flex-start !important;
   align-items: center !important;
-  overflow: hidden;
+  overflow-y: auto;                      /* 猫爬架上下滚动，查看全部 16 只猫 */
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 #board-frame {
-  max-width: 370px !important;            /* 340 → 370：整体放大+30px */
-  width: 100% !important;
-  padding: 12px !important;               /* 10 → 12：内部留白更宽松，爪垫呼吸感更强 */
-  margin: auto 0 20px 0 !important;       /* 底部 16→20：留出滚动空间，最后一行不被滚动条/底栏挡住 */
-  /* margin-top:auto 吃掉上方所有剩余空间 → 16格自动贴底，顶部留空给用户的其他功能 */
-  flex-shrink: 0 !important;              /* 防压缩：小屏时猫盘不缩小，16格完整露出 */
-  max-height: 55vh !important;            /* 限制最大高度，小屏时内部可滚动，不被底部按钮压住 */
-  overflow-y: auto !important;            /* 猫盘内容超出时可上下滑动 */
-  -webkit-overflow-scrolling: touch;      /* iOS 丝般顺滑滚动 */
+  position: relative;                     /* 猫爬架：垂直长条，可上下滚动 */
+  width: 320px;
+  height: 2400px;
+  margin: 0 auto;
+  padding: 0;
+  overflow: visible;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  pointer-events: none;                   /* 层穿透，猫咪 slot 可拖拽 */
+  flex-shrink: 0;
 }
 
-/* grid gap 收紧（防止整体过宽） */
+/* 弯曲猫爬架柱子 */
+.cattree-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 猫咪自由散布层：去掉 4x4 网格，改为全屏定位层，JS 随机摆放 */
 #matrix-grid {
-  gap: 12px !important;                  /* 11 → 12：配合整体放大，每格之间间隙更舒服 */
-  max-width: 100% !important;            /* ⚠ 覆盖 HTML tailwind max-w-[320px]，让grid填满board-frame，真的放大 */
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: block !important;
+  aspect-ratio: auto !important;
+  gap: 0 !important;
+  max-width: none !important;
+  margin: 0 !important;
 }
 
-/* 猫爪垫（奶油米黄 + 淡桃棕 → 全屋暖色系统一，不再偏粉橘） */
+/* 猫盘站位：slot 透明，猫盘由 slot::before 提供 */
 .matrix-slot {
+  position: absolute;
+  width: 92px;
+  height: 92px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  position: relative;
-  aspect-ratio: 1 / 1;
-  border-radius: 50%;
-  background: radial-gradient(circle at 50% 28%,
-    #fffbf0 0%,     /* 顶部：非常浅的奶白（和房间墙面顶部一致） */
-    #fff1d6 42%,    /* 中段：浅奶油黄 */
-    #f9e0b8 78%,    /* 下部：淡桃棕（木色浅色） */
-    #edcc97 100%    /* 边缘：暖橘棕（和地板颜色呼应） */
-  );
-  box-shadow:
-    inset 0 3px 6px rgba(255,255,255,0.92),
-    inset 0 -5px 9px rgba(180,120,60,0.22),
-    0 4px 8px rgba(140,85,25,0.22),
-    0 1.5px 2.5px rgba(0,0,0,0.06);
-  border: 2px solid rgba(255,255,255,0.6);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  border: none;
   overflow: visible !important;
-  transition: transform 0.12s ease, box-shadow 0.22s ease;
+  transition: none;
+  pointer-events: auto;                  /* 猫咪可拖拽合成 */
 }
-.matrix-slot:hover { transform: translateY(-2px); box-shadow:
-    inset 0 3px 6px rgba(255,255,255,0.92),
-    inset 0 -5px 9px rgba(180,120,60,0.22),
-    0 7px 14px rgba(140,85,25,0.3),
-    0 1.5px 2.5px rgba(0,0,0,0.06); }
+.matrix-slot:hover { transform: none; box-shadow: none; }
 
-/* 猫爪印：4 趾垫 + 1 掌垫 → 改成橘棕色系（和原木/爪盘色匹配，不再红棕） */
+/* 猫盘：大圆木盘，猫脚站上面 */
 .matrix-slot::before {
   content: '';
   position: absolute;
-  width: 82%;
-  height: 68%;
-  left: 9%;
-  top: 18%;
-  background-repeat: no-repeat;
-  background-image:
-    radial-gradient(ellipse 17% 21% at 22% 14%, rgba(180,120,65,0.28) 0%, transparent 72%),
-    radial-gradient(ellipse 17% 21% at 50% 7%,  rgba(180,120,65,0.28) 0%, transparent 72%),
-    radial-gradient(ellipse 17% 21% at 78% 14%, rgba(180,120,65,0.28) 0%, transparent 72%),
-    radial-gradient(ellipse 17% 21% at 35% 20%, rgba(180,120,65,0.24) 0%, transparent 72%),
-    radial-gradient(ellipse 17% 21% at 65% 20%, rgba(180,120,65,0.24) 0%, transparent 72%),
-    radial-gradient(ellipse 42% 38% at 50% 58%, rgba(180,120,65,0.3)  0%, transparent 72%);
-  pointer-events: none;
-  opacity: 0.95;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: 46px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, #f2d8ac 0%, #c8905a 55%, #965f35 100%);
+  box-shadow:
+    inset 0 2px 4px rgba(255,255,255,0.55),
+    0 4px 8px rgba(90,50,15,0.35);
+  z-index: 0;
 }
-.matrix-slot.filled::before { opacity: 0.24; }
+.matrix-slot.filled::before { opacity: 1; }
 .matrix-slot.has-merge-flash { overflow: visible; z-index: 5; }
+
+/* 猫盘下方地面阴影 */
+.matrix-slot::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center,
+    rgba(52,36,12,0.28) 0%,
+    rgba(52,36,12,0.12) 55%,
+    transparent 78%);
+  z-index: -1;
+  pointer-events: none;
+}
 
 /* ═══════════════════════════════════════════
    猫咪卡片（整体贴底：猫咪真正"站"在爪垫上）
@@ -892,6 +915,21 @@
   transform-origin: 50% 98%;    /* 呼吸动画的锚点也改到底部 */
 }
 .pet-card:active { cursor: grabbing; }
+
+/* 猫咪内容层：整体轻微左右摇摆（从脚部为轴），叠加呼吸/摇头/甩尾，让猫更自然 */
+.pet-mover {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  transform-origin: 50% 98%;
+  animation: bodySway var(--sway-dur, 4.6s) ease-in-out infinite;
+  animation-delay: var(--sway-delay, 0s);
+  will-change: transform;
+}
 
 /* LV 标签：红色圆角矩形 */
 .pet-lv-badge {
@@ -961,9 +999,9 @@
 }
 .pet-img {
   display: block;
-  width: 92%;                  /* 之前 85% → 加大，猫咪更大更突出 */
+  width: 115%;                 /* 猫咪主体放大，填满猫盘 */
   height: auto;
-  max-height: 94%;             /* 高度上限，防止超过爪垫 */
+  max-height: 118%;            /* 高度上限放宽，让猫更大 */
   object-fit: contain;
   object-position: bottom center;  /* 关键：图片自己也贴底 */
   pointer-events: none;
@@ -1016,7 +1054,8 @@
   box-shadow: none !important;
 }
 .pet-dragging .pet-head,
-.pet-dragging .pet-tail-wag { animation: none !important; }
+.pet-dragging .pet-tail-wag,
+.pet-dragging .pet-mover { animation: none !important; }
 
 .pet-ghost {
   opacity: 0.22 !important;
@@ -1025,7 +1064,8 @@
   transition: all 0.15s ease;
 }
 .pet-ghost .pet-head,
-.pet-ghost .pet-tail-wag { animation: none !important; }
+.pet-ghost .pet-tail-wag,
+.pet-ghost .pet-mover { animation: none !important; }
 
 .pet-snap-back { animation: snapBack 0.35s cubic-bezier(0.25,0.8,0.25,1.2) forwards; pointer-events: none; }
 .pet-spawn { animation: petSpawn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards; }
@@ -1074,10 +1114,10 @@
   100% { opacity: 0; transform: translate(-50%, -85px) scale(0.7); }
 }
 
-/* 顶部等级金币浮动：+xxx 红色数字向上飘（附着在等级横排 level-info 上方） */
+/* 顶部等级金币浮动：+xxx 红色数字从金币下方出现、向上飘（附着在等级横排 level-info 上方） */
 .float-income-top {
   position: absolute;
-  bottom: 100%;                      /* level-info 上方起点 */
+  top: 100%;                         /* 金币下方起点，向上飘进 HUD，不会飞出屏外 */
   left: 50%;
   transform: translateX(-50%);
   z-index: 20;
@@ -1098,10 +1138,10 @@
 }
 .float-income-top::before { content: '+'; margin-right: 2px; }
 @keyframes incomeFloatTop {
-  0%   { opacity: 0; transform: translate(-50%, 6px)  scale(0.6); }
-  18%  { opacity: 1; transform: translate(-50%, 0px)   scale(1.12); }
-  55%  { opacity: 1; transform: translate(-50%, -22px) scale(1); }
-  100% { opacity: 0; transform: translate(-50%, -48px) scale(0.7); }
+  0%   { opacity: 0; transform: translate(-50%, 10px) scale(0.6); }
+  18%  { opacity: 1; transform: translate(-50%, 4px)  scale(1.12); }
+  55%  { opacity: 1; transform: translate(-50%, -12px) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -26px) scale(0.7); }
 }
 
 /* 合成闪光 */
@@ -1562,15 +1602,20 @@
 /* ═══════════════════════════════════════════
    动画关键帧
    ═══════════════════════════════════════════ */
+@keyframes bodySway {
+  0%, 100% { transform: rotate(0deg); }
+  30% { transform: rotate(-2.2deg); }
+  70% { transform: rotate(2.2deg); }
+}
 @keyframes petBreathe {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-4px) scale(1.06); }
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }   /* 只做极轻微起伏，不再上下浮动（避免"死猫"感） */
 }
 @keyframes headSway {
-  0%, 100% { transform: rotate(-2.2deg); }
-  25% { transform: rotate(1.5deg); }
-  50% { transform: rotate(2.5deg); }
-  75% { transform: rotate(-1.8deg); }
+  0%, 100% { transform: rotate(-4deg); }
+  25% { transform: rotate(2deg); }
+  50% { transform: rotate(4deg); }
+  75% { transform: rotate(-2deg); }
 }
 @keyframes tailWag {
   0%, 100% { transform: skewX(-1.5deg) translateX(-1px); }
@@ -3106,8 +3151,9 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 9px 12px;
-  border-radius: 16px;
+  width: 100%;
+  padding: 9px 14px;
+  border-radius: 0;
   background: rgba(255,255,255,0.55);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -3122,10 +3168,11 @@
 .hud-profile { display: flex; align-items: center; gap: 8px; flex-shrink: 0; cursor: pointer; }
 .hud-avatar { width: 42px; height: 42px; border-radius: 50%; border: 2px solid #fff; object-fit: cover; background: #fff5e6; box-shadow: 0 2px 6px rgba(120,70,20,0.18); }
 .hud-user { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
-.hud-name { font-size: 14px; font-weight: 800; color: #5d4037; max-width: 88px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hud-name { font-size: 14px; font-weight: 800; color: #5d4037; max-width: 6ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hud-lv { font-size: 12px; font-weight: 900; color: #e65100; }
 .hud-stats { display: flex; align-items: center; gap: 10px; flex: 1; justify-content: center; min-width: 0; }
 .hud-stat { font-size: 13px; font-weight: 800; color: #6d4c41; white-space: nowrap; flex-shrink: 0; }
+.hud-coins { position: relative; }
 .hud-stat b { font-weight: 900; color: #5d4037; margin-left: 2px; font-size: 14px; }
 .hud-usdt b { color: #e65100; }
 
@@ -3381,7 +3428,9 @@
    猫抓板上方悬浮小喇叭（全服喜讯排队滚动播报）
    ═══════════════════════════════════════════ */
 .broadcast-bar {
-  position: relative;
+  position: sticky;          /* 喇叭固定在游戏区顶部，猫爬架滚动时不超过它 */
+  top: 0;
+  z-index: 5;
   display: flex;
   align-items: center;
   width: 100%;
@@ -3396,6 +3445,7 @@
   font-size: 12px;
   flex-shrink: 0;
   overflow: hidden;
+  pointer-events: none;   /* 只做展示，穿透到猫咪层 */
 }
 .broadcast-icon {
   position: absolute;
