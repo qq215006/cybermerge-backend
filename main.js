@@ -103,27 +103,13 @@ const I18N = {
     ru: '• Перетаскивайте котов одного уровня, чтобы объединить их<br>• Покупка котов стоит монеты; каждая покупка повышает все цены на 7%<br>• Смотрите рекламу для ускорения и бесплатных котов<br>• Автослияние и офлайн-доход после ежедневного чек-ина<br>• Приглашайте друзей + выполняйте задания для бонусов<br>• Подключите TON-кошелек для вывода из пула'
   },
   version:         { zh:'v1.0.0 · CyberMerge', en:'v1.0.0 · CyberMerge',  ru:'v1.0.0 · CyberMerge' },
-  // 提现进度 / 创世分红弹窗
-  withdraw_title:  { zh:'提现进度 / 创世分红', en:'Withdraw / Dividend', ru:'Вывод / Дивиденд' },
-  withdraw_btn:    { zh:'分红进度',          en:'Dividend',               ru:'Дивиденды' },
-  withdraw_sub:    { zh:'再开7级，提现比例提升', en:'Open 7 levels ↑',    ru:'Ещё 7 уровней ↑' },
-  wd_pool_label:   { zh:'💰 本期鱼池（可提现）', en:'💰 Current Pool',     ru:'💰 Текущий пул' },
-  wd_rate_prefix:  { zh:'当前可提现比例：',   en:'Withdraw rate: ',       ru:'Ставка вывода: ' },
-  wd_ad_text:      { zh:'看广告领 20% 特权', en:'Watch ad +20%',         ru:'Реклама +20%' },
-  wd_invite_text:  { zh:'邀请 3 名好友，直接跃升下一级比例！', en:'Invite 3 ↑', ru:'Пригласи 3 ↑' },
-  wd_rate_label:   { zh:'提现',               en:'Withdraw',               ru:'Вывод' },
-  wd_ms_dividend:  { zh:'每日分红',            en:'Daily Dividend',         ru:'Дневной дивиденд' },
-  wd_ms_reached:   { zh:'已达成',              en:'Reached',                ru:'Достигнуто' },
-  wd_ms_current:   { zh:'当前阶段',            en:'Current',                ru:'Текущий' },
-  wd_ms_locked:    { zh:'未解锁',              en:'Locked',                 ru:'Заблокировано' },
   // 个人中心
   profile_title:   { zh:'👤 个人中心',         en:'👤 Profile',             ru:'👤 Профиль' },
   profile_coins:   { zh:'总金币',              en:'Coins',                 ru:'Монеты' },
   profile_earn:    { zh:'每秒产出',            en:'Earn / sec',            ru:'Доход / сек' },
   profile_invite:  { zh:'邀请人数',            en:'Invites',               ru:'Инвайты' },
-  profile_weekad:  { zh:'本周看广告',          en:'Ads / week',            ru:'Реклама / нед.' },
+  profile_weekad:  { zh:'本周贡献',            en:'Contribution / week',   ru:'Вклад / нед.' },
   profile_divcats: { zh:'40级猫分红',          en:'LV.40 Div.',            ru:'Див. LV.40' },
-  profile_rate:    { zh:'提现比例',            en:'Rate',                  ru:'Ставка' },
   profile_ref:     { zh:'邀请码',              en:'Code',                  ru:'Код' },
   profile_copy:    { zh:'复制邀请码',          en:'Copy',                  ru:'Копировать' },
   profile_copied:  { zh:'✅ 邀请码已复制',     en:'✅ Copied',             ru:'✅ Скопировано' },
@@ -137,9 +123,6 @@ const I18N = {
   t_detecting:      { zh:'🔍 正在识别 TON 钱包...', en:'🔍 Detecting TON wallet...', ru:'🔍 Поиск TON-кошелька...' },
   t_wallet_ok:      { zh:'✅ 钱包已链接：',     en:'✅ Wallet linked: ',     ru:'✅ Кошелек подключен: ' },
   t_no_wallet:      { zh:'⚠️ 未检测到 TON 钱包，请安装 Tonkeeper 后重试', en:'⚠️ No TON wallet detected. Install Tonkeeper and retry.', ru:'⚠️ TON-кошелек не найден. Установите Tonkeeper и повторите.' },
-  // 提现弹窗 toast
-  wd_ad_ok:         { zh:'✅ 20% 提现特权已激活（临时）', en:'✅ 20% withdrawal boost activated (temporary)', ru:'✅ Временный вывод 20% активирован' },
-  wd_ad_done:       { zh:'⚠️ 今日特权次数已用完 (3/3)', en:'⚠️ Daily boost used up (3/3)', ru:'⚠️ Дневной лимит исчерпан (3/3)' },
   // 通用/广告/合成/购买/任务/邀请 toast（补齐三语，替换原硬编码中文）
   t_ai_daily_reset: { zh:'⏰ 新的一天到啦~签到合成已关闭', en:'⏰ New day! Auto merge turned off', ru:'⏰ Новый день! Автослияние выключено' },
   t_ai_checkin_ok:  { zh:'✅ 签到成功！智能合成已开启', en:'✅ Checked in! Auto merge ON', ru:'✅ Чек-ин выполнен! Автослияние ВКЛ' },
@@ -468,7 +451,6 @@ const S = {
   aiRunning: false,                   // 智能合成是否运行中
   aiTimer: null,                      // 智能合成循环定时器
   aiLock: false,                      // 互斥锁：防本次 tick 未跑完就重入
-  wdAdUsed: 0,                        // 提现弹窗「看视频临时特权」今日已用次数（上限 3）
   inviteCount: 0,                     // 邀请好友次数（云存档）
   refCode: '',                        // 我的随机邀请码（后端生成，用于邀请链接，隐藏 TG ID）
   divCats: [],                        // 场上40级猫的剩余分红次数数组 [4,3,2]
@@ -490,23 +472,6 @@ const DAILY_TASKS = [
   { key: 'task-watch-ad', icon: '📺', descKey: 'task_desc_1', coins: 10000 },
 ];
 const TASK_DONE_KEY = 'cybermerge_daily_tasks';  // 存 { date, done: [taskKey] }，每日重置
-
-// ═══════ 提现进度/创世分红：阶梯提现比例 + 里程碑 ═══════
-const WD_AD_LIMIT = 3;                      // 看广告临时特权每日上限 3 次
-const WD_MILESTONES = [
-  { lv: 10, rate: 1,   icon: null,               noteKey: null },
-  { lv: 20, rate: 5,   icon: null,               noteKey: null },
-  { lv: 27, rate: 20,  icon: null,               noteKey: null },
-  { lv: 40, rate: 100, icon: '/cats_new/LV.40.png',  noteKey: 'wd_ms_dividend' },  // 终极信仰：财神猫
-];
-// 根据当前等级返回提现比例（%）
-function withdrawRate(lv) {
-  if (lv >= 40) return 100;
-  if (lv >= 27) return 20;
-  if (lv >= 20) return 5;
-  if (lv >= 10) return 1;
-  return 0;
-}
 
 // ═══════ TON 钱包状态：自动识别已绑定钱包地址 ═══════
 const WALLET_KEY = 'cybermerge_ton_wallet';   // localStorage 缓存绑定地址
@@ -704,7 +669,7 @@ function todayStr() {
   return new Date(Date.now()).toISOString().slice(0, 10);
 }
 
-// 跨天归零每日广告计数（adUsedToday / wdAdUsed），保证上报给后端的始终是「今天」的数量
+// 跨天归零每日广告计数（adUsedToday / boostAdUsed），保证上报给后端的始终是「今天」的数量
 function resetDailyCountersIfNewDay() {
   const today = todayStr();
   try {
@@ -712,7 +677,6 @@ function resetDailyCountersIfNewDay() {
     localStorage.setItem(AD_DAY_KEY, today);
   } catch(_) {}
   S.adUsedToday = 0;
-  S.wdAdUsed = 0;
   S.boostAdUsed = 0;
   S.inflateCount = 0;   // 通胀每日重置
 }
@@ -970,7 +934,6 @@ function collectCloudData() {
     buyCount: S.buyCount,
     inflateCount: S.inflateCount,
     adUsedToday: S.adUsedToday,
-    wdAdUsed: S.wdAdUsed,
     divCats: S.divCats,
     pokedex: [...collected],
     aiUnlockDay: lsGet(AI_KEY, ''),
@@ -1015,7 +978,6 @@ function buildSignString(tgId, data, timestamp) {
     data.buyCount ?? 0,
     data.inflateCount ?? 0,
     data.adUsedToday ?? 0,
-    data.wdAdUsed ?? 0,
     pokedex,
     data.aiUnlockDay ?? '',
     divCats,
@@ -1107,7 +1069,6 @@ function applyStateToS(obj) {
   if (typeof obj.buyCount === 'number') S.buyCount = obj.buyCount;
   if (typeof obj.inflateCount === 'number') S.inflateCount = obj.inflateCount;
   if (typeof obj.adUsedToday === 'number') S.adUsedToday = obj.adUsedToday;
-  if (typeof obj.wdAdUsed === 'number') S.wdAdUsed = obj.wdAdUsed;
   if (Array.isArray(obj.divCats)) S.divCats = obj.divCats.map(x => Number(x) || 0);
   if (Array.isArray(obj.pokedex)) {
     collected.clear();
@@ -1164,7 +1125,6 @@ async function syncBackend() {
     S.buyCount = Math.max(S.buyCount, Number(u.buyCount) || 0, (local && typeof local.buyCount === 'number') ? local.buyCount : 0);
     S.inflateCount = Math.max(S.inflateCount, Number(u.inflateCount) || 0, (local && typeof local.inflateCount === 'number') ? local.inflateCount : 0);
     S.adUsedToday = Math.max(S.adUsedToday, Number(u.adUsedToday) || 0, (local && typeof local.adUsedToday === 'number') ? local.adUsedToday : 0);
-    S.wdAdUsed = Math.max(S.wdAdUsed, Number(u.wdAdUsed) || 0, (local && typeof local.wdAdUsed === 'number') ? local.wdAdUsed : 0);
     if (typeof u.inviteCount === 'number') S.inviteCount = u.inviteCount;
     if (typeof u.refCode === 'string' && u.refCode) S.refCode = u.refCode;
     if (Array.isArray(u.divCats)) S.divCats = u.divCats.map(x => Number(x) || 0);
@@ -2113,13 +2073,13 @@ function spawnAirdrop() {
   const box = d('div', 'airdrop-box');
   box.textContent = '📦';
   const side = Math.random() < 0.5 ? 'left' : 'right';
-  box.style[side] = (Math.random() * 24) + 'px';
-  box.style.top = (Math.random() * 140 - 40) + 'px';
+  box.style[side] = (Math.random() * 20 + 6) + 'px';               // 屏幕左右边缘 6-26px
+  box.style.top = (Math.random() * 40 + 15) + '%';                 // 视口中上部 15%-55%，确保可见
   box.addEventListener('click', () => {
     confirmAd({ icon: '📦', title: t('confirm_airdrop_t'), desc: t('confirm_airdrop_d'), onOk: () => watchAirdropAd(box) });
   });
   layer.appendChild(box);
-  setTimeout(() => { if (box.parentNode) box.remove(); }, 35000);   // 35 秒后消失
+  setTimeout(() => { if (box.parentNode) box.remove(); }, 15000);   // 15 秒后消失
 }
 function watchAirdropAd(box) {
   showMonetagAd(() => {
@@ -2134,7 +2094,7 @@ function watchAirdropAd(box) {
 function startAirdrop() {
   const loop = () => {
     spawnAirdrop();
-    setTimeout(loop, 10 * 60 * 1000 + Math.random() * 5 * 60 * 1000);   // 每 10-15 分钟掉一次
+    setTimeout(loop, 60 * 1000);   // 每分钟掉一次
   };
   loop();
 }
@@ -2310,48 +2270,6 @@ function ev(){
   document.addEventListener('keydown', e=>{ if(e.key==='Escape') cleanDrag(); });
 }
 
-// ═══════ 渲染提现弹窗（核心资产大字报 + 阶梯里程碑）═══════
-function renderWithdrawPanel() {
-  const userLv = Math.max(1, maxUnlockedLv());
-  // 核心资产：本期鱼池 + 当前提现比例（低比例制造落差）
-  const poolEl = document.getElementById('wd-pool-amount');
-  const rateEl = document.getElementById('wd-rate-value');
-  if (poolEl) poolEl.textContent = fmtNum(S.usdt);
-  if (rateEl) rateEl.textContent = withdrawRate(userLv) + '%';
-
-  // 阶梯里程碑（垂直列表，4 个节点）
-  const msWrap = document.getElementById('wd-milestones');
-  if (!msWrap) return;
-  // 当前阶段 = 第一个未达成的里程碑（离玩家最近的下一级）
-  let currentIdx = -1;
-  for (let i = 0; i < WD_MILESTONES.length; i++) {
-    if (WD_MILESTONES[i].lv > userLv) { currentIdx = i; break; }
-  }
-  msWrap.innerHTML = WD_MILESTONES.map((ms, i) => {
-    const reached = ms.lv <= userLv;
-    const isCurrent = i === currentIdx;
-    const state = reached ? 'reached' : (isCurrent ? 'current' : 'locked');
-    // 徽章：普通里程碑显示 LV.x；LV.40 显示财神猫头像
-    const badgeHtml = ms.icon
-      ? '<img src="' + ms.icon + '" alt="LV.40 财神猫">'
-      : 'LV.' + ms.lv;
-    // 中间：提现比例 + （LV.40 附加每日分红）
-    const rateText = t('wd_rate_label') + ' ' + ms.rate + '%' + (ms.noteKey ? ' + ' + t(ms.noteKey) : '');
-    const tagText = reached ? t('wd_ms_reached') : (isCurrent ? t('wd_ms_current') : t('wd_ms_locked'));
-    return '<div class="wd-ms wd-ms-' + state + '">' +
-      '<div class="wd-ms-badge">' + badgeHtml + '</div>' +
-      '<div class="wd-ms-info">' +
-        '<span class="wd-ms-rate">' + rateText + '</span>' +
-      '</div>' +
-      '<span class="wd-ms-tag">' + tagText + '</span>' +
-    '</div>';
-  }).join('');
-
-  // 看视频临时特权计数
-  const adCount = document.getElementById('wd-ad-count');
-  if (adCount) adCount.textContent = '(' + S.wdAdUsed + '/' + WD_AD_LIMIT + ')';
-}
-
 // ═══════ 个人中心：渲染玩家全部数据 ═══════
 function renderProfile() {
   const userLv = Math.max(1, maxUnlockedLv());
@@ -2364,7 +2282,6 @@ function renderProfile() {
   set('pf-invite', String(S.inviteCount || 0));
   set('pf-weekad', String(S.weekAdCount || 0));
   set('pf-divcats', divCount + ' 只' + (divCount > 0 ? '（剩余 ' + S.divCats.join('/') + ' 次）' : ''));
-  set('pf-rate', withdrawRate(userLv) + '%');
   set('pf-ref', S.refCode || '-');
   const avatar = document.getElementById('pf-avatar');
   if (avatar) avatar.src = '/cats_new/LV.' + userLv + '.png';
@@ -2812,13 +2729,6 @@ function btn(){
     });
   });
 
-  // 提现进度/创世分红弹窗（入口已移到个人中心）
-  const wdModal = document.getElementById('withdraw-modal');
-  const openWithdraw = () => { renderWithdrawPanel(); wdModal?.classList.add('show'); };
-  const closeWithdraw = () => wdModal?.classList.remove('show');
-  document.getElementById('withdraw-close')?.addEventListener('click', closeWithdraw);
-  wdModal?.addEventListener('click', (e) => { if (e.target.id === 'withdraw-modal') closeWithdraw(); });
-
   // 个人中心：点整条 HUD 通栏（全局热区）从右侧滑出
   const pfModal = document.getElementById('profile-modal');
   const openProfile = () => { renderProfile(); pfModal?.classList.add('show'); };
@@ -2839,28 +2749,6 @@ function btn(){
     const link = buildInviteLink();
     try { navigator.clipboard?.writeText(link); toast(t('profile_copied'), 'success'); }
     catch(_) { toast(t('profile_ref') + ': ' + link, 'info'); }
-  });
-
-  // 看广告领 20% 提现特权（每日 3 次）
-  document.getElementById('wd-ad-btn')?.addEventListener('click', () => {
-    if (S.wdAdUsed >= WD_AD_LIMIT) { toast(t('wd_ad_done'), 'warn'); return; }
-    showMonetagAd(() => {
-      S.wdAdUsed++;
-      const c = document.getElementById('wd-ad-count');
-      if (c) c.textContent = '(' + S.wdAdUsed + '/' + WD_AD_LIMIT + ')';
-      toast(t('wd_ad_ok'), 'success');
-      saveCloudNow();
-    });
-  });
-  // 邀请 3 名好友跃升下一级比例（复用邀请分享）
-  document.getElementById('wd-invite-btn')?.addEventListener('click', () => {
-    const inviteUrl = buildInviteLink();
-    if (tg && tg.openTelegramLink) {
-      tg.openTelegramLink('https://t.me/share/url?url=' + encodeURIComponent(inviteUrl) + '&text=' + encodeURIComponent(t('t_share_text')));
-    } else {
-      try { navigator.clipboard?.writeText(inviteUrl); toast(t('t_invite_copied'), 'success'); }
-      catch (_) { toast(t('t_invite_link') + inviteUrl, 'info'); }
-    }
   });
 
   document.getElementById('btn-merge')?.addEventListener('click',buy);

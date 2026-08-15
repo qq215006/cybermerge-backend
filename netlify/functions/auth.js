@@ -10,7 +10,6 @@ import { handleAuth } from '../../lib/handler-core.js';
  *   grid          JSONB DEFAULT '[]'::jsonb,
  *   buy_count     INTEGER DEFAULT 0,
  *   ad_used_today INTEGER DEFAULT 0,
- *   wd_ad_used    INTEGER DEFAULT 0,
  *   pokedex       JSONB DEFAULT '[]'::jsonb,
  *   settings      JSONB DEFAULT '{}'::jsonb,
  *   ai_unlock_day TEXT DEFAULT '',

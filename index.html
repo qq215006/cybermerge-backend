@@ -104,7 +104,7 @@
         <span class="season-banner-countdown" id="season-countdown-banner">0天 0时 0分 0秒</span>
       </div>
       <div class="season-banner-right">
-        <span class="season-banner-pool-label" data-i18n="wd_pool_label">实时奖池</span>
+        <span class="season-banner-pool-label">实时奖池</span>
         <span class="season-banner-pool-value" id="prize-pool-amount">$0.000</span>
       </div>
     </section>
@@ -287,9 +287,8 @@
           <div class="profile-stat"><span class="ps-label">💵 USD₮</span><span class="ps-value" id="pf-usdt">$0.00</span></div>
           <div class="profile-stat"><span class="ps-label" data-i18n="profile_earn">每秒产出</span><span class="ps-value" id="pf-earn">0</span></div>
           <div class="profile-stat"><span class="ps-label" data-i18n="profile_invite">邀请人数</span><span class="ps-value" id="pf-invite">0</span></div>
-          <div class="profile-stat"><span class="ps-label" data-i18n="profile_weekad">本周看广告</span><span class="ps-value" id="pf-weekad">0</span></div>
+          <div class="profile-stat"><span class="ps-label" data-i18n="profile_weekad">本周贡献</span><span class="ps-value" id="pf-weekad">0</span></div>
           <div class="profile-stat"><span class="ps-label" data-i18n="profile_divcats">40级猫分红</span><span class="ps-value" id="pf-divcats">0 只</span></div>
-          <div class="profile-stat"><span class="ps-label" data-i18n="profile_rate">提现比例</span><span class="ps-value" id="pf-rate">0%</span></div>
           <div class="profile-stat"><span class="ps-label" data-i18n="profile_ref">邀请码</span><span class="ps-value" id="pf-ref">-</span></div>
         </div>
         <button id="pf-connect-wallet" class="pf-copy-btn pf-wallet-btn">💳 <span data-i18n="profile_wallet">连接 TON 钱包</span></button>
@@ -332,41 +331,6 @@
         <!-- 排行榜列表 -->
         <div id="leaderboard-list" class="leaderboard-list">
           <div class="lb-empty" id="lb-empty">⏳ 排行榜加载中...</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════════ 提现进度 / 创世分红弹窗 ═══════════ -->
-  <div id="withdraw-modal" class="withdraw-modal">
-    <div class="withdraw-content">
-      <div class="withdraw-header">
-        <span class="withdraw-title">📈 <span data-i18n="withdraw_title">提现进度 / 创世分红</span></span>
-        <button id="withdraw-close" class="withdraw-close">✕</button>
-      </div>
-      <div class="withdraw-body">
-        <!-- 1. 核心资产大字报 -->
-        <div class="wd-hero">
-          <div class="wd-hero-label" data-i18n="wd_pool_label">💰 本期鱼池（可提现）</div>
-          <div class="wd-hero-amount" id="wd-pool-amount">0</div>
-          <div class="wd-hero-rate">
-            <span data-i18n="wd_rate_prefix">当前可提现比例：</span><b id="wd-rate-value">1%</b>
-          </div>
-        </div>
-
-        <!-- 2. 阶梯里程碑进度条（JS 动态渲染 4 个阶梯） -->
-        <div class="wd-milestones" id="wd-milestones"></div>
-
-        <!-- 3. 变现加速按钮 -->
-        <div class="wd-actions">
-          <button id="wd-ad-btn" class="wd-action-btn wd-action-ad">
-            <span class="wd-action-icon">📺</span>
-            <span class="wd-action-text"><span data-i18n="wd_ad_text">看广告领 20% 特权</span> <b id="wd-ad-count">(0/3)</b></span>
-          </button>
-          <button id="wd-invite-btn" class="wd-action-btn wd-action-invite">
-            <span class="wd-action-icon">🚀</span>
-            <span class="wd-action-text" data-i18n="wd_invite_text">邀请 3 名好友，直接跃升下一级比例！</span>
-          </button>
         </div>
       </div>
     </div>

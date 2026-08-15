@@ -2296,232 +2296,6 @@
 .lb-rank-3 { background: linear-gradient(135deg,#ffcc80,#ef6c00); color:#5d4037; }
 .lb-rank-n { background: #fff3e0; color:#795548; }
 
-/* ═══════════ 提现进度 / 创世分红弹窗 ═══════════ */
-.withdraw-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 100001;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  background: rgba(60,30,10,0.55);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  padding: 16px;
-}
-.withdraw-modal.show {
-  display: flex;
-  animation: stFade 0.25s ease-out;
-}
-.withdraw-content {
-  width: 100%;
-  max-width: 340px;
-  max-height: 88vh;
-  overflow-y: auto;
-  background: linear-gradient(180deg, #fffdf6 0%, #fff3e0 100%);
-  border: 3px solid #d9b686;
-  border-radius: 22px;
-  box-shadow: 0 12px 40px rgba(80,40,10,0.4);
-  display: flex;
-  flex-direction: column;
-}
-.withdraw-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  border-bottom: 2px solid #f0d5b0;
-  background: linear-gradient(180deg, #fff8e1, #ffe0b2);
-  border-radius: 19px 19px 0 0;
-}
-.withdraw-title {
-  font-size: 15px;
-  font-weight: 900;
-  color: #5d4037;
-}
-.withdraw-close {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  border: 1.5px solid #b8845a;
-  background: #fff;
-  color: #6d4c41;
-  font-size: 14px;
-  font-weight: 900;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.withdraw-close:active { transform: scale(0.9); }
-.withdraw-body {
-  padding: 14px 16px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-/* 1. 核心资产大字报（红底金字，最大字号居中） */
-.wd-hero {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 18px 12px 14px;
-  background: linear-gradient(180deg, #ff8a80 0%, #ef5350 40%, #d32f2f 100%);
-  border-radius: 16px;
-  border: 2.5px solid #fff;
-  border-bottom: 4px solid #a01f1f;
-  box-shadow:
-    inset 0 1.5px 0 rgba(255,255,255,0.55),
-    0 6px 16px rgba(180,40,60,0.3);
-}
-.wd-hero-label {
-  font-size: 12px;
-  font-weight: 700;
-  color: #fff;
-  opacity: 0.94;
-}
-.wd-hero-amount {
-  font-size: 34px;                       /* 最大字号，核心资产一眼看清 */
-  font-weight: 900;
-  line-height: 1.1;
-  color: #fff59d;
-  text-shadow:
-    0 2px 4px rgba(0,0,0,0.4),
-    0 0 18px rgba(255,235,59,0.6);
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.5px;
-}
-.wd-hero-rate {
-  font-size: 13px;
-  color: #fff;
-  font-weight: 700;
-}
-.wd-hero-rate b {
-  color: #ffeb3b;
-  font-size: 17px;
-  font-weight: 900;
-  text-shadow: 0 0 8px rgba(255,235,59,0.7);
-}
-
-/* 2. 阶梯里程碑进度条（垂直列表） */
-.wd-milestones {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.wd-ms {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
-  background: rgba(255,255,255,0.7);
-  border: 1.5px solid #f0d5b0;
-  border-radius: 12px;
-  transition: all 0.2s ease;
-}
-.wd-ms-badge {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  overflow: hidden;
-  font-weight: 900;
-  font-size: 13px;
-  border: 2px solid #e0c8a8;
-  background: #fff;
-  color: #6d4c41;
-}
-.wd-ms-badge img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-.wd-ms-info {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-.wd-ms-rate {
-  font-size: 15px;
-  font-weight: 900;
-  color: #5d4037;
-  white-space: nowrap;
-}
-.wd-ms-note {
-  font-size: 10px;
-  color: #a1887f;
-  font-weight: 700;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.wd-ms-tag {
-  font-size: 10px;
-  font-weight: 800;
-  padding: 3px 8px;
-  border-radius: 8px;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-/* 里程碑状态 */
-.wd-ms-reached .wd-ms-badge { background: linear-gradient(135deg,#c8e6c9,#a5d6a7); border-color: #66bb6a; color: #2e7d32; }
-.wd-ms-reached .wd-ms-tag { background: #e8f5e9; color: #2e7d32; }
-.wd-ms-current {
-  border-color: #ffb300;
-  border-width: 2px;
-  background: linear-gradient(135deg, #fff8e1, #ffe082);
-  box-shadow: 0 3px 10px rgba(255,179,0,0.3);
-}
-.wd-ms-current .wd-ms-badge { background: linear-gradient(135deg,#ffd54f,#ffb300); border-color: #ff9800; color: #5d4037; }
-.wd-ms-current .wd-ms-tag { background: #fff3e0; color: #e65100; animation: coinGlow 1.5s ease-in-out infinite; }
-.wd-ms-locked { opacity: 0.6; }
-.wd-ms-locked .wd-ms-badge { background: #f5f5f5; color: #9e9e9e; border-color: #e0e0e0; }
-.wd-ms-locked .wd-ms-tag { background: #eee; color: #9e9e9e; }
-
-/* 3. 变现加速按钮 */
-.wd-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.wd-action-btn {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
-  border-radius: 16px;
-  border: 2px solid #fff;
-  color: #fff;
-  font-weight: 800;
-  cursor: pointer;
-  text-align: left;
-  transition: transform 0.06s ease, filter 0.06s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-.wd-action-btn:active { transform: translateY(2px); filter: brightness(0.92); }
-.wd-action-icon { font-size: 24px; flex-shrink: 0; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3)); }
-.wd-action-text { flex: 1; font-size: 13px; line-height: 1.3; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
-.wd-action-text b { font-size: 12px; }
-.wd-action-ad {
-  background: linear-gradient(135deg, #ff7043 0%, #e64a19 100%);
-  border-bottom: 4px solid #bf360c;
-  box-shadow: 0 4px 10px rgba(230,74,25,0.35);
-}
-.wd-action-invite {
-  background: linear-gradient(135deg, #7e57c2 0%, #5e35b1 100%);
-  border-bottom: 4px solid #4527a0;
-  box-shadow: 0 4px 10px rgba(94,53,177,0.35);
-}
-
 /* ═══════ 每日任务弹窗 ═══════ */
 .task-modal {
   position: fixed;
@@ -3082,13 +2856,18 @@
 .bottom-btn-red-main.shop-locked .bb-coin-icon,
 .bottom-btn-red-main.shop-locked .buy-cat-float { opacity: 0.55; }
 
-/* 动态空投层 */
+/* 动态空投层：fixed 覆盖在游戏可视区上方（脱离猫爬架 2400px 文档流，
+   否则补给箱会掉在 2400px 处、用户默认视图根本看不到） */
 #airdrop-layer {
-  position: relative;
+  position: fixed;
+  left: 50%;
+  top: 0;
+  bottom: 0;
   width: 100%;
-  max-width: 370px;
-  height: 0;
+  max-width: 430px;
+  transform: translateX(-50%);
   pointer-events: none;
+  z-index: 20;
 }
 .airdrop-box {
   position: absolute;
@@ -3311,15 +3090,6 @@
   border-color: #fff;
 }
 
-/* 空投补给箱：沿边缘游走 + 呼吸灯 */
-.airdrop-box {
-  animation: airdropFloat 3s ease-in-out infinite, airdropBreathe 1.6s ease-in-out infinite, airdropPatrol 12s ease-in-out infinite alternate;
-}
-@keyframes airdropPatrol {
-  0% { margin-top: -40px; }
-  50% { margin-top: 30px; }
-  100% { margin-top: 0px; }
-}
 
 /* ═══════════════════════════════════════════
    推特赚金：9:16 赛博朋克/超梦海报弹窗

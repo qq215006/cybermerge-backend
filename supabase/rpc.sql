@@ -14,7 +14,6 @@ CREATE TABLE IF NOT EXISTS users (
   buy_count     INTEGER DEFAULT 0,
   inflate_count INTEGER DEFAULT 0,
   ad_used_today INTEGER DEFAULT 0,
-  wd_ad_used    INTEGER DEFAULT 0,
   pokedex       JSONB DEFAULT '[]'::jsonb,
   max_level     INTEGER DEFAULT 0,  -- 冗余最高等级字段，用于提升排行榜查询性能
   settings      JSONB DEFAULT '{}'::jsonb,
