@@ -480,18 +480,16 @@ const S = {
 const AI_KEY = 'cybermerge_ai_unlock_day';  // 存最后一次签到解锁智能合成的日期 "YYYY-MM-DD"
 const AD_DAY_KEY = 'cybermerge_ad_day';     // 存最后一天广告计数所属日期 "YYYY-MM-DD"（跨天归零）
 const AI_TICK_MS = 180;                     // AI 循环周期（毫秒）：不要太快避免卡顿
-const ADSGRAM_BLOCK_ID = '42861';          // Adsgram 激励视频广告（加速可产出）
-const AI_AD_BLOCK_ID = '42821';            // 预留：激励视频广告2（签到已改免费，暂不占用此广告位）
+// ═══════ Monetag 激励弹窗广告（统一 zone：11583087，通过 show_11583087('pop') 触发）═══════
 
-// ═══════ 每日任务：1 个 Adsgram 任务广告单元 + 金币奖励 ═══════
+// ═══════ 每日任务：1 个任务 + 金币奖励（看 Monetag 弹窗广告）═══════
 const DAILY_TASKS = [
-  { key: 'task-42862', blockId: 'task-42862', icon: '📺', descKey: 'task_desc_1', coins: 10000 },
+  { key: 'task-watch-ad', icon: '📺', descKey: 'task_desc_1', coins: 10000 },
 ];
 const TASK_DONE_KEY = 'cybermerge_daily_tasks';  // 存 { date, done: [taskKey] }，每日重置
 
 // ═══════ 提现进度/创世分红：阶梯提现比例 + 里程碑 ═══════
 const WD_AD_LIMIT = 3;                      // 看广告临时特权每日上限 3 次
-const WD_AD_BLOCK_ID = '42864';             // 提现 20% 特权激励视频广告位
 const WD_MILESTONES = [
   { lv: 10, rate: 1,   icon: null,               noteKey: null },
   { lv: 20, rate: 5,   icon: null,               noteKey: null },
@@ -1586,16 +1584,31 @@ function makeNewbieLock() {
   });
   return card;
 }
-function watchNewbieAd() {
+// ═══════ Monetag 激励弹窗广告统一封装 ═══════
+// 所有广告位都走同一个 zone：show_11583087({ ymid: 玩家 Telegram ID })
+function showMonetagAd(onReward) {
   try {
-    if (!window.Adsgram) { toast(t('t_ad_not_loaded'), 'warn'); return; }
-    const AdController = window.Adsgram.init({ blockId: ADSGRAM_BLOCK_ID });
-    AdController.show()
-      .then(() => claimNewbieCat())
-      .catch(() => toast(t('t_ad_not_finished'), 'warn'));
+    if (typeof window.show_11583087 !== 'function') {
+      toast(t('t_ad_not_loaded'), 'warn');
+      return;
+    }
+    // 注入玩家 Telegram ID 到 Monetag 的 {ymid} 宏，供后端 postback 定位用户
+    window.show_11583087({ ymid: String(getTgId()) })
+      .then(() => {
+        // 广告观看完毕，执行原有发奖励逻辑
+        if (typeof onReward === 'function') onReward();
+      })
+      .catch(() => {
+        // 广告拉取失败或用户提前关闭
+        toast(t('t_ad_not_finished'), 'warn');
+      });
   } catch(_) {
     toast(t('t_ad_load_failed'), 'warn');
   }
+}
+
+function watchNewbieAd() {
+  showMonetagAd(() => claimNewbieCat());
 }
 
 function tap(e) {
@@ -1798,22 +1811,11 @@ function watchAd() {
     autoScrollCatTree();   // 广告得猫后自动滚动
   };
 
-  // 接入 Adsgram 广告
-  try {
-    if (!window.Adsgram) {
-      toast(t('t_ad_not_loaded'),'warn');
-      return;
-    }
-    const AdController = window.Adsgram.init({ blockId: ADSGRAM_BLOCK_ID });
-    AdController.show()
-      .then(() => grantReward())                                 // 成功看完 → 发奖励 + 存档
-      .catch(() => toast(t('t_ad_not_finished'),'warn'));    // 中途关闭 / 拉取失败
-  } catch(_) {
-    toast(t('t_ad_load_failed'),'warn');
-  }
+  // 接入 Monetag 广告（看完后发奖励 + 存档）
+  showMonetagAd(grantReward);
 }
 
-// ═══════ 每日任务：弹窗 + Adsgram 任务广告 ═══════
+// ═══════ 每日任务：弹窗 + Monetag 激励广告 ═══════
 function getDoneTasks() {
   const today = todayStr();
   try {
@@ -1848,34 +1850,29 @@ function renderTasks() {
       list.appendChild(item);
       return;
     }
-    // 未完成：使用 Adsgram Task Web Component（任务广告不能走 init/show）
-    const el = d('adsgram-task', 'task-adsgram');
-    el.setAttribute('data-block-id', task.blockId);
-    el.innerHTML =
-      '<span slot="reward" class="task-reward-slot">+ ' + task.coins + ' ' + t('level_coins_suf') + '</span>' +
-      '<span slot="button" class="task-go-btn">' + t('t_task_claim') + '</span>' +
-      '<span slot="claim" class="task-claim-btn">' + t('t_task_claim') + '</span>' +
-      '<span slot="done" class="task-done-btn">' + t('t_task_done_label') + '</span>';
-    bindTaskAd(el, task);
-    list.appendChild(el);
+    // 未完成：渲染为可点击任务条目，点击触发 Monetag 弹窗广告
+    const item = d('div', 'task-item');
+    item.innerHTML =
+      '<span class="task-icon">' + task.icon + '</span>' +
+      '<span class="task-info"><span class="task-desc">' + t(task.descKey) + '</span></span>' +
+      '<span class="task-reward">+ ' + task.coins + ' ' + t('level_coins_suf') + '</span>' +
+      '<button class="task-go-btn" type="button">' + t('t_task_claim') + '</button>';
+    item.querySelector('.task-go-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      showMonetagAd(() => grantTaskReward(task));
+    });
+    list.appendChild(item);
   });
 }
-// 任务广告通过 <adsgram-task> 的「reward」事件发奖（不是 init/show）
-function bindTaskAd(el, task) {
-  const grant = () => {
-    // 发金币奖励 + 标记完成 + 立即云存档
-    S.usdt = parseFloat((S.usdt + task.coins).toFixed(4));
-    S.adUsedToday++;                     // 任务广告计入每日总次数
-    markTaskDone(task.key);
-    ui();
-    toast(t('t_task_done').replace('{icon}', task.icon).replace('{coins}', task.coins),'success');
-    saveCloudNow();   // 广告奖励后立即云同步
-    renderTasks();                     // 刷新任务列表（标记已完成）
-  };
-  el.addEventListener('reward', grant);
-  el.addEventListener('onError', () => toast(t('t_ad_load_failed'),'warn'));
-  el.addEventListener('onBannerNotFound', () => toast(t('t_ad_not_finished'),'warn'));
-  el.addEventListener('onTooLongSession', () => toast(t('t_ad_not_loaded'),'warn'));
+// 任务广告看完后发金币奖励（Monetag 弹窗）
+function grantTaskReward(task) {
+  S.usdt = parseFloat((S.usdt + task.coins).toFixed(4));
+  S.adUsedToday++;                     // 任务广告计入每日总次数
+  markTaskDone(task.key);
+  ui();
+  toast(t('t_task_done').replace('{icon}', task.icon).replace('{coins}', task.coins),'success');
+  saveCloudNow();   // 广告奖励后立即云同步
+  renderTasks();                     // 刷新任务列表（标记已完成）
 }
 function openTasks() {
   renderTasks();
@@ -1883,7 +1880,7 @@ function openTasks() {
 }
 function closeTasks() {
   document.getElementById('task-modal')?.classList.remove('show');
-  // 关闭时清空任务列表，移除 <adsgram-task> 组件，避免它留在 DOM 里后台重试弹错误
+  // 关闭时清空任务列表，释放 DOM
   const list = document.getElementById('task-list');
   if (list) list.innerHTML = '';
 }
@@ -2071,22 +2068,14 @@ function spawnAirdrop() {
   setTimeout(() => { if (box.parentNode) box.remove(); }, 10000);
 }
 function watchAirdropAd(box) {
-  try {
-    if (!window.Adsgram) { toast(t('t_ad_not_loaded'), 'warn'); return; }
-    const AdController = window.Adsgram.init({ blockId: ADSGRAM_BLOCK_ID });
-    AdController.show()
-      .then(() => {
-        const reward = 5000;   // 空投金币补给（前端即时反馈 + 云同步，广告计数由回调记账）
-        S.usdt = parseFloat((S.usdt + reward).toFixed(4));
-        ui();
-        toast('+5000 ' + t('level_coins_suf'), 'success');
-        if (box && box.parentNode) box.remove();
-        saveCloudNow();
-      })
-      .catch(() => toast(t('t_ad_not_finished'), 'warn'));
-  } catch(_) {
-    toast(t('t_ad_load_failed'), 'warn');
-  }
+  showMonetagAd(() => {
+    const reward = 5000;   // 空投金币补给（前端即时反馈 + 云同步）
+    S.usdt = parseFloat((S.usdt + reward).toFixed(4));
+    ui();
+    toast('+5000 ' + t('level_coins_suf'), 'success');
+    if (box && box.parentNode) box.remove();
+    saveCloudNow();
+  });
 }
 function startAirdrop() {
   const loop = () => {
@@ -2770,21 +2759,13 @@ function btn(){
   // 看广告领 20% 提现特权（每日 3 次）
   document.getElementById('wd-ad-btn')?.addEventListener('click', () => {
     if (S.wdAdUsed >= WD_AD_LIMIT) { toast(t('wd_ad_done'), 'warn'); return; }
-    try {
-      if (!window.Adsgram) { toast(t('t_ad_not_loaded'), 'warn'); return; }
-      const AdController = window.Adsgram.init({ blockId: WD_AD_BLOCK_ID });
-      AdController.show()
-        .then(() => {
-          S.wdAdUsed++;
-          const c = document.getElementById('wd-ad-count');
-          if (c) c.textContent = '(' + S.wdAdUsed + '/' + WD_AD_LIMIT + ')';
-          toast(t('wd_ad_ok'), 'success');
-          saveCloudNow();
-        })
-        .catch(() => toast(t('t_ad_not_finished'), 'warn'));
-    } catch(_) {
-      toast(t('t_ad_load_failed'), 'warn');
-    }
+    showMonetagAd(() => {
+      S.wdAdUsed++;
+      const c = document.getElementById('wd-ad-count');
+      if (c) c.textContent = '(' + S.wdAdUsed + '/' + WD_AD_LIMIT + ')';
+      toast(t('wd_ad_ok'), 'success');
+      saveCloudNow();
+    });
   });
   // 邀请 3 名好友跃升下一级比例（复用邀请分享）
   document.getElementById('wd-invite-btn')?.addEventListener('click', () => {

@@ -51,13 +51,23 @@ CREATE INDEX IF NOT EXISTS idx_invites_inviter_day ON invites (inviter_tg_id, cr
 ALTER TABLE invites ADD COLUMN IF NOT EXISTS rewarded BOOLEAN DEFAULT false;
 ALTER TABLE invites ADD COLUMN IF NOT EXISTS rewarded_at BIGINT;
 
--- ── 广告服务端回调表（Adsgram Reward URL 回调记录，用于交叉校验风控）──
+-- ── 广告服务端回调表（Monetag postback 回调记录，用于交叉校验风控）──
 CREATE TABLE IF NOT EXISTS ad_callbacks (
   id         SERIAL PRIMARY KEY,
   tg_id      TEXT,
   created_at BIGINT
 );
 CREATE INDEX IF NOT EXISTS idx_ad_callbacks_tg_day ON ad_callbacks (tg_id, created_at);
+
+-- ── 广告财务流水表（Monetag 每次回调的预估收益，用于与 Monetag 后台对账）──
+CREATE TABLE IF NOT EXISTS ad_revenue (
+  id         BIGSERIAL PRIMARY KEY,
+  tg_id      TEXT,
+  event      TEXT DEFAULT '',
+  price      DOUBLE PRECISION DEFAULT 0,
+  created_at BIGINT DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_ad_revenue_tg_day ON ad_revenue (tg_id, created_at);
 
 -- ── RPC 1：记录邀请关系（开户时调用，仅记录，不发奖励）──────────────
 CREATE OR REPLACE FUNCTION insert_invite(p_inviter_tg_id text, p_invited_tg_id text, p_ts bigint)
@@ -534,29 +544,40 @@ INSERT INTO global_stats (id, total_ads_watched, current_prize_pool, season_id, 
 VALUES (1, 0, 0, 0, 0)
 ON CONFLICT (id) DO NOTHING;
 
--- ── 4. 广告回调记账（Adsgram 服务端回调调用，广告计数唯一权威来源）──
--- 第三方不提供 tx_id → 改用「用户级 15 秒防抖锁」（PostgreSQL 咨询锁实现）
-CREATE OR REPLACE FUNCTION record_ad_callback(p_tg_id text)
+-- ── 4. 广告回调记账（Monetag postback 回调调用，广告计数唯一权威来源）──
+-- 第三方不提供唯一 tx_id → 改用「用户级 15 秒防抖锁」（PostgreSQL 咨询锁实现）保证幂等
+DROP FUNCTION IF EXISTS record_ad_callback(text);
+CREATE OR REPLACE FUNCTION record_ad_callback(p_tg_id text, p_event text, p_price double precision)
 RETURNS json AS $$
 DECLARE
   v_day text := to_char(now() AT TIME ZONE 'UTC', 'YYYY-MM-DD');
   v_now bigint := (extract(epoch from now())*1000)::bigint;
   v_last bigint;
+  v_user_exists boolean;
 BEGIN
   -- 用户级咨询锁：同一 userid 串行，避免并发请求绕过防抖
   PERFORM pg_advisory_xact_lock(1, hashtext(p_tg_id));
 
-  -- 15 秒防抖：同一 userid 15 秒内只允许成功记账一次
+  -- 用户存在性校验：无效 user_id 直接拒绝（不记账、不发奖）
+  SELECT EXISTS(SELECT 1 FROM users WHERE tg_id = p_tg_id) INTO v_user_exists;
+  IF NOT v_user_exists THEN
+    RETURN json_build_object('ok', false, 'reason', 'user not found');
+  END IF;
+
+  -- 15 秒防抖：同一 userid 15 秒内只允许成功记账一次（幂等）
   SELECT MAX(created_at) INTO v_last FROM ad_callbacks
   WHERE tg_id = p_tg_id AND created_at >= v_now - 15000;
-
   IF v_last IS NOT NULL THEN
     RETURN json_build_object('ok', false, 'reason', 'duplicate callback within 15s');
   END IF;
 
   INSERT INTO ad_callbacks (tg_id, created_at) VALUES (p_tg_id, v_now);
 
-  -- 全服奖池：每 1 次广告 +0.001U
+  -- 财务流水：记录本次广告预估收益（event + price，供对账）
+  INSERT INTO ad_revenue (tg_id, event, price, created_at)
+  VALUES (p_tg_id, COALESCE(p_event, ''), COALESCE(p_price, 0), v_now);
+
+  -- 全服奖池：每 1 次广告 +0.001U（保持原经济模型不变）
   UPDATE global_stats
   SET total_ads_watched = total_ads_watched + 1,
       current_prize_pool = current_prize_pool + 0.001,
