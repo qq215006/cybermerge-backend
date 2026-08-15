@@ -73,7 +73,8 @@
       0 0 0 2px #1d1108 inset,
       0 20px 80px rgba(0,0,0,0.75),
       0 0 0 1px rgba(255,220,180,0.08);
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
   /* 桌面端：房间背景跟着 9:16 容器一起裁剪（不再是 fixed 全屏） */
   #room-bg {
@@ -336,12 +337,13 @@
   padding: 6px 12px 6px 8px;
   border-radius: 18px;
   background: linear-gradient(180deg, #ff7d8f 0%, #ec485e 55%, #d6344a 100%);
-  border: 2.5px solid #fff;
-  border-bottom: 4px solid #b71c34;
+  border: 2px solid #f6c445;
+  border-bottom: 4px solid #b8860b;
   box-shadow:
-    inset 0 1.5px 0 rgba(255,255,255,0.55),
-    inset 0 -2px 4px rgba(180,40,60,0.2),
-    0 5px 14px rgba(180,40,60,0.28);
+    inset 0 2px 0 rgba(255,255,255,0.7),
+    inset 0 -3px 6px rgba(140,70,20,0.16),
+    0 5px 16px rgba(180,40,60,0.28),
+    0 0 0 1px rgba(255,215,130,0.35);
   color: #fff;
   min-width: 0;
   flex: 1;
@@ -2052,7 +2054,58 @@
   flex-direction: column;
   gap: 12px;
 }
-/* 排行类型切换 Tab（全球 / 好友） */
+/* 赛季倒计时 + 瓜分规则 */
+.season-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.season-countdown-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #fff8e1, #ffe082);
+  border: 2px solid #ffb300;
+  box-shadow: 0 3px 10px rgba(255,179,0,0.25);
+}
+.season-countdown-label {
+  font-size: 13px;
+  font-weight: 800;
+  color: #795548;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.season-countdown-value {
+  font-size: 15px;
+  font-weight: 900;
+  color: #e65100;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+.season-rule {
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.7);
+  border: 1.5px solid #f0d5b0;
+}
+.season-rule-title {
+  font-size: 13px;
+  font-weight: 900;
+  color: #5d4037;
+  margin-bottom: 6px;
+}
+.season-rule-text {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #8d6e63;
+  font-weight: 600;
+}
+/* 排行类型切换 Tab（赛季 / 邀请） */
 .lb-tabs {
   display: flex;
   gap: 8px;
@@ -2761,12 +2814,12 @@
   inset: 0;
   z-index: 100003;
   display: none;
-  align-items: center;
-  justify-content: center;
+  align-items: stretch;
+  justify-content: flex-end;
   background: rgba(60,30,10,0.55);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  padding: 16px;
+  padding: 0;
 }
 .profile-modal.show {
   display: flex;
@@ -2774,15 +2827,22 @@
 }
 .profile-content {
   width: 100%;
-  max-width: 340px;
-  max-height: 88vh;
+  max-width: 320px;
+  height: 100%;
+  max-height: 100dvh;
   overflow-y: auto;
   background: linear-gradient(180deg, #fffdf6 0%, #fff3e0 100%);
   border: 3px solid #d9b686;
-  border-radius: 22px;
-  box-shadow: 0 12px 40px rgba(80,40,10,0.4);
+  border-right: none;
+  border-radius: 22px 0 0 22px;
+  box-shadow: -12px 0 40px rgba(80,40,10,0.4);
   display: flex;
   flex-direction: column;
+  animation: profileSlideIn 0.28s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+@keyframes profileSlideIn {
+  from { transform: translateX(100%); opacity: 0.6; }
+  to { transform: translateX(0); opacity: 1; }
 }
 .profile-header {
   display: flex;
@@ -2884,3 +2944,535 @@
   -webkit-tap-highlight-color: transparent;
 }
 .pf-copy-btn:active { transform: scale(0.97); }
+
+/* ═══════════════════════════════════════════
+   6大核心模式 UI：S1 横幅 + 快捷排 + USDT + 回收态 + 空投
+   （温馨琉璃果冻质感 Warm Glassmorphism & Claymorphism）
+   ═══════════════════════════════════════════ */
+.season-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(255,248,225,0.88), rgba(255,224,178,0.78));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(255,215,130,0.9);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.85),
+    inset 0 -2px 6px rgba(200,130,50,0.12),
+    0 4px 14px rgba(180,120,40,0.18);
+}
+.season-banner-left { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.season-banner-title { font-size: 13px; font-weight: 900; color: #6d4c41; white-space: nowrap; }
+.season-banner-countdown { font-size: 12px; font-weight: 800; color: #e65100; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.season-banner-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; }
+.season-banner-pool-label { font-size: 11px; font-weight: 700; color: #8d6e63; }
+.season-banner-pool-value {
+  font-size: 22px;
+  font-weight: 900;
+  color: #e65100;
+  text-shadow: 0 0 14px rgba(255,160,0,0.55), 0 1px 0 rgba(255,255,255,0.7);
+  font-variant-numeric: tabular-nums;
+}
+
+.quick-actions { display: flex; gap: 8px; }
+.quick-action {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 0;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255,255,255,0.9);
+  background: linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,236,200,0.62));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 2px 8px rgba(180,120,40,0.12);
+  color: #6d4c41;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+.quick-action:active { transform: scale(0.96); }
+
+.balance-pill-usdt {
+  flex: 0 0 auto;
+  gap: 5px;
+  padding: 5px 10px;
+  background: linear-gradient(180deg, #ffe8a3 0%, #ffd54f 55%, #ffb300 100%);
+  border-color: #fff3c4;
+  border-bottom-color: #c88700;
+  color: #6d4c41;
+}
+.balance-pill-usdt .bp-icon {
+  background: radial-gradient(circle at 40% 30%, #fff 0%, #fff3c4 60%, #ffe082 100%);
+}
+.balance-pill-usdt .bp-num { color: #6d4c41; text-shadow: 0 1px 0 rgba(255,255,255,0.5); }
+.balance-pill-usdt .bp-sub { color: #7a5c2e; }
+
+/* 中央买猫按钮：拖拽时变身「官方回收站」发光态 */
+.bottom-btn-red-main.recycle-mode {
+  background: linear-gradient(180deg, #ff9d5c 0%, #ff7043 55%, #e64a19 100%);
+  border-color: #ffd54f;
+  box-shadow: 0 0 20px rgba(255,112,67,0.85), 0 0 0 2px rgba(255,213,79,0.6);
+  animation: recyclePulse 0.6s ease-in-out infinite;
+}
+@keyframes recyclePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+
+/* 中央买猫按钮：35 级封顶钛金锁定态 */
+.bottom-btn-red-main.shop-locked {
+  background: linear-gradient(180deg, #cfd8dc 0%, #90a4ae 55%, #607d8b 100%);
+  border-color: #eceff1;
+  border-bottom-color: #455a64;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.5), inset 0 1px 0 rgba(255,255,255,0.6);
+  filter: none;
+}
+.bottom-btn-red-main.shop-locked .bb-coin-icon,
+.bottom-btn-red-main.shop-locked .buy-cat-float { opacity: 0.55; }
+
+/* 动态空投层 */
+#airdrop-layer {
+  position: relative;
+  width: 100%;
+  max-width: 370px;
+  height: 0;
+  pointer-events: none;
+}
+.airdrop-box {
+  position: absolute;
+  width: 52px;
+  height: 52px;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  cursor: pointer;
+  z-index: 5;
+  filter: drop-shadow(0 4px 8px rgba(180,120,40,0.35));
+  animation: airdropFloat 3s ease-in-out infinite, airdropBreathe 1.6s ease-in-out infinite;
+}
+@keyframes airdropFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes airdropBreathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+/* 新人 99% 锁猫 */
+.newbie-slot { position: relative; }
+.newbie-lock { position: relative; cursor: pointer; }
+.newbie-lock-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.newbie-lock-img { filter: grayscale(0.8) brightness(0.7); }
+.newbie-lock-icon {
+  position: absolute;
+  font-size: 22px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4));
+}
+.newbie-progress {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  font-size: 10px;
+  font-weight: 900;
+  color: #fff;
+  background: linear-gradient(135deg, #ff9800, #e65100);
+  padding: 2px 5px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* HUD 个人数据总览（半透明磨砂琉璃面板） */
+.hud-panel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(255,255,255,0.85);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.8),
+    0 3px 10px rgba(180,120,40,0.14);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.hud-panel:active { transform: scale(0.995); }
+.hud-profile { display: flex; align-items: center; gap: 8px; flex-shrink: 0; cursor: pointer; }
+.hud-avatar { width: 42px; height: 42px; border-radius: 50%; border: 2px solid #fff; object-fit: cover; background: #fff5e6; box-shadow: 0 2px 6px rgba(120,70,20,0.18); }
+.hud-user { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
+.hud-name { font-size: 14px; font-weight: 800; color: #5d4037; max-width: 88px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hud-lv { font-size: 12px; font-weight: 900; color: #e65100; }
+.hud-stats { display: flex; align-items: center; gap: 10px; flex: 1; justify-content: center; min-width: 0; }
+.hud-stat { font-size: 13px; font-weight: 800; color: #6d4c41; white-space: nowrap; flex-shrink: 0; }
+.hud-stat b { font-weight: 900; color: #5d4037; margin-left: 2px; font-size: 14px; }
+.hud-usdt b { color: #e65100; }
+
+/* 快捷排：圆形小图标（横排居中） */
+.quick-actions { display: flex; gap: 10px; justify-content: center; }
+.quick-action {
+  flex: 0 0 auto;
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 0;
+  border: 1.5px solid rgba(255,255,255,0.95);
+  background: linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,236,200,0.7));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 3px 10px rgba(180,120,40,0.18);
+  color: #6d4c41;
+  font-size: 22px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+.quick-action span {
+  font-size: 8px;
+  line-height: 1.05;
+  font-weight: 800;
+  max-width: 58px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+.quick-action:active { transform: scale(0.94); }
+
+/* ═══════════════════════════════════════════
+   合规广告二次确认弹窗
+   ═══════════════════════════════════════════ */
+.confirm-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100010;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(40,20,5,0.6);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  padding: 20px;
+}
+.confirm-modal.show { display: flex; animation: stFade 0.22s ease-out; }
+.confirm-content {
+  width: 100%;
+  max-width: 300px;
+  background: linear-gradient(180deg, #fffdf6 0%, #fff3e0 100%);
+  border: 2.5px solid #d9b686;
+  border-radius: 20px;
+  box-shadow: 0 12px 36px rgba(80,40,10,0.4);
+  padding: 18px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  animation: confirmPop 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+@keyframes confirmPop {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.confirm-icon { font-size: 42px; line-height: 1; }
+.confirm-title { font-size: 16px; font-weight: 900; color: #5d4037; text-align: center; }
+.confirm-desc { font-size: 12.5px; font-weight: 600; color: #8d6e63; text-align: center; line-height: 1.5; }
+.confirm-actions { display: flex; gap: 10px; width: 100%; margin-top: 4px; }
+.confirm-cancel, .confirm-ok {
+  flex: 1;
+  padding: 11px 0;
+  border-radius: 12px;
+  border: none;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  font-family: inherit;
+}
+.confirm-cancel {
+  background: #f5e9d3;
+  color: #6d4c41;
+  border: 1.5px solid #e0c9a6;
+}
+.confirm-ok {
+  background: linear-gradient(180deg, #66bb6a 0%, #388e3c 100%);
+  color: #fff;
+  border: 1.5px solid #fff;
+  border-bottom: 3px solid #2e7d32;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+}
+.confirm-cancel:active, .confirm-ok:active { transform: scale(0.97); }
+
+/* 个人中心操作按钮配色 */
+.pf-wallet-btn { background: linear-gradient(135deg, #5c6bc0, #7e57c2); box-shadow: 0 2px 6px rgba(92,107,192,0.35); }
+.pf-withdraw-btn { background: linear-gradient(135deg, #ffb300, #e65100); box-shadow: 0 2px 6px rgba(230,81,0,0.35); }
+.pf-settings-btn { background: linear-gradient(135deg, #90a4ae, #607d8b); box-shadow: 0 2px 6px rgba(96,125,139,0.35); }
+
+/* 新人 99% 锁猫：皇冠 + 锁 + 进度 */
+.newbie-crown {
+  position: absolute;
+  top: -2px;
+  right: -1px;
+  font-size: 20px;
+  filter: drop-shadow(0 2px 3px rgba(180,120,0,0.55));
+  transform: rotate(12deg);
+  z-index: 3;
+}
+
+/* 官方回收站态：中央按钮文字/图标高亮 */
+.bottom-btn-red-main.recycle-mode .bb-coin-icon {
+  background: radial-gradient(circle at 38% 30%, #fff 0%, #ffe0b2 40%, #ff9800 100%);
+  color: #d84315;
+}
+.bottom-btn-red-main.recycle-mode .bb-lv-label {
+  background: rgba(255,255,255,0.9);
+  color: #d84315;
+  border-color: #fff;
+}
+
+/* 空投补给箱：沿边缘游走 + 呼吸灯 */
+.airdrop-box {
+  animation: airdropFloat 3s ease-in-out infinite, airdropBreathe 1.6s ease-in-out infinite, airdropPatrol 12s ease-in-out infinite alternate;
+}
+@keyframes airdropPatrol {
+  0% { margin-top: -40px; }
+  50% { margin-top: 30px; }
+  100% { margin-top: 0px; }
+}
+
+/* ═══════════════════════════════════════════
+   推特赚金：9:16 赛博朋克/超梦海报弹窗
+   ═══════════════════════════════════════════ */
+.poster-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100012;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(20,8,30,0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 16px;
+}
+.poster-modal.show { display: flex; animation: stFade 0.25s ease-out; }
+.poster-content {
+  width: 100%;
+  max-width: 320px;
+  max-height: 96vh;
+  overflow-y: auto;
+  background: linear-gradient(180deg, #1a0b2e 0%, #0d0221 100%);
+  border: 2px solid #ff00aa;
+  border-radius: 20px;
+  box-shadow:
+    0 0 0 1px rgba(0,255,255,0.4),
+    0 0 24px rgba(255,0,170,0.5),
+    0 12px 40px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  animation: confirmPop 0.24s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+.poster-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255,0,170,0.35);
+}
+.poster-title { font-size: 15px; font-weight: 900; color: #ffd6ff; text-shadow: 0 0 8px rgba(255,0,170,0.8); }
+.poster-close {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid #ff00aa;
+  background: rgba(255,255,255,0.08);
+  color: #ffd6ff;
+  font-size: 14px; font-weight: 900;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.poster-close:active { transform: scale(0.9); }
+.poster-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 10px 14px 0;
+}
+.poster-tab {
+  flex: 1;
+  padding: 8px 0;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.06);
+  color: #ffd6ff;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+.poster-tab-active {
+  background: linear-gradient(135deg, rgba(255,0,170,0.55), rgba(0,255,255,0.4));
+  border-color: #ff00aa;
+  color: #fff;
+  box-shadow: 0 0 12px rgba(255,0,170,0.5);
+}
+.poster-body {
+  display: flex;
+  justify-content: center;
+  padding: 12px;
+}
+#poster-canvas {
+  width: 100%;
+  max-width: 264px;
+  height: auto;
+  border-radius: 12px;
+  border: 1px solid rgba(0,255,255,0.35);
+  box-shadow: 0 0 18px rgba(0,255,255,0.25);
+  display: block;
+  background: #0d0221;
+}
+.poster-actions {
+  padding: 10px 14px 14px;
+  display: flex;
+}
+.poster-share-x {
+  flex: 1;
+  padding: 12px 0;
+  border-radius: 14px;
+  border: 1.5px solid #fff;
+  border-bottom: 3px solid #000;
+  background: linear-gradient(180deg, #2b2b2b 0%, #0a0a0a 100%);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  font-family: inherit;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.4), 0 0 14px rgba(255,0,170,0.3);
+}
+.poster-share-x:active { transform: scale(0.97); }
+
+/* ═══════════════════════════════════════════
+   猫抓板上方悬浮小喇叭（全服喜讯排队滚动播报）
+   ═══════════════════════════════════════════ */
+.broadcast-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 370px;
+  height: 34px;
+  margin: 2px 0 6px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: #7a4a00;
+  font-weight: 800;
+  font-size: 12px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.broadcast-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  z-index: 1;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.25));
+}
+.broadcast-track {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  margin-left: 38px;
+  overflow: hidden;
+}
+.broadcast-text {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  will-change: transform;
+  text-shadow:
+    0 1px 2px rgba(255,255,255,0.95),
+    0 0 5px rgba(255,255,255,0.85);
+}
+
+/* ═══════════════════════════════════════════
+   自付 Gas 提现：Loading 遮罩 + 成功钞票雨
+   ═══════════════════════════════════════════ */
+.withdraw-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 100020;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.withdraw-loading.show { display: flex; }
+.withdraw-loading-box {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+.withdraw-spinner {
+  width: 34px; height: 34px;
+  border: 3px solid #e0e0e0;
+  border-top-color: #2e7d32;
+  border-radius: 50%;
+  animation: wdSpin 0.9s linear infinite;
+}
+@keyframes wdSpin { to { transform: rotate(360deg); } }
+.withdraw-loading-text { font-size: 13px; font-weight: 800; color: #5d4037; }
+
+#money-rain {
+  position: fixed;
+  inset: 0;
+  z-index: 100030;
+  pointer-events: none;
+  overflow: hidden;
+}
+.money-bill {
+  position: absolute;
+  top: -60px;
+  font-size: 28px;
+  animation: moneyFall linear forwards;
+}
+@keyframes moneyFall {
+  to { transform: translateY(110vh) rotate(360deg); opacity: 0.8; }
+}

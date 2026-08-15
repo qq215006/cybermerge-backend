@@ -14,37 +14,78 @@
 // ═══════ 国际化字典 i18n（zh / en / ru）═══════
 const I18N = {
   // 心心胶囊
-  timer_rate:       { zh:'本期鱼池',         en:'Current Pool',          ru:'Текущий пул' },
+  timer_rate:       { zh:'本期鱼池',         en:'Pool',                 ru:'Пул' },
   // 等级横排
-  level_coins_suf: { zh:'金',               en:'coins',                 ru:'монет' },
-  level_reward_t:  { zh:'本期收益',          en:'Current Earnings',       ru:'Текущий заработок' },
-  level_reward_s:  { zh:'鱼池瓜分',          en:'Pool Share',             ru:'Доля пула' },
-  level_max:       { zh:'40级',              en:'LV.40',                  ru:'Ур.40' },
+  level_coins_suf: { zh:'金',               en:'c',                    ru:'м' },
+  level_reward_t:  { zh:'本期收益',          en:'Earnings',             ru:'Доход' },
+  level_reward_s:  { zh:'鱼池瓜分',          en:'Share',                ru:'Доля' },
+  level_max:       { zh:'40级',              en:'LV.40',                ru:'Ур.40' },
   // 标签行
-  wallet_connect:  { zh:'链接钱包 Connect',  en:'Connect Wallet',         ru:'Подключить кошелек' },
-  invite_text:     { zh:'邀请好友',          en:'Invite Friends',         ru:'Пригласить друзей' },
-  invite_en:       { zh:'Invite / Friends',  en:'Invite / Friends',       ru:'Invite / Friends' },
+  wallet_connect:  { zh:'链接钱包',          en:'Wallet',               ru:'Кошелек' },
+  invite_text:     { zh:'邀请好友',          en:'Invite',               ru:'Инвайт' },
+  community:       { zh:'社区',              en:'Community',            ru:'Сообщество' },
+  invite_en:       { zh:'Invite',            en:'Invite',               ru:'Invite' },
   // 顶部全球等级榜按钮
-  leaderboard:     { zh:'全球等级榜',        en:'Global Rank',            ru:'Мировой рейтинг' },
-  lb_my_rank:      { zh:'我的排名',          en:'My Rank',                ru:'Мой рейтинг' },
-  lb_tab_global:   { zh:'🌍 全球排行',       en:'🌍 Global',              ru:'🌍 Мировой' },
-  lb_tab_invite:   { zh:'👥 邀请榜',          en:'👥 Invites',            ru:'👥 Приглашения' },
-  lb_empty:        { zh:'🏆 暂无上榜数据，快去合成升级吧！', en:'🏆 No ranking yet. Merge cats to rank up!', ru:'🏆 Пока нет рейтинга. Объединяйте котов!' },
-  lb_empty_invite: { zh:'👥 今日暂无邀请，快去邀请好友冲榜吧！', en:'👥 No invites today. Invite friends to rank!', ru:'👥 Пока нет приглашений сегодня. Пригласите друзей!' },
+  leaderboard:     { zh:'全球等级榜',        en:'Rank',                 ru:'Рейтинг' },
+  lb_my_rank:      { zh:'我的排名',          en:'My Rank',                ru:'Рейтинг' },
+  lb_tab_invite:   { zh:'👥 邀请榜',          en:'👥 Invite',             ru:'👥 Инвайт' },
+  lb_empty_invite: { zh:'👥 本周暂无邀请，快去邀请好友冲榜吧！', en:'👥 No invites this week. Invite friends to rank!', ru:'👥 Пока нет приглашений на этой неделе. Пригласите друзей!' },
   lb_loading:      { zh:'⏳ 排行榜加载中...', en:'⏳ Loading leaderboard...', ru:'⏳ Загрузка рейтинга...' },
   lb_invite_unit:  { zh:'邀请', en:'invites', ru:'пригл.' },
+  // 赛季天梯
+  season_ladder:    { zh:'赛季天梯',      en:'Season',           ru:'Сезон' },
+  season_title:     { zh:'赛季',          en:'Season',           ru:'Сезон' },
+  season_tab:        { zh:'🏆 赛季榜',     en:'🏆 Season',        ru:'🏆 Сезон' },
+  season_countdown:  { zh:'赛季倒计时',    en:'Countdown',        ru:'Отсчёт' },
+  season_rule:       { zh:'赛季瓜分规则',  en:'Rules',            ru:'Правила' },
+  season_rule_text:  { zh:'赛季倒计时结束后统计，锁定满40级的用户，按本周看广告数量占比瓜分红利池所有资金。', en:'At season end, LV.40 holders split the entire pool in proportion to ads watched this week.', ru:'По окончании сезона держатели LV.40 делят весь пул пропорционально просмотренной рекламе за неделю.' },
+  season_shares_unit:{ zh:'份',            en:'shares',          ru:'долей' },
+  season_empty:     { zh:'🏆 本场暂无40级招财猫，快去合成升级抢占份额吧！', en:'🏆 No LV.40 cats this season yet. Merge to grab a share!', ru:'🏆 Пока нет котов LV.40 в этом сезоне. Объединяйте, чтобы получить долю!' },
+  // 快捷功能小圆标
+  quick_leaderboard: { zh:'全球天梯',        en:'Rank',                ru:'Топ' },
+  quick_community:   { zh:'官方社区',        en:'Group',               ru:'Группа' },
+  quick_invite:      { zh:'邀请赚U',         en:'Invite U',            ru:'Инвайт U' },
+  quick_settings:    { zh:'设置',            en:'Settings',            ru:'Настр.' },
+  // 底部 Dock：每日签到 + 推特赚金
+  twitter_btn:       { zh:'推特赚金',        en:'X Earn',               ru:'X Доход' },
+  twitter_sub:       { zh:'X / Share',       en:'X / Share',            ru:'X / Share' },
+  daily_checkin:     { zh:'🎯 每日签到',     en:'🎯 Check-in',          ru:'🎯 Чек-ин' },
+  // 个人中心操作按钮
+  profile_wallet:    { zh:'连接 TON 钱包',   en:'Connect TON',          ru:'TON-кошелек' },
+  profile_claim:     { zh:'Claim / 提现',    en:'Claim',                ru:'Вывод' },
+  profile_settings:  { zh:'游戏设置',        en:'Settings',             ru:'Настройки' },
+  // 合规广告二次确认弹窗
+  confirm_cancel:    { zh:'取消',            en:'Cancel',               ru:'Отмена' },
+  confirm_ok:        { zh:'▶ 观看视频',      en:'▶ Watch',              ru:'▶ Смотреть' },
+  confirm_newbie_t:  { zh:'📺 观看 1 次赞助广告即可解锁', en:'📺 Watch 1 sponsored ad to unlock', ru:'📺 Посмотрите 1 рекламу для разблокировки' },
+  confirm_newbie_d:  { zh:'解锁 35 级皇冠猫', en:'Unlock the LV.35 crown cat', ru:'Разблокировать кота LV.35' },
+  confirm_airdrop_t: { zh:'📺 观看视频立即开启大量金币', en:'📺 Watch video to open a big coin supply', ru:'📺 Смотрите видео, чтобы получить монеты' },
+  confirm_airdrop_d: { zh:'开启补给箱，获得金币奖励', en:'Open the supply crate for coins', ru:'Откройте ящик и получите монеты' },
+  poster_title:      { zh:'生成海报',         en:'Poster',               ru:'Постер' },
+  poster_share:      { zh:'分享 X',           en:'Share X',              ru:'Поделиться X' },
+  style_cyberpunk:   { zh:'赛博朋克',        en:'Cyber',                ru:'Кибер' },
+  style_dreamland:   { zh:'梦幻乐园',        en:'Dream',                ru:'Мечта' },
+  style_cute:        { zh:'超萌',            en:'Cute',                 ru:'Милота' },
+  t_need_wallet:    { zh:'请先连接 TON 钱包', en:'Connect TON wallet first', ru:'Сначала подключите TON-кошелек' },
+  t_need_10usdt:    { zh:'USD₮ 余额需达到 10 才可提现', en:'Need at least 10 USD₮ to withdraw', ru:'Нужно минимум 10 USD₮ для вывода' },
+  // 倒计时单位
+  time_day:        { zh:'天', en:'d', ru:'д' },
+  time_hour:       { zh:'时', en:'h', ru:'ч' },
+  time_minute:     { zh:'分', en:'m', ru:'м' },
+  time_second:     { zh:'秒', en:'s', ru:'с' },
   // 底部按钮
   ad_text:         { zh:'广告加速',           en:'Ad Boost',              ru:'Реклама-буст' },
   task_title:      { zh:'每日任务',           en:'Task',                    ru:'Задания' },
   task_sub:        { zh:'Task / Earn',        en:'Task / Earn',            ru:'Задания / Доход' },
   buy_label:       { zh:'买 LV.',             en:'Buy LV.',               ru:'Купить LV.' },
+  shop_locked:     { zh:'🛑 35级封顶',        en:'🛑 35 cap',             ru:'🛑 35 макс.' },
   pokedex_btn:     { zh:'猫咪图鉴',           en:'Pedia',                   ru:'Сбор' },
   pokedex_count:   { zh:'已收集',             en:'Collected',              ru:'Собрано' },
   pokedex_unit:    { zh:'只猫咪',             en:'cats',                   ru:'котов' },
   // 签到合成按钮（每日免费签到开启智能合成 + 离线产出，0点重置）
-  ai_on:           { zh:'⚡ 合成中',          en:'⚡ Merging',           ru:'⚡ Слияние' },
-  ai_off:          { zh:'⚡ 合成关',          en:'⚡ Merge OFF',         ru:'⚡ Слияние ВЫКЛ' },
-  ai_locked:       { zh:'⚡ 签到合成',        en:'⚡ Check-in & Merge',  ru:'⚡ Чек-ин и слияние' },
+  ai_on:           { zh:'⚡ 合成中',          en:'⚡ On',               ru:'⚡ Вкл' },
+  ai_off:          { zh:'⚡ 已签到',          en:'⚡ Checked',          ru:'⚡ Чек-ин' },
+  ai_locked:       { zh:'🎯 每日签到',        en:'🎯 Check-in',         ru:'🎯 Чек-ин' },
   // 离线收益弹窗
   offline_title:   { zh:'🎁 离线收益',        en:'🎁 Offline Earnings',  ru:'🎁 Офлайн-доход' },
   offline_desc:    { zh:'你离开期间累计产出', en:'Earned while you were away', ru:'Заработано за время офлайн' },
@@ -52,10 +93,10 @@ const I18N = {
   offline_claim:   { zh:'领取',              en:'Claim',                ru:'Получить' },
   // 设置面板
   settings_title:  { zh:'⚙️ 系统设置 Settings', en:'⚙️ Settings',         ru:'⚙️ Настройки' },
-  music_label:     { zh:'🎵 背景音乐',         en:'🎵 Background Music',    ru:'🎵 Фоновая музыка' },
-  sfx_label:       { zh:'🔔 游戏音效',         en:'🔔 Sound Effects',       ru:'🔔 Звуковые эффекты' },
+  music_label:     { zh:'🎵 背景音乐',         en:'🎵 Music',              ru:'🎵 Музыка' },
+  sfx_label:       { zh:'🔔 游戏音效',         en:'🔔 SFX',                ru:'🔔 Звук' },
   lang_label:      { zh:'🌍 语言 Language',    en:'🌍 Language',            ru:'🌍 Язык' },
-  rules_label:     { zh:'📖 游戏规则',         en:'📖 Game Rules',          ru:'📖 Правила игры' },
+  rules_label:     { zh:'📖 游戏规则',         en:'📖 Rules',              ru:'📖 Правила' },
   rules_text: {
     zh: '• 拖动相同等级的猫咪可合成更高一级<br>• 商店购买猫咪消耗金币，每次购买全场物价+7%<br>• 看广告可加速产出并免费领猫咪<br>• 签到合成后自动运行并离线产出（每日免费开启）<br>• 邀请好友 + 完成任务墙赚额外金币<br>• 链接 TON 钱包后可提现鱼池收益',
     en: '• Drag same-level cats to merge into a higher level<br>• Buying cats costs coins; each purchase raises all prices by 7%<br>• Watch ads to boost output and get free cats<br>• Auto Merge + offline earnings run after daily check-in<br>• Invite friends + complete tasks to earn extra coins<br>• Connect TON wallet to withdraw pool earnings',
@@ -63,13 +104,13 @@ const I18N = {
   },
   version:         { zh:'v1.0.0 · CyberMerge', en:'v1.0.0 · CyberMerge',  ru:'v1.0.0 · CyberMerge' },
   // 提现进度 / 创世分红弹窗
-  withdraw_title:  { zh:'提现进度 / 创世分红', en:'Withdraw / Genesis Dividend', ru:'Вывод / Генезис-дивиденд' },
+  withdraw_title:  { zh:'提现进度 / 创世分红', en:'Withdraw / Dividend', ru:'Вывод / Дивиденд' },
   withdraw_btn:    { zh:'分红进度',          en:'Dividend',               ru:'Дивиденды' },
-  withdraw_sub:    { zh:'再开7级，提现比例提升', en:'Open 7 more levels to boost withdrawal', ru:'Откройте ещё 7 уровней' },
-  wd_pool_label:   { zh:'💰 本期鱼池（可提现）', en:'💰 Current Pool (Withdrawable)', ru:'💰 Текущий пул (к выводу)' },
-  wd_rate_prefix:  { zh:'当前可提现比例：',   en:'Current withdrawal rate: ', ru:'Текущая ставка вывода: ' },
-  wd_ad_text:      { zh:'看广告领 20% 特权', en:'Watch ad for 20% boost', ru:'Смотрите рекламу — вывод 20%' },
-  wd_invite_text:  { zh:'邀请 3 名好友，直接跃升下一级比例！', en:'Invite 3 friends to jump to next tier!', ru:'Пригласите 3 друзей и перейдите на следующий уровень!' },
+  withdraw_sub:    { zh:'再开7级，提现比例提升', en:'Open 7 levels ↑',    ru:'Ещё 7 уровней ↑' },
+  wd_pool_label:   { zh:'💰 本期鱼池（可提现）', en:'💰 Current Pool',     ru:'💰 Текущий пул' },
+  wd_rate_prefix:  { zh:'当前可提现比例：',   en:'Withdraw rate: ',       ru:'Ставка вывода: ' },
+  wd_ad_text:      { zh:'看广告领 20% 特权', en:'Watch ad +20%',         ru:'Реклама +20%' },
+  wd_invite_text:  { zh:'邀请 3 名好友，直接跃升下一级比例！', en:'Invite 3 ↑', ru:'Пригласи 3 ↑' },
   wd_rate_label:   { zh:'提现',               en:'Withdraw',               ru:'Вывод' },
   wd_ms_dividend:  { zh:'每日分红',            en:'Daily Dividend',         ru:'Дневной дивиденд' },
   wd_ms_reached:   { zh:'已达成',              en:'Reached',                ru:'Достигнуто' },
@@ -77,15 +118,15 @@ const I18N = {
   wd_ms_locked:    { zh:'未解锁',              en:'Locked',                 ru:'Заблокировано' },
   // 个人中心
   profile_title:   { zh:'👤 个人中心',         en:'👤 Profile',             ru:'👤 Профиль' },
-  profile_coins:   { zh:'总金币',              en:'Total Coins',           ru:'Всего монет' },
+  profile_coins:   { zh:'总金币',              en:'Coins',                 ru:'Монеты' },
   profile_earn:    { zh:'每秒产出',            en:'Earn / sec',            ru:'Доход / сек' },
-  profile_invite:  { zh:'邀请人数',            en:'Invites',               ru:'Приглашения' },
-  profile_weekad:  { zh:'本周看广告',          en:'Ads this week',         ru:'Реклама за неделю' },
-  profile_divcats: { zh:'40级猫分红',          en:'LV.40 Dividends',       ru:'Дивиденды LV.40' },
-  profile_rate:    { zh:'提现比例',            en:'Withdraw Rate',         ru:'Ставка вывода' },
-  profile_ref:     { zh:'邀请码',              en:'Invite Code',           ru:'Код приглашения' },
-  profile_copy:    { zh:'复制邀请码',          en:'Copy Invite Code',      ru:'Копировать код' },
-  profile_copied:  { zh:'✅ 邀请码已复制',     en:'✅ Invite code copied', ru:'✅ Код скопирован' },
+  profile_invite:  { zh:'邀请人数',            en:'Invites',               ru:'Инвайты' },
+  profile_weekad:  { zh:'本周看广告',          en:'Ads / week',            ru:'Реклама / нед.' },
+  profile_divcats: { zh:'40级猫分红',          en:'LV.40 Div.',            ru:'Див. LV.40' },
+  profile_rate:    { zh:'提现比例',            en:'Rate',                  ru:'Ставка' },
+  profile_ref:     { zh:'邀请码',              en:'Code',                  ru:'Код' },
+  profile_copy:    { zh:'复制邀请码',          en:'Copy',                  ru:'Копировать' },
+  profile_copied:  { zh:'✅ 邀请码已复制',     en:'✅ Copied',             ru:'✅ Скопировано' },
   // toast
   t_music_on:      { zh:'🎵 背景音乐已开启',   en:'🎵 Background music ON',  ru:'🎵 Фоновая музыка ВКЛ' },
   t_music_off:     { zh:'🎵 背景音乐已关闭',   en:'🎵 Background music OFF', ru:'🎵 Фоновая музыка ВЫКЛ' },
@@ -106,15 +147,21 @@ const I18N = {
   t_ad_limit_accel: { zh:'今日加速次数已用完，明日再来~', en:'Daily boost limit reached, come back tomorrow~', ru:'Дневной лимит буста исчерпан, завтра~' },
   t_grid_full:      { zh:'猫窝满啦！先合一下腾位~', en:'Nest is full! Merge first to make room~', ru:'Гнездо заполнено! Сначала объедините~' },
   t_grid_full_buy:  { zh:'猫窝满啦！合一下腾位~', en:'Nest is full! Merge to make room~', ru:'Гнездо заполнено! Объедините~' },
+  t_recycle_fail:   { zh:'回收失败，请重试', en:'Recycle failed, retry', ru:'Переработка не удалась' },
+  t_newbie_done:    { zh:'新人猫已领取', en:'Newbie cat claimed', ru:'Кот новичка получен' },
   t_ad_not_loaded:  { zh:'广告系统未加载，请稍后再试', en:'Ad system not loaded, try again later', ru:'Рекламная система не загружена, повторите позже' },
   t_ad_load_failed: { zh:'广告加载失败，请稍后再试', en:'Ad failed to load, try again later', ru:'Не удалось загрузить рекламу, повторите позже' },
   t_ad_not_finished:{ zh:'广告未看完，无法获得奖励', en:'Ad not finished, no reward', ru:'Реклама не досмотрена, награды нет' },
-  t_no_coins:       { zh:'❤ 金币不足！需 {price} 金（看广告免费领）', en:'❤ Not enough coins! Need {price} coins (watch ad for free)', ru:'❤ Не хватает монет! Нужно {price} монет (смотрите рекламу)' },
+  t_no_coins:       { zh:'❤ 金币不足！还需 {price} 金', en:'❤ Not enough coins! Need {price} coins', ru:'❤ Не хватает монет! Нужно {price} монет' },
+  t_buy_fail:       { zh:'购买失败，请重试', en:'Purchase failed, try again', ru:'Покупка не удалась, попробуйте снова' },
   t_got_cat:        { zh:'获得 {name} LV.{lv}（下次涨价 7%）', en:'Got {name} LV.{lv} (next price +7%)', ru:'Получен {name} LV.{lv} (следующая цена +7%)' },
   t_accel_success:  { zh:'⚡ 加速成功！获得 {name} LV.{lv}', en:'⚡ Boost success! Got {name} LV.{lv}', ru:'⚡ Буст успешен! Получен {name} LV.{lv}' },
   t_task_done:      { zh:'{icon} 任务完成！获得 {coins} 金币', en:'{icon} Task done! Got {coins} coins', ru:'{icon} Задание выполнено! Получено {coins} монет' },
   t_wrong_type:     { zh:'品种不同，不能合体哦', en:'Different breeds cannot merge', ru:'Разные породы нельзя объединять' },
   t_merge_success:  { zh:'🎉 合体！{name} LV.{lv}', en:'🎉 Merged! {name} LV.{lv}', ru:'🎉 Объединение! {name} LV.{lv}' },
+  t_merge_crit:     { zh:'💥 暴击！直接升级 {name} LV.{lv}', en:'💥 Crit! Upgraded to {name} LV.{lv}', ru:'💥 Крит! {name} LV.{lv}' },
+  t_merge_coin:     { zh:'💰 合成奖励 +{coins} 金币', en:'💰 Merge bonus +{coins} coins', ru:'💰 Бонус +{coins} монет' },
+  broadcast_msg:    { zh:'🎉 {name} 合成暴击！额外 +{extra} 级 → LV.{lv}', en:'🎉 {name} CRIT! +{extra} → LV.{lv}', ru:'🎉 {name} крит! +{extra} → LV.{lv}' },
   t_invite_copied:  { zh:'📋 邀请链接已复制！去 Telegram 粘贴给好友吧~', en:'📋 Invite link copied! Paste it to friends on Telegram~', ru:'📋 Ссылка скопирована! Отправьте друзьям в Telegram~' },
   t_invite_link:    { zh:'🔗 邀请链接：', en:'🔗 Invite link: ', ru:'🔗 Ссылка: ' },
   t_coin_soon:      { zh:'暗币系统即将开放！', en:'Dark coin system coming soon!', ru:'Система тёмных монет скоро!' },
@@ -123,7 +170,7 @@ const I18N = {
   t_locked:         { zh:'未解锁', en:'Locked', ru:'Заблокировано' },
   t_share_text:     { zh:'快来 CyberMerge 合成猫咪，瓜分大奖池！🐱💰', en:'Come to CyberMerge, merge cats and win the big pool! 🐱💰', ru:'Заходи в CyberMerge, объединяй котов и выигрывай призы! 🐱💰' },
   // 每日任务描述
-  task_desc_1:      { zh:'接任务领 10000 金币', en:'Take task for 10000 coins', ru:'Задание на 10000 монет' },
+  task_desc_1:      { zh:'接任务领 10000 金币', en:'Task +10000 coins', ru:'Задание +10000' },
 };
 
 // 当前语言（默认中文，可被 localStorage 覆盖）
@@ -147,6 +194,8 @@ function applyI18n() {
   });
   // 智能合成按钮文案（JS 动态设的）
   if (typeof updateAiBtn === 'function') updateAiBtn();
+  // 赛季天梯文案（JS 动态设的：赛季编号 / 标题 / 倒计时）
+  if (typeof updateSeasonUI === 'function') updateSeasonUI();
   // 钱包按钮：已连接态显示地址缩写、未连接态显示当前语言文案
   // （覆盖 data-i18n 是因为已连接时不应被「Connect Wallet」盖掉地址）
   if (typeof refreshWalletUI === 'function') refreshWalletUI();
@@ -166,25 +215,22 @@ const CLOUD_SYNC_MS = 2 * 60 * 1000;              // 距上次云同步超过 2 
 const LOCAL_SAVE_KEY = 'cybermerge_local_save';   // 本地实时存档 key
 const AUTH_ENDPOINT = '/auth';                    // 后端端点：Cloudflare Pages Functions 用 /auth；Netlify 用 /.netlify/functions/auth
 
-// ═══════ 数值模型（防刷铁律）═══════
+// ═══════ 自付 Gas 提现常量 ═══════
+const TREASURY_WALLET = 'UQBUMHoFdQ_PIGY_aart2kYeutngALLxxiwr14yrrM1S7uDZ';  // 项目方金库地址
+const WITHDRAW_GAS_FEE = 0.1;                  // 0.1 TON（前端展示用，实际验资以后端环境变量为准）
+const WITHDRAW_GAS_FEE_NANO = '100000000';     // 0.1 TON 的 nanoTON（转账金额，1 TON = 1e9 nanoTON）
+const WITHDRAW_MIN_USDT = 10;                  // 最低可提现 internal_usdt
+
+// ═══════ 数值模型（防刷铁律：价格由后端 buy_cat RPC 定价，前端不算价）═══════
 const EARN_BASE = 1;              // LV.1 基础算力 1/秒
 const EARN_RATIO = 1.8;          // 算力跨级倍率（严格 < 2，确保 1+1 < 2）
-const PRICE_BASE = 100;          // 商店底价 100 金币
-const PRICE_LV_RATIO = 2.2;      // 跨级成本倍率（> 1.8，成本永远跑赢收益）
-const PRICE_INFLATE = 1.03;      // 每次购买全场物价通胀 3%
 const BUY_LV_GAP = 4;            // 可购最高等级 = maxUnlocked - 4
 const AD_LV_GAP = 5;             // 广告领取等级 = maxUnlocked - 5
-const SHOP_MAX_LV = 36;          // 商店最高可买等级（36级以上全靠合成）
-const DAILY_FREE_BUYS = 5;       // 每天前5次购买不涨物价
+const SHOP_MAX_LV = 35;          // 商店最高可买等级（35级以上全靠合成/回收站变现）
 
 // 第 n 级猫的每秒产出算力 P_n = 1 × 1.8^(n-1)
 function lvEarnPerSec(lv) {
   return EARN_BASE * Math.pow(EARN_RATIO, lv - 1);
-}
-
-// 商店购买成本 Cost = 100 × 2.2^(lv-1) × 1.03^inflateCount
-function lvPrice(lv) {
-  return Math.floor(PRICE_BASE * Math.pow(PRICE_LV_RATIO, lv - 1) * Math.pow(PRICE_INFLATE, S.inflateCount));
 }
 
 // 场上猫咪每秒总产出（不含堆叠）
@@ -235,6 +281,11 @@ function buyLevel() {
   }
   if (minLv !== null && minLv < targetLv) return minLv;
   return targetLv;
+}
+
+// 商店锁定：历史最高等级达到 35 后锁定（35 级以上全靠合成/回收站变现）
+function shopLocked() {
+  return maxUnlockedLv() >= SHOP_MAX_LV;
 }
 
 // ═══════ 大数字格式化：K / M / B / T / Qa / Qi ═══════
@@ -409,6 +460,7 @@ function catName(lv) {
 const S = {
   grid: new Array(TOTAL).fill(null),  // grid[i] = null 或 lv 整数
   usdt: 1000,                         // 总金币（= 自有金币 + 服务端 bonusCoins）
+  username: '',                       // 玩家昵称（后端返回）
   bonusCoins: 0,                      // 服务端发放的奖励（邀请奖励 + 离线产出），前端不直接修改
   buyCount: 0,                        // 历史总购买次数
   inflateCount: 0,                    // 累计通胀次数（每天前5次免费，之后每次+3%）
@@ -421,24 +473,12 @@ const S = {
   refCode: '',                        // 我的随机邀请码（后端生成，用于邀请链接，隐藏 TG ID）
   divCats: [],                        // 场上40级猫的剩余分红次数数组 [4,3,2]
   weekAdCount: 0,                     // 本周看广告次数（后端统计，用于分红贡献）
+  internalUsdt: 0,                    // 内部美金余额（后端 RPC 结算）
+  adContribution: 0,                  // 广告贡献度（后端累计看广告数，HUD 展示）
+  newbieCatClaimed: false,            // 新人35级猫是否已领取
 };
-const BUY_DAY_KEY = 'cybermerge_buy_day';  // 今日购买次数（每日重置）
-
-// 记录一次购买：每天前5次不涨物价，之后每次 inflateCount+1
-function recordBuy() {
-  S.buyCount++;
-  const today = todayStr();
-  let count = 0;
-  try {
-    const raw = localStorage.getItem(BUY_DAY_KEY);
-    const obj = raw ? JSON.parse(raw) : null;
-    if (obj && obj.date === today) count = obj.count;
-  } catch(_) {}
-  count++;
-  try { localStorage.setItem(BUY_DAY_KEY, JSON.stringify({ date: today, count })); } catch(_) {}
-  if (count > DAILY_FREE_BUYS) S.inflateCount++;
-}
 const AI_KEY = 'cybermerge_ai_unlock_day';  // 存最后一次签到解锁智能合成的日期 "YYYY-MM-DD"
+const AD_DAY_KEY = 'cybermerge_ad_day';     // 存最后一天广告计数所属日期 "YYYY-MM-DD"（跨天归零）
 const AI_TICK_MS = 180;                     // AI 循环周期（毫秒）：不要太快避免卡顿
 const ADSGRAM_BLOCK_ID = '42861';          // Adsgram 激励视频广告（加速可产出）
 const AI_AD_BLOCK_ID = '42821';            // 预留：激励视频广告2（签到已改免费，暂不占用此广告位）
@@ -562,9 +602,145 @@ async function connectWallet() {
   }
 }
 
+// ═══════ 自付 Gas 提现 ═══════
+// 构造 TON 文本备注 payload（Comment Cell），后端据此核对 user_id
+async function buildCommentPayload(comment) {
+  const { beginCell } = await import('@ton/core');
+  const cell = beginCell().storeUint(0, 32).storeStringTail(comment).endCell();
+  return cell.toBoc().toString('base64');
+}
+
+// 将 BOC 转为真实交易 hash（TonAPI 按 hash 查链，不能用 BOC 直接查）
+async function bocToHash(boc) {
+  try {
+    const { Cell } = await import('@ton/core');
+    const bytes = Uint8Array.from(atob(boc), c => c.charCodeAt(0));
+    const cell = Cell.fromBoc(bytes)[0];
+    const h = cell.hash();
+    return Array.from(h).map(b => b.toString(16).padStart(2, '0')).join('');
+  } catch (_) {
+    return boc;   // 解析失败兜底返回原值
+  }
+}
+
+function showWithdrawLoading() {
+  document.getElementById('withdraw-loading')?.classList.add('show');
+}
+function hideWithdrawLoading() {
+  document.getElementById('withdraw-loading')?.classList.remove('show');
+}
+function startMoneyRain() {
+  const layer = document.getElementById('money-rain');
+  if (!layer) return;
+  layer.innerHTML = '';
+  const bills = ['💵', '💸', '💰'];
+  for (let i = 0; i < 24; i++) {
+    const b = document.createElement('span');
+    b.className = 'money-bill';
+    b.textContent = bills[Math.floor(Math.random() * bills.length)];
+    b.style.left = (Math.random() * 100) + '%';
+    b.style.animationDuration = (1.6 + Math.random() * 2) + 's';
+    b.style.animationDelay = (Math.random() * 0.8) + 's';
+    b.style.fontSize = (20 + Math.random() * 18) + 'px';
+    layer.appendChild(b);
+  }
+  setTimeout(() => { layer.innerHTML = ''; }, 4000);
+}
+
+async function doWithdraw() {
+  if (!tonConnectUI) { toast(t('t_ad_not_loaded'), 'warn'); return; }
+  const usdtAmount = Number(S.internalUsdt) || 0;
+  if (usdtAmount < WITHDRAW_MIN_USDT) { toast(t('t_need_10usdt'), 'warn'); return; }
+  if (!wallet.address) { toast(t('t_need_wallet'), 'warn'); connectWallet(); return; }
+
+  try {
+    const payload = await buildCommentPayload(String(getTgId()));
+    const tx = {
+      validUntil: Date.now() + 5 * 60 * 1000,
+      messages: [{
+        address: TREASURY_WALLET,
+        amount: WITHDRAW_GAS_FEE_NANO,
+        payload,
+      }],
+    };
+    const result = await tonConnectUI.sendTransaction(tx);
+    const boc = result?.boc || '';
+    if (!boc) { toast('未获取到交易凭证，请重试', 'warn'); return; }
+    const hash = await bocToHash(boc);
+
+    // 等待状态：链上确认中，USDT 自动打款准备中...
+    showWithdrawLoading();
+    const r = await callRpc('request_withdraw', {
+      usdt_amount: usdtAmount,
+      boc_or_hash: hash,
+      receive_address: wallet.address,
+    });
+    hideWithdrawLoading();
+
+    if (r && r.ok) {
+      S.internalUsdt = 0;   // 前端先归零，最终以数据库为准
+      ui();
+      renderProfile();
+      startMoneyRain();
+      toast('提现成功，USDT 已发送至您的钱包！', 'success');
+      saveLocal();
+    } else {
+      toast(r?.reason || t('t_buy_fail'), 'warn');
+    }
+  } catch (e) {
+    hideWithdrawLoading();
+    // 用户在钱包里取消签名 / 拒绝支付
+    toast('支付取消', 'info');
+  }
+}
+
 function todayStr() {
   // 每日重置改到「早上8点」：8点(上海)=UTC 0点，所以直接用 UTC 日期
   return new Date(Date.now()).toISOString().slice(0, 10);
+}
+
+// 跨天归零每日广告计数（adUsedToday / wdAdUsed），保证上报给后端的始终是「今天」的数量
+function resetDailyCountersIfNewDay() {
+  const today = todayStr();
+  try {
+    if (localStorage.getItem(AD_DAY_KEY) === today) return;
+    localStorage.setItem(AD_DAY_KEY, today);
+  } catch(_) {}
+  S.adUsedToday = 0;
+  S.wdAdUsed = 0;
+}
+
+// ═══════ 赛季（7天一个赛季，每周一 08:00 北京时间重置，从第0赛季开始）═══════
+const SEASON_WEEK_MS = 7 * 24 * 3600 * 1000;
+const SEASON_EPOCH_MS = Date.UTC(2026, 7, 10, 0, 0, 0); // 赛季0起点：2026-08-10 周一 08:00 北京时间（UTC 0点）
+
+function getSeasonInfo() {
+  const now = Date.now();
+  const season = Math.floor((now - SEASON_EPOCH_MS) / SEASON_WEEK_MS);
+  const nextReset = SEASON_EPOCH_MS + (season + 1) * SEASON_WEEK_MS;
+  return { season, countdownMs: Math.max(0, nextReset - now) };
+}
+function formatCountdown(ms) {
+  const total = Math.floor(ms / 1000);
+  const d = Math.floor(total / 86400);
+  const h = Math.floor((total % 86400) / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  return d + t('time_day') + ' ' + h + t('time_hour') + ' ' + m + t('time_minute') + ' ' + s + t('time_second');
+}
+function updateSeasonUI() {
+  const info = getSeasonInfo();
+  const title = document.getElementById('season-title');
+  if (title) title.textContent = 'S' + info.season + t('season_title');
+  // S1 横幅标题：动态显示当前赛季编号
+  const bannerTitle = document.getElementById('season-banner-title');
+  if (bannerTitle) bannerTitle.textContent = '🏆 S' + info.season + ' ' + t('season_title') + '瓜分';
+  // 弹窗倒计时
+  const cd = document.getElementById('season-countdown');
+  if (cd) cd.textContent = formatCountdown(info.countdownMs);
+  // 横幅倒计时
+  const cdBanner = document.getElementById('season-countdown-banner');
+  if (cdBanner) cdBanner.textContent = formatCountdown(info.countdownMs);
 }
 // 当前玩家每日广告上限 = 基础 15 + 邀请加成（每邀请1人+1，封顶+5，总封顶20）
 function adDailyLimit() {
@@ -626,8 +802,9 @@ function aiTick() {
         else { idx2 = i; break; }
       }
       if (idx2 >= 0) {
-        // 直接合并 idx1 + idx2 → 生成新等级
-        const newLv = Math.min(lv + 1, MAX_LV);
+        // 合并 idx1 + idx2 → 暴击判定生成新等级
+        const mr = mergeResultLv(lv);
+        const newLv = mr.nl;
         S.grid[idx1] = null;
         S.grid[idx2] = newLv;
         if (newLv === MAX_LV) S.divCats.push(4);  // 合成出40级猫：记分红资格
@@ -635,31 +812,39 @@ function aiTick() {
         const ni = S.grid.indexOf(newLv); // 找到新等级在排序后的位置
         if (ni >= 0) boom(ni);
         collect(newLv);
+        if (mr.coins > 0) S.usdt = parseFloat((S.usdt + mr.coins).toFixed(4));  // 合成金币奖励
         audio.sfxMerge();                 // 🔔 智能合成成功音效
+        if (mr.crit) { audio.play('merge_combo'); reportMergeCritBroadcast(newLv, mr.extra, mr.coins); }  // 💥 暴击
         saveLocal();
         merged = true;
         break;  // 每次 tick 只做一次合并，防止卡顿
       }
     }
     if (merged) return;
-    // ② 没有可合成 → 有钱的话买一只 buyLevel
-    const lv = buyLevel();
-    const price = lvPrice(lv);
-    if (S.usdt >= price) {
-      const emptyIdx = S.grid.findIndex(x => x === null);
-      if (emptyIdx >= 0) {
-        S.usdt = parseFloat((S.usdt - price).toFixed(4));
-        recordBuy();
-        S.grid[emptyIdx] = lv;
-        draw(emptyIdx);
-        const pet = g?.children[emptyIdx]?.querySelector('.pet-card');
-        if (pet) { pet.classList.add('pet-spawn'); pet.addEventListener('animationend',()=>pet.classList.remove('pet-spawn'),{once:true}); }
-        collect(lv);
-        saveLocal();
-      }
-    }
+    // ② 没有可合成 → 异步走 buy_cat RPC 买一只（前端不算价，防重入）
+    aiBuyCat();
   } finally {
     S.aiLock = false;
+  }
+}
+
+// 智能合成自动买猫：异步调 RPC，防止高频循环里重复触发
+let _aiBuying = false;
+async function aiBuyCat() {
+  if (_aiBuying || shopLocked()) return;
+  _aiBuying = true;
+  try {
+    const lv = buyLevel();
+    const r = await callRpc('buy_cat', { level: lv });
+    if (r && r.ok) {
+      if (typeof r.price === 'number') S.usdt = parseFloat((S.usdt - r.price).toFixed(4));
+      applyGridFromRpc(r.grid);
+      collect(lv);
+      ui();
+      saveLocal();
+    }
+  } finally {
+    _aiBuying = false;
   }
 }
 
@@ -842,6 +1027,33 @@ async function computeSignature(tgId, data, timestamp) {
 // ═══════ 云端同步：仅广告奖励 / 2 分钟定时 / 关闭后台时触发 ═══════
 let _lastCloudSync = 0;
 
+// 通用 RPC 调用：走 /auth 后端验真 tg_id 后转发 Supabase RPC，前端不算价/不计资产
+async function callRpc(action, payload) {
+  try {
+    const initData = getInitData();
+    const resp = await fetch(AUTH_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, initData, data: payload || {} })
+    });
+    const data = await resp.json();
+    if (!data.success) return { ok: false, reason: data.message || 'error' };
+    return data.result || { ok: false, reason: 'empty' };
+  } catch(_) {
+    return { ok: false, reason: 'network' };
+  }
+}
+
+// 用 RPC 返回的 grid 数组刷新本地网格（一切以服务端为准）
+function applyGridFromRpc(grid) {
+  if (!Array.isArray(grid)) return;
+  for (let i = 0; i < TOTAL; i++) {
+    const x = grid[i];
+    S.grid[i] = (typeof x === 'number' && x >= 1 && x <= MAX_LV) ? x : null;
+  }
+  for (let i = 0; i < TOTAL; i++) draw(i);
+}
+
 async function saveCloudNow() {
   const initData = getInitData();
   const data = collectCloudData();
@@ -913,7 +1125,7 @@ async function syncBackend() {
     });
     console.log('Syncing backend login resp:', resp.status, resp.statusText);
     const data = await resp.json();
-    if (!data.success || !data.user) { applyStateToS(local); return; }
+    if (!data.success || !data.user) { applyStateToS(local); resetDailyCountersIfNewDay(); ui(); return; }
     const u = data.user;
 
     // 金币：总金币 = 云端总额 与 本地总额 取较大者；服务端 bonusCoins 单独记录
@@ -947,6 +1159,13 @@ async function syncBackend() {
     if (typeof u.refCode === 'string' && u.refCode) S.refCode = u.refCode;
     if (Array.isArray(u.divCats)) S.divCats = u.divCats.map(x => Number(x) || 0);
     if (typeof u.weekAdCount === 'number') S.weekAdCount = u.weekAdCount;
+    if (typeof u.adContribution === 'number') S.adContribution = u.adContribution;
+    if (typeof u.internalUsdt === 'number') S.internalUsdt = u.internalUsdt;
+    if (typeof u.newbieCatClaimed === 'boolean') S.newbieCatClaimed = u.newbieCatClaimed;
+    if (typeof u.username === 'string' && u.username) S.username = u.username;
+
+    // 合并完成后跨天归零每日广告计数（避免把昨日 adUsedToday 混入今天）
+    resetDailyCountersIfNewDay();
 
     // aiUnlockDay：取较新日期
     const localDay = (local && typeof local.aiUnlockDay === 'string') ? local.aiUnlockDay : '';
@@ -985,6 +1204,7 @@ async function syncBackend() {
   } catch(_) {
     // 后端不可用（本地/未部署）时回退本地存档，不打断游戏
     applyStateToS(local);
+    resetDailyCountersIfNewDay();
     ui();
     refreshWalletUI();
     applyI18n();
@@ -998,6 +1218,38 @@ function toast(m, t) {
   let el = d('div','toast toast-'+(t||'info')); el.textContent = m; c.appendChild(el);
   requestAnimationFrame(() => el.classList.add('toast-enter'));
   setTimeout(() => { el.classList.add('toast-leave'); el.addEventListener('transitionend',()=>el.remove(),{once:true}); }, 1500);
+}
+
+// ═══════ 合规广告二次确认弹窗：所有广告触发前必须先弹出确认 ═══════
+let _confirmCb = null;
+function confirmAd(opts) {
+  const modal = document.getElementById('confirm-modal');
+  if (!modal) return;
+  const icon = document.getElementById('confirm-icon');
+  const title = document.getElementById('confirm-title');
+  const desc = document.getElementById('confirm-desc');
+  const ok = document.getElementById('confirm-ok');
+  if (icon) icon.textContent = opts.icon || '📺';
+  if (title) title.textContent = opts.title || t('confirm_ok');
+  if (desc) desc.textContent = opts.desc || '';
+  if (ok) ok.textContent = '▶ ' + (opts.okText || t('confirm_ok').replace('▶ ', ''));
+  _confirmCb = opts.onOk || null;
+  modal.classList.add('show');
+}
+function closeConfirm() {
+  document.getElementById('confirm-modal')?.classList.remove('show');
+  _confirmCb = null;
+}
+function bindConfirmModal() {
+  const modal = document.getElementById('confirm-modal');
+  if (!modal) return;
+  document.getElementById('confirm-cancel')?.addEventListener('click', closeConfirm);
+  document.getElementById('confirm-ok')?.addEventListener('click', () => {
+    const cb = _confirmCb;
+    closeConfirm();
+    if (typeof cb === 'function') cb();
+  });
+  modal.addEventListener('click', (e) => { if (e.target.id === 'confirm-modal') closeConfirm(); });
 }
 
 // ═══════ 离线收益弹窗：展示当日签到后的离线产出 ═══════
@@ -1107,8 +1359,6 @@ const audio = {
 
 // ═══════ 全局产金定时器（每秒遍历网格算力累加）═══════
 function startTimer() {
-  const numEl = document.getElementById('timer-num');
-  if (!numEl) return;
   if (timerInterval) clearInterval(timerInterval);
   let earnAccum = 0;
   let floatTick = 0;                    // 100ms tick 计数，每 10 tick = 1 秒飘一次+产出
@@ -1155,9 +1405,9 @@ function floatIncome(amount) {
   el.addEventListener('animationend', () => el.remove(), { once: true });
 }
 
-// ═══════ 顶部等级金币浮动：+X 附着在等级横排（level-info）上方 ═══════
+// ═══════ 顶部金币浮动：+X 附着在金币 HUD 上方 ═══════
 function floatIncomeTop(amount) {
-  const info = document.querySelector('.level-info');
+  const info = document.querySelector('.hud-coins');
   if (!info) return;
   const el = document.createElement('span');
   el.className = 'float-income-top';
@@ -1194,26 +1444,38 @@ function ui() {
     }
     _lastCoinVal = S.usdt;
   }
+  // HUD USDT 余额
+  const usdtEl = document.getElementById('hud-usdt');
+  if (usdtEl) usdtEl.textContent = '$' + (Number(S.internalUsdt) || 0).toFixed(2);
+  // HUD 昵称 / 邀请数 / 广告贡献度
+  const nameEl = document.getElementById('hud-name');
+  if (nameEl) nameEl.textContent = S.username || 'Player';
+  const inviteEl = document.getElementById('hud-invite');
+  if (inviteEl) inviteEl.textContent = String(S.inviteCount || 0);
+  const adcontEl = document.getElementById('hud-adcont');
+  if (adcontEl) adcontEl.textContent = String(S.adContribution || 0);
+  const avatarEl = document.getElementById('hud-avatar');
+  if (avatarEl) avatarEl.src = '/cats/LV.' + userLv + '.png';
   if (progCurLv) progCurLv.textContent = userLv;
   if (progBarFill) {
     const pct = Math.min(100, (userLv / 40) * 100);
     progBarFill.style.width = pct.toFixed(1) + '%';
   }
 
-  // 中间按钮：只显示「买 LV.x」（不再显示金币总数）
+  // 中间按钮：买猫（35 级封顶锁定，前端不算价）
   const lvLabelEl = document.getElementById('bb-lv-label');
   const mergeBtn = document.getElementById('btn-merge');
+  const locked = shopLocked();
   const lv = buyLevel();
-  const price = lvPrice(lv);
-  const canAfford = S.usdt >= price;
 
-  // 按钮上只显示「买 LV.x」（文案走 i18n），不显示金币数
-  if (lvLabelEl) lvLabelEl.textContent = t('buy_label') + lv;
+  if (lvLabelEl && !(mergeBtn && mergeBtn.classList.contains('recycle-mode'))) {
+    lvLabelEl.textContent = locked ? t('shop_locked') : (t('buy_label') + lv);
+  }
 
-  // 悬浮猫咪：按即将购买的等级展示素材
+  // 悬浮猫咪：按即将购买的等级展示素材（锁定态展示 35 级）
   const buyCatImg = document.getElementById('buy-cat-float');
   if (buyCatImg) {
-    const catLv = buyLevel();
+    const catLv = locked ? 35 : buyLevel();
     const cat = CATS[catLv] || CATS[1];
     if (buyCatImg.dataset.lv !== String(catLv)) {
       buyCatImg.src = cat.img;
@@ -1221,36 +1483,28 @@ function ui() {
     }
   }
 
-  // 灰禁态：金币不够时按钮变灰
+  // 锁定态：钛金色锁定，禁止点击
   if (mergeBtn) {
-    if (canAfford) {
+    if (locked) {
+      mergeBtn.classList.add('shop-locked');
       mergeBtn.classList.remove('btn-disabled');
+    } else {
+      mergeBtn.classList.remove('shop-locked', 'btn-disabled');
       if (lvLabelEl) {
         lvLabelEl.style.background = 'rgba(255, 230, 150, 0.22)';
         lvLabelEl.style.color = '#fff59d';
       }
-    } else {
-      mergeBtn.classList.add('btn-disabled');
-      if (lvLabelEl) {
-        lvLabelEl.style.background = 'rgba(0,0,0,0.45)';
-        lvLabelEl.style.color = '#ffcdd2';
-      }
     }
   }
 
-  // 广告按钮：金币不够时高亮，金币足够时淡化
+  // 广告按钮：只显示每日剩余次数（不再用「金币不够」高亮，因为前端不算价）
   const adBtn = document.getElementById('btn-ad-reward');
   if (adBtn) {
     const adLv = adRewardLv();
     const adCountEl = document.getElementById('ad-count');
     if (adCountEl) adCountEl.textContent = (adDailyLimit() - S.adUsedToday) + '/' + adDailyLimit();
-    document.getElementById('ad-lv').textContent = adLv;
-    if (!canAfford && S.adUsedToday < adDailyLimit()) {
-      adBtn.classList.add('ad-highlight');
-    } else {
-      adBtn.classList.remove('ad-highlight');
-    }
-    // 今日广告次数用完
+    const adLvEl = document.getElementById('ad-lv');
+    if (adLvEl) adLvEl.textContent = adLv;
     if (S.adUsedToday >= adDailyLimit()) {
       adBtn.classList.add('btn-disabled');
     } else {
@@ -1289,6 +1543,13 @@ function draw(i) {
   let lv = S.grid[i];
   s.innerHTML = '';
   s.classList.remove('stack-2','stack-3');
+  // 新人福利：[0] 号位未领取时固定显示 99% 锁猫
+  if (i === 0 && !S.newbieCatClaimed && lv === null) {
+    s.classList.add('filled', 'newbie-slot');
+    s.dataset.empty = 'false';
+    s.appendChild(makeNewbieLock());
+    return;
+  }
   if(lv===null){ s.classList.remove('filled'); s.dataset.empty='true'; return; }
   s.classList.add('filled'); s.dataset.empty='false';
   let dom = makePet(lv);
@@ -1296,6 +1557,35 @@ function draw(i) {
   dom.addEventListener('touchstart', down, {passive:false});
   dom.addEventListener('mousedown', down);
   dom.addEventListener('click', tap);
+}
+
+// 新人 99% 锁猫（带皇冠，点击弹合规确认面板后看广告解锁 35 级猫）
+function makeNewbieLock() {
+  const card = d('div', 'pet-card newbie-lock');
+  card.innerHTML =
+    '<span class="pet-lv-badge">35</span>' +
+    '<div class="newbie-lock-inner">' +
+      '<img class="pet-img newbie-lock-img" src="/cats/LV.35.png" alt="锁定的35级猫" draggable="false" />' +
+      '<span class="newbie-crown">👑</span>' +
+      '<span class="newbie-lock-icon">🔒</span>' +
+      '<span class="newbie-progress">99%</span>' +
+    '</div>';
+  card.addEventListener('click', (e) => {
+    e.stopPropagation();
+    confirmAd({ icon: '👑', title: t('confirm_newbie_t'), desc: t('confirm_newbie_d'), onOk: watchNewbieAd });
+  });
+  return card;
+}
+function watchNewbieAd() {
+  try {
+    if (!window.Adsgram) { toast(t('t_ad_not_loaded'), 'warn'); return; }
+    const AdController = window.Adsgram.init({ blockId: ADSGRAM_BLOCK_ID });
+    AdController.show()
+      .then(() => claimNewbieCat())
+      .catch(() => toast(t('t_ad_not_finished'), 'warn'));
+  } catch(_) {
+    toast(t('t_ad_load_failed'), 'warn');
+  }
 }
 
 function tap(e) {
@@ -1318,6 +1608,29 @@ function all() {
   for(let i=0;i<TOTAL;i++){ if(!g.children[i]){ let s=d('div','matrix-slot'); s.dataset.index=i; g.appendChild(s); } draw(i); }
 }
 
+// ═══════ 合成暴击 + 金币奖励 ═══════
+// 基础：必定升 1 级（2 只同级 → 1 只高 1 级，封顶 40）
+// 额外跳级：0.1% 额外 +1 级，0.005% 额外 +2 级，0.00001% 额外 +3 级
+// 金币奖励：10% +1500 金币，5% +2500 金币
+function mergeResultLv(baseLv) {
+  const newBase = Math.min(baseLv + 1, MAX_LV);
+
+  const r1 = Math.random();
+  let extra = 0;
+  if (r1 < 0.0000001) extra = 3;       // 0.00001% 大暴击 +3
+  else if (r1 < 0.00005) extra = 2;    // 0.005% 暴击 +2
+  else if (r1 < 0.001) extra = 1;      // 0.1% 小暴击 +1
+
+  const nl = Math.min(newBase + extra, MAX_LV);
+
+  const r2 = Math.random();
+  let coins = 0;
+  if (r2 < 0.05) coins = 2500;         // 5% 大奖
+  else if (r2 < 0.15) coins = 1500;    // 10% 小奖
+
+  return { nl, coins, crit: extra > 0, extra };
+}
+
 // ═══════ 合成后自动排序：最高等级排第一个（索引0），空格(null)排最后 ═══════
 function sortGrid() {
   // 取出所有非空格，按等级降序（高在前）
@@ -1335,25 +1648,29 @@ function grid() {
 }
 
 // ═══════ 购买（扣金币 + buyCount++ 触发通胀）═══════
-function buy() {
+async function buy() {
+  if (shopLocked()) { toast(t('t_shop_locked'), 'warn'); return; }
   const lv = buyLevel();
-  const price = lvPrice(lv);
-  if (S.usdt < price) {
-    toast(t('t_no_coins').replace('{price}', fmtNum(price)),'error');
+  const r = await callRpc('buy_cat', { level: lv });
+
+  if (!r || r.ok === false) {
+    if (r && r.reason === 'insufficient coins') {
+      toast(t('t_no_coins').replace('{price}', fmtNum(r.price || 0)), 'error');
+    } else if (r && r.reason === 'grid full') {
+      toast(t('t_grid_full_buy'), 'warn');
+    } else {
+      toast(t('t_buy_fail'), 'warn');
+    }
     return;
   }
-  let idx = -1; for (let i = 0; i < TOTAL; i++) if (S.grid[i] === null) { idx = i; break; }
-  if (idx === -1) { toast(t('t_grid_full_buy'),'warn'); return; }
-  S.usdt = parseFloat((S.usdt - price).toFixed(4));
-  recordBuy();                   // 购买计数（前5次免费，之后+3%通胀）
-  S.grid[idx] = lv;
-  draw(idx);
-  ui();
-  let pet = g.children[idx].querySelector('.pet-card');
-  if (pet) { pet.classList.add('pet-spawn'); pet.addEventListener('animationend',()=>pet.classList.remove('pet-spawn'),{once:true}); }
+
+  // 一切以 RPC 返回为准：price 来自后端，grid 来自后端，前端不算价
+  if (typeof r.price === 'number') S.usdt = parseFloat((S.usdt - r.price).toFixed(4));
+  applyGridFromRpc(r.grid);
   collect(lv);
-  toast(t('t_got_cat').replace('{name}', catName(lv)).replace('{lv}', lv),'success');
-  saveLocal();   // 买猫后本地存档（云端由 2 分钟定时器 / 关闭后台兜底）
+  ui();
+  toast(t('t_got_cat').replace('{name}', catName(lv)).replace('{lv}', lv), 'success');
+  saveLocal();
 }
 
 // ═══════ 加速可产出（看 Adsgram 广告，成功看完才给猫）═══════
@@ -1469,13 +1786,219 @@ function closeTasks() {
   if (list) list.innerHTML = '';
 }
 
-// ═══════ 拖拽（2 只同等级合成升级）═══════
+// ═══════ 拖拽（2 只同等级合成升级）+ 拖到中央按钮回收 ═══════
+// 松手位置是否落在中央买猫按钮（回收站）区域
+function isOverRecycleZone(x, y) {
+  const btn = document.getElementById('btn-merge');
+  if (!btn) return false;
+  const r = btn.getBoundingClientRect();
+  return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+}
+// 拖拽时中央按钮切换为「回收站」发光态
+function setRecycleMode(on) {
+  const btn = document.getElementById('btn-merge');
+  if (!btn) return;
+  btn.classList.toggle('recycle-mode', on);
+  const icon = document.getElementById('bb-coin-icon');
+  const label = document.getElementById('bb-lv-label');
+  if (on) {
+    if (icon) icon.textContent = '🔥';
+    if (label) label.textContent = '官方回收站';
+  } else {
+    if (icon) icon.textContent = '❤️';
+    if (label) label.textContent = shopLocked() ? t('shop_locked') : (t('buy_label') + buyLevel());
+  }
+}
+// 回收一只猫：走 recycle_cat RPC，后端算奖励 + 行锁防双花
+async function doRecycle(index, level) {
+  const r = await callRpc('recycle_cat', { index, level });
+  if (!r || r.ok === false) {
+    toast(t('t_recycle_fail'), 'warn');
+    return;
+  }
+  applyGridFromRpc(r.grid);
+  if (r.type === 'coins') {
+    if (typeof r.reward === 'number') S.usdt = parseFloat((S.usdt + r.reward).toFixed(4));
+    floatIncomeTop(r.reward);                       // 金币飞向 HUD
+  } else if (r.type === 'usdt') {
+    if (typeof r.reward === 'number') S.internalUsdt = parseFloat(((S.internalUsdt || 0) + r.reward).toFixed(6));
+    toast('+$' + r.reward + ' USD₮', 'success');    // 美金到账提示（特效后续补）
+  }
+  ui();
+  saveLocal();
+}
+
+// ═══════ 新人 35 级猫（99% 锁 → 看广告解锁）═══════
+async function claimNewbieCat() {
+  if (S.newbieCatClaimed) { toast(t('t_newbie_done'), 'warn'); return; }
+  const r = await callRpc('claim_newbie_cat', {});
+  if (!r || r.ok === false) {
+    toast(t('t_recycle_fail'), 'warn');
+    return;
+  }
+  S.newbieCatClaimed = true;
+  applyGridFromRpc(r.grid);
+  collect(35);
+  ui();
+  saveLocal();
+}
+
+// ═══════ S1 奖池横幅：轮询 global_stats + CountUp 平滑滚动 ═══════
+let _prizePoolVal = 0;
+let _poolRaf = null;
+function animatePrizePool(target) {
+  const el = document.getElementById('prize-pool-amount');
+  if (!el) { _prizePoolVal = target; return; }
+  if (_poolRaf) cancelAnimationFrame(_poolRaf);
+  const from = _prizePoolVal;
+  const dur = 900;
+  const t0 = performance.now();
+  const step = (t) => {
+    const k = Math.min(1, (t - t0) / dur);
+    const eased = 1 - Math.pow(1 - k, 3);
+    const v = from + (target - from) * eased;
+    el.textContent = '$' + v.toFixed(3);
+    if (k < 1) _poolRaf = requestAnimationFrame(step);
+    else { _prizePoolVal = target; _poolRaf = null; }
+  };
+  _poolRaf = requestAnimationFrame(step);
+}
+async function fetchPrizePool() {
+  try {
+    const initData = getInitData();
+    const resp = await fetch(AUTH_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'get_global_stats', initData })
+    });
+    const data = await resp.json();
+    if (data.success && data.globalStats) {
+      animatePrizePool(Number(data.globalStats.current_prize_pool) || 0);
+    }
+  } catch(_) {}
+}
+function startPrizePoolPolling() {
+  fetchPrizePool();
+  setInterval(fetchPrizePool, 15000);
+}
+
+// ═══════ 全服喜讯广播：猫抓板上方悬浮小喇叭（排队滚动播报）═══════
+let _broadcastQueue = [];
+let _lastBroadcastId = 0;
+let _broadcastPlaying = false;
+
+async function reportMergeCritBroadcast(level, extra, coins) {
+  try { await callRpc('report_merge_crit', { level, extra, coins }); } catch(_) {}
+}
+
+async function fetchBroadcasts() {
+  try {
+    const initData = getInitData();
+    const resp = await fetch(AUTH_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'get_broadcasts', initData })
+    });
+    const data = await resp.json();
+    if (data.success && Array.isArray(data.broadcasts)) {
+      data.broadcasts.forEach(b => {
+        const id = Number(b.id) || 0;
+        if (id > _lastBroadcastId) {
+          _lastBroadcastId = id;
+          _broadcastQueue.unshift(b);   // 新的优先插队
+        }
+      });
+      if (!_broadcastPlaying) playNextBroadcast();
+    }
+  } catch(_) {}
+}
+
+function playNextBroadcast() {
+  if (!_broadcastQueue.length) { _broadcastPlaying = false; return; }
+  _broadcastPlaying = true;
+  const b = _broadcastQueue.shift();
+  showBroadcastText(b, () => { setTimeout(playNextBroadcast, 350); });
+}
+
+function showBroadcastText(b, onDone) {
+  const el = document.getElementById('broadcast-text');
+  const track = document.querySelector('.broadcast-track');
+  if (!el || !track) { if (onDone) onDone(); return; }
+  const name = shortName(b.username || '???', 12);
+  el.textContent = t('broadcast_msg')
+    .replace('{name}', name)
+    .replace('{extra}', b.extra || 0)
+    .replace('{lv}', b.level || 0);
+  // 先重置测宽度，再从右向左快速穿过
+  el.style.transform = 'none';
+  const textW = el.scrollWidth;
+  const trackW = track.clientWidth;
+  el.style.transform = 'translateX(' + trackW + 'px)';
+  try {
+    const anim = el.animate(
+      [{ transform: 'translateX(' + trackW + 'px)' }, { transform: 'translateX(' + (-textW - 4) + 'px)' }],
+      { duration: Math.max(1600, textW * 10), easing: 'linear' }
+    );
+    anim.onfinish = () => { if (onDone) onDone(); };
+  } catch(_) {
+    if (onDone) setTimeout(onDone, 1800);
+  }
+}
+
+function startBroadcastPolling() {
+  fetchBroadcasts();
+  setInterval(fetchBroadcasts, 3000);
+}
+
+// ═══════ 动态空投：3-5 分钟随机生成补给箱（沿边缘游走 + 呼吸灯），点击弹合规确认窗 ═══════
+function spawnAirdrop() {
+  const layer = document.getElementById('airdrop-layer');
+  if (!layer) return;
+  layer.innerHTML = '';
+  const box = d('div', 'airdrop-box');
+  box.textContent = '📦';
+  const side = Math.random() < 0.5 ? 'left' : 'right';
+  box.style[side] = (Math.random() * 24) + 'px';
+  box.style.top = (Math.random() * 140 - 40) + 'px';
+  box.addEventListener('click', () => {
+    confirmAd({ icon: '📦', title: t('confirm_airdrop_t'), desc: t('confirm_airdrop_d'), onOk: () => watchAirdropAd(box) });
+  });
+  layer.appendChild(box);
+  setTimeout(() => { if (box.parentNode) box.remove(); }, 10000);
+}
+function watchAirdropAd(box) {
+  try {
+    if (!window.Adsgram) { toast(t('t_ad_not_loaded'), 'warn'); return; }
+    const AdController = window.Adsgram.init({ blockId: ADSGRAM_BLOCK_ID });
+    AdController.show()
+      .then(() => {
+        const reward = 5000;   // 空投金币补给（前端即时反馈 + 云同步，广告计数由回调记账）
+        S.usdt = parseFloat((S.usdt + reward).toFixed(4));
+        ui();
+        toast('+5000 ' + t('level_coins_suf'), 'success');
+        if (box && box.parentNode) box.remove();
+        saveCloudNow();
+      })
+      .catch(() => toast(t('t_ad_not_finished'), 'warn'));
+  } catch(_) {
+    toast(t('t_ad_load_failed'), 'warn');
+  }
+}
+function startAirdrop() {
+  const loop = () => {
+    spawnAirdrop();
+    setTimeout(loop, 3 * 60 * 1000 + Math.random() * 2 * 60 * 1000);
+  };
+  loop();
+}
+
 function down(e) {
   if(e.button!==undefined&&e.button!==0) return;
   e.preventDefault(); e.stopPropagation();
   cleanDrag();
   let pe=e.currentTarget, s=pe.parentElement, i=parseInt(s.dataset.index), lv=S.grid[i];
   if(lv===null) return;
+  setRecycleMode(true);   // 拖拽开始 → 中央按钮变身回收站
   let p=pos(e), cl=pe.cloneNode(true);
   cl.classList.add('pet-dragging');
   let r=s.getBoundingClientRect();
@@ -1501,12 +2024,20 @@ function up(e) {
   let ox = D.ox, oy = D.oy;
   D.cl = null; D.gh = null; D.i = -1; D.lv = 0; D.ox = 0; D.oy = 0;
   document.body.style.overflow = '';
+  setRecycleMode(false);
   if(gh) gh.classList.remove('pet-ghost');
   let safeKill = setTimeout(() => {
     if(cl && cl.parentNode) { cl.style.transition = 'none'; cl.remove(); }
   }, 600);
   let p = pos(e), ex = p.x, ey = p.y;
   if(ex===undefined||ex===0){ ex=sx+ox; ey=sy+oy; }
+  // 拖到中央按钮 → 回收站（走 recycle_cat RPC）
+  if (isOverRecycleZone(ex, ey)) {
+    if (cl) { cl.remove(); }
+    clearTimeout(safeKill);
+    doRecycle(sr, sl);
+    return;
+  }
   let tgt = at(ex, ey);
   if(tgt===-1||tgt===sr) {
     if(!cl) { clearTimeout(safeKill); return; }
@@ -1541,7 +2072,8 @@ function up(e) {
     toast(t('t_wrong_type'),'warn');
     return;
   }
-  let nl = Math.min(sl+1, MAX_LV);
+  const mr = mergeResultLv(sl);
+  const nl = mr.nl;
   if(!cl) { clearTimeout(safeKill); return; }
   let tr2 = g.children[tgt].getBoundingClientRect(), cr2 = cl.getBoundingClientRect();
   cl.style.transition = 'transform .2s cubic-bezier(.25,.8,.25,1.2)';
@@ -1555,9 +2087,19 @@ function up(e) {
     const ni = S.grid.indexOf(nl);             // 找新等级排序后的位置
     if (ni >= 0) boom(ni);                     // 在正确位置触发合成闪光
     collect(nl);
-    // 防刷铁律：合成无金币奖励（仅解锁图鉴 + 等级提升）
-    audio.sfxMerge();                          // 🔔 合成成功音效
-    toast(t('t_merge_success').replace('{name}', catName(nl)).replace('{lv}', nl),'success');
+    // 合成金币奖励（10% +1500，5% +2500）
+    if (mr.coins > 0) {
+      S.usdt = parseFloat((S.usdt + mr.coins).toFixed(4));
+      toast(t('t_merge_coin').replace('{coins}', mr.coins),'success');
+    }
+    if (mr.crit) {
+      audio.play('merge_combo');               // 💥 暴击连击音
+      reportMergeCritBroadcast(nl, mr.extra, mr.coins);  // 全服喜讯广播
+      toast(t('t_merge_crit').replace('{name}', catName(nl)).replace('{lv}', nl),'success');
+    } else {
+      audio.sfxMerge();                        // 🔔 合成成功音效
+      toast(t('t_merge_success').replace('{name}', catName(nl)).replace('{lv}', nl),'success');
+    }
     ui();
     saveLocal();   // 合成后本地存档（云端由定时器/关闭兜底）
   }, {once:true});
@@ -1639,6 +2181,7 @@ function renderProfile() {
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
   set('pf-lv', 'Lv.' + userLv);
   set('pf-coins', fmtNum(S.usdt));
+  set('pf-usdt', '$' + (Number(S.internalUsdt) || 0).toFixed(2));
   set('pf-earn', fmtNum(totalEarnPerSec()));
   set('pf-invite', String(S.inviteCount || 0));
   set('pf-weekad', String(S.weekAdCount || 0));
@@ -1647,47 +2190,472 @@ function renderProfile() {
   set('pf-ref', S.refCode || '-');
   const avatar = document.getElementById('pf-avatar');
   if (avatar) avatar.src = '/cats/LV.' + userLv + '.png';
+  const walletBtn = document.querySelector('#pf-connect-wallet span');
+  if (walletBtn) walletBtn.textContent = wallet.address ? shortAddr(wallet.address) : t('profile_wallet');
+}
+
+// ═══════ 推特赚金：9:16 赛博朋克/超梦海报生成 + X 分享 ═══════
+const POSTER_QUOTES = {
+  zh: [
+    '猫咪不问对错，只问罐头。',
+    '在这个赛博世界，猫是最后的温柔。',
+    '今天也要像猫一样，优雅地躺平。',
+    '代码会崩，猫不会。',
+    '别急，猫都知道答案。',
+    '摸鱼是一种态度，猫是大师。',
+    '生活很苦，还好猫很甜。',
+    '再忙也要像猫一样伸个懒腰。',
+    '猫咪的呼噜声，是最好的白噪音。',
+    '有些路要自己走，有些罐头要自己开。',
+    '今天不开心？吸一口猫就好了。',
+    '猫生赢家：睡到自然醒，吃到自然胖。',
+    '世界很大，猫窝最暖。',
+    '别慌，猫还没跑，说明还有救。',
+    '越努力越幸运，越撸猫越快乐。',
+    '猫咪教会我们：享受当下。',
+    '有时候，躺平也是一种智慧。',
+    '愿你像猫，被世界温柔以待。',
+    '猫的瞳孔里，藏着星辰大海。',
+    '今天也是猫系打工人。',
+    '猫爪踩过的每一步，都算数。',
+    '不要焦虑，猫自有安排。',
+    '生活的解药：猫、茶、好心情。',
+    '猫咪一笑，烦恼全消。',
+    '做个像猫一样自由的人。',
+    '世界以痛吻我，我以猫治愈。',
+    '猫是软软的，日子是暖暖的。',
+    '别熬夜了，猫都睡了。',
+    '你负责努力，猫负责可爱。',
+    '罐头会有的，猫也会有的。',
+    '猫尾巴一甩，好运自然来。',
+    '今天也要元气满满喵。',
+    '有猫在，孤独自动退散。',
+    '猫的眼睛会说话。',
+    '人间值得，因为猫在。',
+    '摸摸猫头，烦恼没有。',
+    '猫式哲学：吃饱就睡，睡醒就玩。',
+    '你养的不是猫，是治愈系神器。',
+    '猫的温柔，胜过千言万语。',
+    '一路有你，喵不可言。',
+    '猫咪的陪伴，是最好的礼物。',
+    '别怕，猫会陪着你。',
+    '今天也要做个可爱的人。',
+    '猫与星光，皆不可辜负。',
+    '生活明朗，猫生可爱。',
+    '一起合成，一起发财，一起吸猫。',
+    '猫是液态的，快乐也是。',
+    '心里有猫，眼里有光。',
+    '慢下来，像猫一样生活。',
+    '愿每个爱猫的人都被好运眷顾。',
+  ],
+  en: [
+    'Cats don\'t ask questions, only for food.',
+    'In a cyber world, cats are the softest glitch.',
+    'Stay curious, stay cat.',
+    'Code breaks, cats don\'t.',
+    'The future is feline.',
+    'Purr over profit.',
+    'Life is hard, but cats are soft.',
+    'Stretch like nobody\'s watching.',
+    'A cat\'s purr is the best white noise.',
+    'Some doors you open yourself.',
+    'Bad day? Pet a cat.',
+    'Sleep in, eat well, live like a cat.',
+    'The world is big, the cat bed is warm.',
+    'Don\'t panic, the cat is still here.',
+    'Work hard, pet harder.',
+    'Cats teach us to enjoy the moment.',
+    'Sometimes, resting is wisdom.',
+    'May you be treated gently, like a cat.',
+    'A cat\'s eyes hide the stars.',
+    'Powered by coffee and cats.',
+    'Every paw step counts.',
+    'Don\'t worry, the cat has a plan.',
+    'The cure: cat, tea, good mood.',
+    'A cat\'s smile melts worries.',
+    'Be as free as a cat.',
+    'The world wounds, cats heal.',
+    'Soft cats, warm days.',
+    'Stop scrolling, the cat is asleep.',
+    'You do the work, the cat does the cute.',
+    'There will be cans, there will be cats.',
+    'A flick of the tail brings luck.',
+    'Full of energy, meow.',
+    'With a cat, loneliness fades.',
+    'A cat\'s eyes speak.',
+    'Life is worth it because of cats.',
+    'Pat the cat, lose the stress.',
+    'Eat, sleep, play — cat philosophy.',
+    'You didn\'t adopt a cat, you adopted therapy.',
+    'A cat\'s warmth says more than words.',
+    'Along the way, meow forever.',
+    'A cat\'s company is the best gift.',
+    'Don\'t be afraid, the cat is with you.',
+    'Be someone\'s sunshine today.',
+    'Cats and starlight, both unmissable.',
+    'Life is bright, cats are cute.',
+    'Merge, earn, and pet cats.',
+    'Cats are liquid, and so is happiness.',
+    'A cat in the heart, light in the eyes.',
+    'Slow down, live like a cat.',
+    'May every cat lover be lucky.',
+  ],
+  ru: [
+    'Кошки не задают вопросов, только просят еду.',
+    'В кибер-мире кошки — самый тёплый сбой.',
+    'Оставайся любопытным, оставайся котом.',
+    'Код ломается, кошки — нет.',
+    'Будущее за кошками.',
+    'Мурлыканье важнее прибыли.',
+    'Жизнь трудна, но кошки мягкие.',
+    'Потянись, как будто никто не смотрит.',
+    'Мурлыканье кошки — лучший белый шум.',
+    'Некоторые двери открываешь сам.',
+    'Плохой день? Погладь кота.',
+    'Спи дольше, ешь лучше — живи как кот.',
+    'Мир большой, а кошачья лежанка тёплая.',
+    'Не паникуй, кот ещё здесь.',
+    'Работай усердно, гладь ещё усерднее.',
+    'Кошки учат наслаждаться моментом.',
+    'Иногда отдых — это мудрость.',
+    'Пусть с тобой обходятся нежно, как с котом.',
+    'В глазах кошки прячутся звёзды.',
+    'Работает на кофе и кошках.',
+    'Каждый шаг лапки важен.',
+    'Не волнуйся, у кота есть план.',
+    'Лекарство: кот, чай, хорошее настроение.',
+    'Улыбка кота растапливает тревоги.',
+    'Будь свободным, как кот.',
+    'Мир ранит, кошки лечат.',
+    'Мягкие кошки, тёплые дни.',
+    'Хватит скроллить, кот уже спит.',
+    'Ты работаешь, кот милуется.',
+    'Будут и консервы, и кошки.',
+    'Взмах хвоста приносит удачу.',
+    'Полный энергии, мяу.',
+    'С котом одиночество уходит.',
+    'Глаза кошки говорят.',
+    'Жизнь стоит того из-за кошек.',
+    'Погладь кота — забудь стресс.',
+    'Ешь, спи, играй — философия кота.',
+    'Ты завёл не кота, а терапию.',
+    'Тепло кошки говорит больше слов.',
+    'По пути — мяу навсегда.',
+    'Компания кота — лучший подарок.',
+    'Не бойся, кот с тобой.',
+    'Будь чьим-то солнцем сегодня.',
+    'Кошки и звёзды — нельзя пропустить.',
+    'Жизнь светла, кошки милы.',
+    'Объединяй, зарабатывай и гладь котов.',
+    'Кошки жидкие, и счастье тоже.',
+    'Кот в сердце — свет в глазах.',
+    'Замедлись, живи как кот.',
+    'Пусть всем любителям кошек везёт.',
+  ],
+};
+function randomQuote() {
+  const list = POSTER_QUOTES[_lang] || POSTER_QUOTES.zh;
+  return list[Math.floor(Math.random() * list.length)];
+}
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+// 生成并绘制游戏链接二维码（白底 + 黑码，保证可扫）
+async function drawQrCode(ctx, cx, cy, size, text) {
+  try {
+    const mod = await import('qrcode');
+    const QR = mod.default || mod;
+    const dataUrl = await QR.toDataURL(text, {
+      width: 256, margin: 1, errorCorrectionLevel: 'M',
+      color: { dark: '#000000', light: '#ffffff' },
+    });
+    const img = await loadImage(dataUrl);
+    const x = cx - size / 2, y = cy - size / 2;
+    const pad = size * 0.07;
+    ctx.save();
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(x - pad, y - pad, size + pad * 2, size + pad * 2);
+    ctx.strokeStyle = 'rgba(0,0,0,0.18)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x - pad, y - pad, size + pad * 2, size + pad * 2);
+    ctx.drawImage(img, x, y, size, size);
+    ctx.restore();
+  } catch (_) {}
+}
+function neonText(ctx, text, x, y, font, fill, glow) {
+  ctx.save();
+  ctx.font = font;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.shadowColor = glow;
+  ctx.shadowBlur = 18;
+  ctx.fillStyle = fill;
+  ctx.fillText(text, x, y);
+  ctx.shadowBlur = 0;
+  ctx.fillText(text, x, y);
+  ctx.restore();
+}
+function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+  const chars = String(text).split('');
+  const lines = [];
+  let line = '';
+  for (let i = 0; i < chars.length; i++) {
+    const test = line + chars[i];
+    if (ctx.measureText(test).width > maxWidth && line) { lines.push(line); line = chars[i]; }
+    else line = test;
+  }
+  if (line) lines.push(line);
+  lines.forEach((ln, idx) => { ctx.fillText(ln, x, y + idx * lineHeight); });
+  return lines.length * lineHeight;
+}
+let _posterStyle = 'cyberpunk';
+const POSTER_STYLES = {
+  cyberpunk: {
+    titleFill: '#ffd6ff', titleGlow: '#ff00aa',
+    sub: 'MERGE CATS · WIN THE POOL', subFill: '#7ff7ff', subGlow: '#00ffff',
+    lvFill: '#ffe066', lvGlow: '#ffaa00',
+    quoteFill: '#ffffff', quoteGlow: '#ff00aa',
+    catGlow: '#00ffff', catBase: 'rgba(255,0,170,0.5)',
+    watermark: 'rgba(255,255,255,0.55)',
+  },
+  dreamland: {
+    titleFill: '#d81b8f', titleGlow: '#ff9ecf',
+    sub: 'DREAM · SWEET · CUTE', subFill: '#8e24aa', subGlow: '#e1bee7',
+    lvFill: '#e91e8c', lvGlow: '#ffb6d9',
+    quoteFill: '#5d3a6b', quoteGlow: '#ff9ecf',
+    catGlow: '#ff9ecf', catBase: 'rgba(255,158,207,0.45)',
+    watermark: 'rgba(120,60,120,0.55)',
+  },
+  cute: {
+    titleFill: '#f4511e', titleGlow: '#ffd54f',
+    sub: 'KAWAII · PURR · LOVE', subFill: '#ef6c00', subGlow: '#ffcc80',
+    lvFill: '#ff7043', lvGlow: '#ffccbc',
+    quoteFill: '#6d4c41', quoteGlow: '#ffab91',
+    catGlow: '#ffd54f', catBase: 'rgba(255,213,79,0.45)',
+    watermark: 'rgba(120,80,40,0.55)',
+  },
+};
+function fillBg(ctx, W, H, colors) {
+  const bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, colors[0]);
+  bg.addColorStop(0.5, colors[1]);
+  bg.addColorStop(1, colors[2]);
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);   // 实色全覆盖，保证海报不透明
+}
+function drawCyberBg(ctx, W, H) {
+  fillBg(ctx, W, H, ['#2b0a4e', '#12052e', '#041226']);
+  const g = ctx.createRadialGradient(W * 0.5, H * 0.22, 0, W * 0.5, H * 0.22, W * 0.7);
+  g.addColorStop(0, 'rgba(255,0,170,0.30)');
+  g.addColorStop(1, 'rgba(255,0,170,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = 'rgba(0,255,255,0.16)'; ctx.lineWidth = 1.2;
+  for (let i = 0; i <= 18; i++) { const y = H * 0.12 + (H * 0.88 * i / 18); ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+  for (let i = -9; i <= 9; i++) { const x = W / 2 + i * (W / 16); ctx.beginPath(); ctx.moveTo(x, H * 0.12); ctx.lineTo(W / 2 + (x - W / 2) * 2.6, H); ctx.stroke(); }
+}
+function drawStar(ctx, x, y, r) {
+  ctx.beginPath();
+  for (let i = 0; i < 5; i++) {
+    const a = -Math.PI / 2 + i * Math.PI * 2 / 5;
+    const a2 = a + Math.PI / 5;
+    ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
+    ctx.lineTo(x + Math.cos(a2) * r * 0.5, y + Math.sin(a2) * r * 0.5);
+  }
+  ctx.closePath(); ctx.fill();
+}
+function drawHeart(ctx, x, y, s, color) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(s / 16, s / 16); ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(0, 4);
+  ctx.bezierCurveTo(0, 0, -8, -6, -8, 2);
+  ctx.bezierCurveTo(-8, 8, 0, 12, 0, 14);
+  ctx.bezierCurveTo(0, 12, 8, 8, 8, 2);
+  ctx.bezierCurveTo(8, -6, 0, 0, 0, 4);
+  ctx.fill(); ctx.restore();
+}
+function drawPaw(ctx, x, y, s) {
+  ctx.beginPath(); ctx.ellipse(x, y + s * 0.3, s, s * 0.7, 0, 0, Math.PI * 2); ctx.fill();
+  [[-s * 0.6, -s * 0.4], [0, -s * 0.85], [s * 0.6, -s * 0.4]].forEach(([dx, dy]) => {
+    ctx.beginPath(); ctx.arc(x + dx, y + dy, s * 0.28, 0, Math.PI * 2); ctx.fill();
+  });
+}
+function drawDreamBg(ctx, W, H) {
+  fillBg(ctx, W, H, ['#ffe8f3', '#f6d6ff', '#dcd6ff']);
+  for (let i = 0; i < 26; i++) {
+    const x = Math.random() * W, y = Math.random() * H, r = 12 + Math.random() * 40;
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, 'rgba(255,255,255,0.9)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  for (let i = 0; i < 40; i++) { drawStar(ctx, Math.random() * W, Math.random() * H * 0.8, 2 + Math.random() * 4); }
+}
+function drawCuteBg(ctx, W, H) {
+  fillBg(ctx, W, H, ['#fff6de', '#ffe6cd', '#ffd7d7']);
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  for (let i = 0; i < 30; i++) { ctx.beginPath(); ctx.arc(Math.random() * W, Math.random() * H, 8 + Math.random() * 20, 0, Math.PI * 2); ctx.fill(); }
+  for (let i = 0; i < 16; i++) { drawHeart(ctx, Math.random() * W, Math.random() * H * 0.85, 10 + Math.random() * 22, 'rgba(255,138,128,0.4)'); }
+  ctx.fillStyle = 'rgba(255,183,77,0.45)';
+  for (let i = 0; i < 18; i++) { drawPaw(ctx, Math.random() * W, Math.random() * H, 8 + Math.random() * 14); }
+}
+async function renderPoster(style) {
+  style = style || _posterStyle || 'cyberpunk';
+  const conf = POSTER_STYLES[style] || POSTER_STYLES.cyberpunk;
+  const canvas = document.getElementById('poster-canvas');
+  if (!canvas) return;
+  const W = canvas.width, H = canvas.height;
+  const ctx = canvas.getContext('2d');
+  const lv = Math.max(1, maxUnlockedLv());
+  const cat = CATS[lv] || CATS[1];
+  const quote = randomQuote();
+  const name = catName(lv);
+  const username = S.username || 'Player';
+
+  ctx.clearRect(0, 0, W, H);
+  if (style === 'dreamland') drawDreamBg(ctx, W, H);
+  else if (style === 'cute') drawCuteBg(ctx, W, H);
+  else drawCyberBg(ctx, W, H);
+
+  neonText(ctx, 'CYBERMERGE', W / 2, H * 0.085, '900 64px "Segoe UI",sans-serif', conf.titleFill, conf.titleGlow);
+  neonText(ctx, conf.sub, W / 2, H * 0.13, '700 26px "Segoe UI",sans-serif', conf.subFill, conf.subGlow);
+
+  // 当前最高等级猫图
+  try {
+    const img = await loadImage(cat.img);
+    const size = Math.min(W * 0.62, H * 0.32);
+    const sx = (W - size) / 2, sy = H * 0.19;
+    const g2 = ctx.createRadialGradient(W / 2, sy + size * 0.55, size * 0.1, W / 2, sy + size * 0.55, size * 0.75);
+    g2.addColorStop(0, conf.catBase);
+    g2.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g2; ctx.fillRect(0, 0, W, H);
+    ctx.save(); ctx.shadowColor = conf.catGlow; ctx.shadowBlur = 40;
+    ctx.drawImage(img, sx, sy, size, size);
+    ctx.restore();
+  } catch (_) {}
+
+  neonText(ctx, 'LV.' + lv + '  ' + name, W / 2, H * 0.565, '900 44px "Segoe UI",sans-serif', conf.lvFill, conf.lvGlow);
+
+  ctx.save();
+  ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  ctx.shadowColor = conf.quoteGlow; ctx.shadowBlur = 16;
+  ctx.fillStyle = conf.quoteFill;
+  ctx.font = '700 34px "PingFang SC","Microsoft YaHei",sans-serif';
+  wrapText(ctx, '「' + quote + '」', W / 2, H * 0.615, W * 0.8, 50);
+  ctx.restore();
+
+  // 游戏链接二维码（白底黑码，保证可扫）
+  await drawQrCode(ctx, W / 2, H * 0.79, 170, buildInviteLink());
+
+  ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = conf.watermark;
+  ctx.font = '500 24px "Segoe UI",sans-serif';
+  ctx.fillText('@' + username + ' · CyberMerge', W / 2, H * 0.965);
+
+  canvas.dataset.quote = quote;
+  canvas.dataset.style = style;
+}
+function openPoster() {
+  const modal = document.getElementById('poster-modal');
+  if (!modal) return;
+  modal.classList.add('show');
+  renderPoster(_posterStyle);
+}
+function closePoster() {
+  document.getElementById('poster-modal')?.classList.remove('show');
+}
+async function grantShareReward() {
+  const r = await callRpc('daily_share_reward', {});
+  if (r && r.ok) {
+    const reward = Number(r.reward) || 0;   // 后端返回字段是 reward
+    if (reward > 0) S.usdt = parseFloat((S.usdt + reward).toFixed(4));
+    ui();
+    toast(t('t_task_done').replace('{icon}', '🐦').replace('{coins}', reward), 'success');
+    saveLocal();
+  }
+}
+async function sharePosterToX() {
+  const canvas = document.getElementById('poster-canvas');
+  if (!canvas) return;
+  const quote = canvas.dataset.quote || randomQuote();
+  const text = t('t_share_text') + ' ' + quote;
+  try {
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+    if (blob) {
+      const file = new File([blob], 'cybermerge-poster.png', { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'CyberMerge', text });
+        grantShareReward();
+        return;
+      }
+    }
+  } catch (e) {
+    if (e && (e.name === 'AbortError' || e.name === 'NotAllowedError')) return;  // 用户取消分享
+  }
+  // 降级：X 文字 intent + 下载海报图（纯前端无法直接把图片发到 X，需 X API 授权）
+  const url = encodeURIComponent(buildInviteLink());
+  window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + url, '_blank');
+  try {
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = 'cybermerge-poster.png';
+    a.click();
+  } catch (_) {}
+  grantShareReward();
 }
 
 // ═══════ 按钮 ═══════
 function btn(){
   // 全球等级榜按钮：打开弹窗并拉取真实排行榜（按等级）
   const lbModal = document.getElementById('leaderboard-modal');
-  const openLeaderboard = () => { lbModal?.classList.add('show'); fetchLeaderboard(); };
+  const openLeaderboard = () => { lbModal?.classList.add('show'); updateSeasonUI(); fetchSeasonBoard(); };
   const closeLeaderboard = () => lbModal?.classList.remove('show');
   document.getElementById('btn-leaderboard')?.addEventListener('click', openLeaderboard);
   document.getElementById('leaderboard-close')?.addEventListener('click', closeLeaderboard);
   lbModal?.addEventListener('click', (e) => { if (e.target.id === 'leaderboard-modal') closeLeaderboard(); });
 
-  // 排行榜 Tab 切换（全球排行 / 当日邀请榜）
+  // 排行榜 Tab 切换（赛季榜 / 本周邀请榜）
   const lbTabs = document.querySelectorAll('.lb-tab');
   lbTabs.forEach(tab => {
     tab.addEventListener('click', () => {
       lbTabs.forEach(t => t.classList.remove('lb-tab-active'));
       tab.classList.add('lb-tab-active');
-      if (tab.dataset.tab === 'global') {
-        fetchLeaderboard();      // 全球榜：按等级
+      if (tab.dataset.tab === 'invite') {
+        fetchInviteBoard();      // 邀请榜：本周邀请数（周一 8 点重置）
       } else {
-        fetchInviteBoard();      // 当日邀请榜：按今日邀请数
+        fetchSeasonBoard();      // 赛季榜：40级份额数
       }
     });
   });
 
-  // 提现进度/创世分红弹窗
+  // 提现进度/创世分红弹窗（入口已移到个人中心）
   const wdModal = document.getElementById('withdraw-modal');
   const openWithdraw = () => { renderWithdrawPanel(); wdModal?.classList.add('show'); };
   const closeWithdraw = () => wdModal?.classList.remove('show');
-  document.getElementById('btn-withdraw')?.addEventListener('click', openWithdraw);
   document.getElementById('withdraw-close')?.addEventListener('click', closeWithdraw);
   wdModal?.addEventListener('click', (e) => { if (e.target.id === 'withdraw-modal') closeWithdraw(); });
 
-  // 个人中心：点顶部等级/头像区域打开
+  // 个人中心：点整条 HUD 通栏（全局热区）从右侧滑出
   const pfModal = document.getElementById('profile-modal');
   const openProfile = () => { renderProfile(); pfModal?.classList.add('show'); };
   const closeProfile = () => pfModal?.classList.remove('show');
-  document.querySelector('.level-info')?.addEventListener('click', openProfile);
+  document.getElementById('hud-panel')?.addEventListener('click', openProfile);
   document.getElementById('profile-close')?.addEventListener('click', closeProfile);
   pfModal?.addEventListener('click', (e) => { if (e.target.id === 'profile-modal') closeProfile(); });
+  // 连接 TON 钱包
+  document.getElementById('pf-connect-wallet')?.addEventListener('click', connectWallet);
+  // 游戏设置：打开系统设置
+  document.getElementById('pf-settings')?.addEventListener('click', () => { closeProfile(); openSettings(); });
+  // USDT Claim（自付 Gas 提现，门槛 10 USD₮，走 TonConnect 转账 + 后端工单）
+  document.getElementById('pf-withdraw')?.addEventListener('click', () => {
+    doWithdraw();
+  });
   document.getElementById('pf-copy-ref')?.addEventListener('click', () => {
     if (!S.refCode) { toast('暂无邀请码', 'warn'); return; }
     const link = buildInviteLink();
@@ -1726,7 +2694,20 @@ function btn(){
   });
 
   document.getElementById('btn-merge')?.addEventListener('click',buy);
-  document.getElementById('btn-ad-reward')?.addEventListener('click',watchAd);
+  // 推特赚金：点击生成 9:16 海报 → 预览 → 分享 X
+  document.getElementById('btn-twitter')?.addEventListener('click', openPoster);
+  document.getElementById('poster-close')?.addEventListener('click', closePoster);
+  document.getElementById('poster-modal')?.addEventListener('click', (e) => { if (e.target.id === 'poster-modal') closePoster(); });
+  document.getElementById('poster-share-x')?.addEventListener('click', sharePosterToX);
+  // 海报风格切换
+  document.querySelectorAll('.poster-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.poster-tab').forEach(t => t.classList.remove('poster-tab-active'));
+      tab.classList.add('poster-tab-active');
+      _posterStyle = tab.dataset.style;
+      renderPoster(_posterStyle);
+    });
+  });
   document.getElementById('btn-invite')?.addEventListener('click', () => {
     // 邀请链接带上当前用户 tgId，被邀请者点进来后 start_param 会带上这个 ID
     const inviteUrl = buildInviteLink();
@@ -1744,10 +2725,14 @@ function btn(){
     }
   });
   document.getElementById('btn-ads')?.addEventListener('click',openPokedex);
-  // TON 钱包链接按钮
-  document.getElementById('btn-connect-wallet')?.addEventListener('click', connectWallet);
-  // 每日任务：打开每日任务弹窗（3 个 Adsgram 任务广告）
-  document.getElementById('btn-task-wall')?.addEventListener('click', openTasks);
+  // 社区：打开 Telegram 群链接
+  document.getElementById('btn-community')?.addEventListener('click', () => {
+    if (tg && tg.openTelegramLink) tg.openTelegramLink('https://t.me/lcz8com');
+    else window.open('https://t.me/lcz8com', '_blank');
+  });
+  // 快捷设置圆标：打开系统设置（openSettings 在下方定义，用箭头函数延迟求值）
+  document.getElementById('btn-quick-settings')?.addEventListener('click', () => openSettings());
+  // TON 钱包链接已移入个人中心（pf-connect-wallet）
   document.getElementById('task-close')?.addEventListener('click', closeTasks);
   document.getElementById('task-modal')?.addEventListener('click', (e) => { if (e.target.id === 'task-modal') closeTasks(); });
   document.getElementById('pokedex-close')?.addEventListener('click',closePokedex);
@@ -1764,7 +2749,6 @@ function btn(){
   const settingsModal = document.getElementById('settings-modal');
   const openSettings = () => settingsModal?.classList.add('show');
   const closeSettings = () => settingsModal?.classList.remove('show');
-  document.getElementById('btn-settings')?.addEventListener('click', openSettings);
   document.getElementById('settings-close')?.addEventListener('click', closeSettings);
   settingsModal?.addEventListener('click', (e) => { if (e.target.id === 'settings-modal') closeSettings(); });
 
@@ -1848,7 +2832,7 @@ function shortName(name, max) {
   return s.length > max ? s.slice(0, max) + '…' : s;
 }
 
-async function fetchLeaderboard() {
+async function fetchSeasonBoard() {
   const listEl = document.getElementById('leaderboard-list');
   const myRankEl = document.getElementById('lb-my-rank');
   if (!listEl) return;
@@ -1858,38 +2842,37 @@ async function fetchLeaderboard() {
     const resp = await fetch(AUTH_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'leaderboard', initData })
+      body: JSON.stringify({ action: 'seasonboard', initData })
     });
     const data = await resp.json();
-    if (!data.success || !data.leaderboard) throw new Error('empty');
-    renderLeaderboard(data.leaderboard);
+    if (!data.success || !data.seasonboard) throw new Error('empty');
+    renderSeasonBoard(data.seasonboard);
   } catch(_) {
-    if (listEl) listEl.innerHTML = '<div class="lb-empty">' + t('lb_empty') + '</div>';
+    if (listEl) listEl.innerHTML = '<div class="lb-empty">' + t('season_empty') + '</div>';
     if (myRankEl) myRankEl.textContent = '—';
   }
 }
 
-function renderLeaderboard(lb) {
+function renderSeasonBoard(sb) {
   const listEl = document.getElementById('leaderboard-list');
   const myRankEl = document.getElementById('lb-my-rank');
   if (!listEl) return;
-  const items = Array.isArray(lb.list) ? lb.list : [];
-  if (myRankEl) myRankEl.textContent = lb.myRank ? '#' + lb.myRank : '—';
+  const items = Array.isArray(sb.list) ? sb.list : [];
+  if (myRankEl) myRankEl.textContent = sb.myRank ? '#' + sb.myRank : '—';
   if (!items.length) {
-    listEl.innerHTML = '<div class="lb-empty">' + t('lb_empty') + '</div>';
+    listEl.innerHTML = '<div class="lb-empty">' + t('season_empty') + '</div>';
     return;
   }
   listEl.innerHTML = items.map(p => {
     return '<div class="lb-item' + (p.isMe ? ' lb-item-me' : '') + '">' +
       '<span class="lb-rank">' + p.rank + '</span>' +
-      '<span class="lb-name">' + escapeHtml(shortName(p.username, 14)) + '</span>' +
-      '<span class="lb-lv">Lv.' + p.lv + '</span>' +
-      '<span class="lb-coins">' + fmtNum(p.coins) + '</span>' +
+      '<span class="lb-name">' + escapeHtml(shortName(p.username, 6)) + '</span>' +
+      '<span class="lb-lv">40级 × ' + p.shares + ' ' + t('season_shares_unit') + '</span>' +
     '</div>';
   }).join('');
 }
 
-// ═══════ 当日邀请榜：拉取 + 渲染（按今日邀请数）═══════
+// ═══════ 本周邀请榜：拉取 + 渲染（按本周邀请数，周一 8 点重置）═══════
 async function fetchInviteBoard() {
   const listEl = document.getElementById('leaderboard-list');
   const myRankEl = document.getElementById('lb-my-rank');
@@ -2046,7 +3029,7 @@ function setupBeaconSave() {
 // ═══════ 启动 ═══════
 function init(){
   loadPokedex(); updatePokedexBadge();
-  twa(); grid(); btn(); ev(); updateAiBtn();
+  twa(); grid(); btn(); ev(); updateAiBtn(); bindConfirmModal();
   // 先用本地实时存档恢复（秒开显示上次进度），云端稍后异步合并
   applyStateToS(loadLocal());
   ui();
@@ -2059,6 +3042,9 @@ function init(){
   initTonConnect();
   // 应用当前保存的语言（覆盖 HTML 默认中文文案）
   applyI18n();
+  // 赛季天梯：立即渲染赛季编号/倒计时，并每秒刷新倒计时
+  updateSeasonUI();
+  setInterval(updateSeasonUI, 1000);
 
   // 启动加载页：预加载音乐 + 猫咪图片，进度 100% 才进入（规避刚打开没音乐）
   preloadAssets(
@@ -2069,6 +3055,9 @@ function init(){
         startTimer();
         syncBackend();
         startCloudSyncTimer();
+        startPrizePoolPolling();   // S1 奖池横幅轮询
+        startAirdrop();            // 动态空投
+        startBroadcastPolling();   // 全服喜讯小喇叭
         setupBeaconSave();
       });
     }

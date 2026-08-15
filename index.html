@@ -71,77 +71,59 @@
     relative
     w-full h-[100dvh] max-w-[430px] mx-auto
     flex flex-col
-    overflow-hidden
+    overflow-y-auto overflow-x-hidden
     shadow-[0_0_60px_rgba(0,0,0,0.25)]
   ">
 
     <!-- ═══════════ 顶部区域 ═══════════ -->
     <header id="top-bar" class="shrink-0 px-2 pt-2">
-      <!-- 第一行：双红色余额胶囊 + 暗币按钮 -->
-      <div class="top-row flex gap-2 items-center">
-        <button id="btn-leaderboard" class="balance-pill balance-pill-left leaderboard-btn" type="button">
-          <span class="bp-icon">🌍</span>
-          <span class="leaderboard-label" data-i18n="leaderboard">全球等级榜</span>
-        </button>
-        <button id="btn-withdraw" class="balance-pill balance-pill-right flex-1 leaderboard-btn" type="button">
-          <span class="bp-icon">🎁</span>
-          <span class="leaderboard-label" data-i18n="withdraw_btn">分红进度</span>
-        </button>
-        <button id="btn-settings" class="settings-btn" aria-label="系统设置">
-          <svg class="gear-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-            <path fill="currentColor" d="M19.14 12.94a7.49 7.49 0 0 0 .05-.94 7.49 7.49 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.61-.22l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96a.5.5 0 0 0-.61.22L2.65 8.84a.5.5 0 0 0 .12.64L4.8 11.06c-.03.31-.05.62-.05.94s.02.63.05.94L2.77 14.52a.5.5 0 0 0-.12.64l1.92 3.32c.13.23.4.32.61.22l2.39-.96c.49.38 1.03.7 1.62.94l.36 2.54c.05.24.26.42.5.42h3.84c.24 0 .45-.18.5-.42l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.21.1.48.01.61-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.04-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/>
-          </svg>
-        </button>
-      </div>
-
-      <!-- 第二行：等级进度条 -->
-      <div class="level-bar flex items-center gap-2 mt-2">
-        <div class="level-info flex items-center gap-1">
-          <div class="level-cat">
-            <img class="level-cat-img" src="/cats/LV.40.png" alt="招财猫" />
-          </div>
-          <div class="level-text">
-            <span class="level-lv" id="level-lv">Lv.1</span>
-            <span class="level-coins" id="level-coins">0</span>
+      <!-- 第一层：HUD 个人数据总览（整条通栏为全局热区，点击从右侧滑出个人中心） -->
+      <div class="hud-panel" id="hud-panel">
+        <div class="hud-profile">
+          <img id="hud-avatar" class="hud-avatar" src="/cats/LV.1.png" alt="avatar" />
+          <div class="hud-user">
+            <span class="hud-name" id="hud-name">Player</span>
+            <span class="hud-lv" id="level-lv">Lv.1</span>
           </div>
         </div>
-        <div class="level-progress flex-1 flex flex-col gap-1 min-w-0 mx-1">
-          <div class="prog-bar">
-            <div class="prog-bar-fill" id="prog-bar-fill" style="width: 0%"></div>
-          </div>
-          <div class="prog-bar-labels">
-            <span class="prog-label-start">Lv.<span id="prog-cur-lv">1</span></span>
-            <span class="prog-label-end" data-i18n="level_max">40级</span>
-          </div>
-        </div>
-        <div class="level-reward">
-          <span class="lr-title" data-i18n="level_reward_t">本期收益</span>
-          <span class="lr-sub" data-i18n="level_reward_s">鱼池瓜分</span>
+        <div class="hud-stats">
+          <span class="hud-stat hud-coins">💰<b id="level-coins">0</b></span>
+          <span class="hud-stat hud-usdt">💵<b id="hud-usdt">$0.00</b></span>
+          <span class="hud-stat hud-invite">👥<b id="hud-invite">0</b></span>
+          <span class="hud-stat hud-adcont">🔥<b id="hud-adcont">0</b></span>
         </div>
       </div>
     </header>
 
+    <!-- ═══════════ S1 赛季大奖池横幅 ═══════════ -->
+    <section id="season-banner" class="season-banner shrink-0 mx-2 mt-2">
+      <div class="season-banner-left">
+        <span class="season-banner-title" id="season-banner-title">🏆 S1 赛季瓜分</span>
+        <span class="season-banner-countdown" id="season-countdown-banner">0天 0时 0分 0秒</span>
+      </div>
+      <div class="season-banner-right">
+        <span class="season-banner-pool-label" data-i18n="wd_pool_label">实时奖池</span>
+        <span class="season-banner-pool-value" id="prize-pool-amount">$0.000</span>
+      </div>
+    </section>
+
+    <!-- ═══════════ 快捷功能小圆标（横排居中） ═══════════ -->
+    <nav id="quick-actions" class="quick-actions shrink-0 mx-2 mt-2">
+      <button id="btn-leaderboard" class="quick-action" type="button">🏆 <span data-i18n="quick_leaderboard">全球天梯</span></button>
+      <button id="btn-community" class="quick-action" type="button">📢 <span data-i18n="quick_community">官方社区</span></button>
+      <button id="btn-invite" class="quick-action" type="button">💌 <span data-i18n="quick_invite">邀请赚U</span></button>
+      <button id="btn-quick-settings" class="quick-action" type="button">⚙️ <span data-i18n="quick_settings">设置</span></button>
+    </nav>
+
     <!-- ═══════════ 核心游戏区 ═══════════ -->
     <main id="game-area" class="flex-1 flex flex-col items-center justify-center px-2 min-h-0">
-      <!-- 大计时器卡片 -->
-      <div class="timer-card">
-        <span class="timer-heart">❤️</span>
-        <span class="timer-num" id="timer-num">364.02秒</span>
-        <span class="timer-rate" id="timer-rate" data-i18n="timer_rate">本期鱼池</span>
+      <!-- 猫抓板上方悬浮小喇叭：全服喜讯排队滚动播报 -->
+      <div id="broadcast-bar" class="broadcast-bar">
+        <span class="broadcast-icon">📢</span>
+        <div class="broadcast-track"><span class="broadcast-text" id="broadcast-text"></span></div>
       </div>
 
-      <!-- 标签行 -->
-      <div class="side-labels flex justify-between w-full px-4 mb-1">
-        <button id="btn-connect-wallet" class="side-label side-label-wallet">
-          <span class="wallet-dot" id="wallet-dot"></span>
-          <span class="wallet-text" id="wallet-text" data-i18n="wallet_connect">链接钱包 Connect</span>
-        </button>
-        <button id="btn-invite" class="side-label side-label-invite">
-          🎁 <span data-i18n="invite_text">邀请好友</span> <span class="invite-en" data-i18n="invite_en">Invite / Friends</span>
-        </button>
-      </div>
-
-      <!-- 网格：奶白色卡片 + 粉橙色爪印圆盘（尺寸收紧，确保底部栏不被挤出） -->
+      <!-- 网格：奶白色卡片 + 粉橙色爪印圆盘 -->
       <div id="board-frame">
         <div id="matrix-grid" class="
           grid grid-cols-4 grid-rows-4
@@ -151,6 +133,9 @@
         ">
         </div>
       </div>
+
+      <!-- 动态空投层（网格两侧边缘随机生成补给箱） -->
+      <div id="airdrop-layer"></div>
     </main>
 
     <!-- ═══════════ 底部导航栏 ═══════════ -->
@@ -160,32 +145,27 @@
       shrink-0
       gap-2
     ">
-      <!-- 左：加速可产出（上） + 每日任务（下）垂直堆叠 -->
+      <!-- 左：每日签到（开启智能合成） + 推特赚金 -->
       <div class="bottom-btn-group bottom-btn-group-left">
-        <button id="btn-ad-reward" class="ad-reward-btn">
-          <span class="ad-emoji">⚡</span>
-          <span class="ad-text"><span data-i18n="ad_text">广告加速</span> <b>LV.<span id="ad-lv">2</span></b></span>
-          <span class="ad-count" id="ad-count">10/10</span>
-        </button>
-        <button id="btn-task-wall" class="bottom-btn bottom-btn-yellow">
+        <button id="btn-daily-checkin" class="ai-merge-btn">🎯 每日签到</button>
+        <button id="btn-twitter" class="bottom-btn bottom-btn-yellow">
           <div class="bb-cat-icon"></div>
           <div class="bb-center">
-            <span class="bb-title" data-i18n="task_title">每日任务</span>
-            <span class="bb-sub"><b data-i18n="task_sub">Task / Earn</b></span>
+            <span class="bb-title" data-i18n="twitter_btn">推特赚金</span>
+            <span class="bb-sub" data-i18n="twitter_sub">X / Share</span>
           </div>
         </button>
       </div>
 
-      <!-- 中：红色购买猫咪按钮（只显示「买 LV.x」，不显示金币总数） -->
+      <!-- 中：买猫 / 官方回收站（拖拽时变身） -->
       <button id="btn-merge" class="bottom-btn bottom-btn-red bottom-btn-red-main">
         <img id="buy-cat-float" class="buy-cat-float" src="/cats/LV.1.png" alt="" draggable="false" />
-        <span class="bb-coin-icon">❤</span>
+        <span class="bb-coin-icon" id="bb-coin-icon">❤️</span>
         <span class="bb-lv-label" id="bb-lv-label">买 LV.1</span>
       </button>
 
-      <!-- 右：智能合成 + 猫咪图鉴（垂直堆叠） -->
+      <!-- 右：猫咪图鉴 -->
       <div class="bottom-btn-group">
-        <span class="ai-merge-btn">⚡ 签到合成</span>
         <button id="btn-ads" class="bottom-btn bottom-btn-yellow">
           <div class="bb-cat-icon bb-cat-icon-right"></div>
           <div class="bb-center">
@@ -270,6 +250,7 @@
         </div>
         <div class="profile-stats">
           <div class="profile-stat"><span class="ps-label" data-i18n="profile_coins">总金币</span><span class="ps-value" id="pf-coins">0</span></div>
+          <div class="profile-stat"><span class="ps-label">💵 USD₮</span><span class="ps-value" id="pf-usdt">$0.00</span></div>
           <div class="profile-stat"><span class="ps-label" data-i18n="profile_earn">每秒产出</span><span class="ps-value" id="pf-earn">0</span></div>
           <div class="profile-stat"><span class="ps-label" data-i18n="profile_invite">邀请人数</span><span class="ps-value" id="pf-invite">0</span></div>
           <div class="profile-stat"><span class="ps-label" data-i18n="profile_weekad">本周看广告</span><span class="ps-value" id="pf-weekad">0</span></div>
@@ -277,22 +258,36 @@
           <div class="profile-stat"><span class="ps-label" data-i18n="profile_rate">提现比例</span><span class="ps-value" id="pf-rate">0%</span></div>
           <div class="profile-stat"><span class="ps-label" data-i18n="profile_ref">邀请码</span><span class="ps-value" id="pf-ref">-</span></div>
         </div>
+        <button id="pf-connect-wallet" class="pf-copy-btn pf-wallet-btn">💳 <span data-i18n="profile_wallet">连接 TON 钱包</span></button>
+        <button id="pf-withdraw" class="pf-copy-btn pf-withdraw-btn">💵 <span data-i18n="profile_claim">Claim / 提现</span></button>
+        <button id="pf-settings" class="pf-copy-btn pf-settings-btn">⚙️ <span data-i18n="profile_settings">游戏设置</span></button>
         <button id="pf-copy-ref" class="pf-copy-btn" data-i18n="profile_copy">复制邀请码</button>
       </div>
     </div>
   </div>
 
-  <!-- ═══════════ 全球等级榜弹窗 ═══════════ -->
+  <!-- ═══════════ 赛季天梯弹窗 ═══════════ -->
   <div id="leaderboard-modal" class="leaderboard-modal">
     <div class="leaderboard-content">
       <div class="leaderboard-header">
-        <span class="leaderboard-title">🌍 <span data-i18n="leaderboard">全球等级榜</span></span>
+        <span class="leaderboard-title">🏆 <span id="season-title">S0赛季</span></span>
         <button id="leaderboard-close" class="leaderboard-close">✕</button>
       </div>
       <div class="leaderboard-body">
+        <!-- 赛季倒计时 + 瓜分规则 -->
+        <div class="season-info">
+          <div class="season-countdown-row">
+            <span class="season-countdown-label" data-i18n="season_countdown">赛季倒计时</span>
+            <span class="season-countdown-value" id="season-countdown">0天 0时 0分 0秒</span>
+          </div>
+          <div class="season-rule">
+            <div class="season-rule-title" data-i18n="season_rule">赛季瓜分规则</div>
+            <div class="season-rule-text" data-i18n="season_rule_text">赛季倒计时结束后统计，锁定满40级的用户，按本周看广告数量占比瓜分红利池所有资金。</div>
+          </div>
+        </div>
         <!-- 排行类型切换 Tab -->
         <div class="lb-tabs">
-          <button class="lb-tab lb-tab-active" data-tab="global" data-i18n="lb_tab_global">🌍 全球排行</button>
+          <button class="lb-tab lb-tab-active" data-tab="season" data-i18n="season_tab">🏆 赛季榜</button>
           <button class="lb-tab" data-tab="invite" data-i18n="lb_tab_invite">👥 邀请榜</button>
         </div>
         <!-- 我的排名 -->
@@ -300,9 +295,9 @@
           <span class="lb-my-label" data-i18n="lb_my_rank">我的排名</span>
           <span class="lb-my-value" id="lb-my-rank">#1</span>
         </div>
-        <!-- 排行榜列表（占位：后续接通所有玩家实时排名） -->
+        <!-- 排行榜列表 -->
         <div id="leaderboard-list" class="leaderboard-list">
-          <div class="lb-empty" id="lb-empty" data-i18n="lb_empty">🏆 排行榜数据接入中，敬请期待</div>
+          <div class="lb-empty" id="lb-empty">⏳ 排行榜加载中...</div>
         </div>
       </div>
     </div>
@@ -367,6 +362,51 @@
       </div>
     </div>
   </div>
+
+  <!-- 合规广告二次确认弹窗（所有广告触发前必须弹出） -->
+  <div id="confirm-modal" class="confirm-modal">
+    <div class="confirm-content">
+      <div class="confirm-icon" id="confirm-icon">📺</div>
+      <div class="confirm-title" id="confirm-title">观看赞助视频获取奖励</div>
+      <div class="confirm-desc" id="confirm-desc">看完视频后奖励将自动到账</div>
+      <div class="confirm-actions">
+        <button id="confirm-cancel" class="confirm-cancel" data-i18n="confirm_cancel">取消</button>
+        <button id="confirm-ok" class="confirm-ok" data-i18n="confirm_ok">▶ 观看视频</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 推特赚金海报生成弹窗（9:16 三风格海报 + X 分享） -->
+  <div id="poster-modal" class="poster-modal">
+    <div class="poster-content">
+      <div class="poster-header">
+        <span class="poster-title">🖼 <span data-i18n="poster_title">生成海报</span></span>
+        <button id="poster-close" class="poster-close">✕</button>
+      </div>
+      <div class="poster-tabs">
+        <button class="poster-tab poster-tab-active" data-style="cyberpunk" data-i18n="style_cyberpunk">赛博朋克</button>
+        <button class="poster-tab" data-style="dreamland" data-i18n="style_dreamland">梦幻乐园</button>
+        <button class="poster-tab" data-style="cute" data-i18n="style_cute">超萌</button>
+      </div>
+      <div class="poster-body">
+        <canvas id="poster-canvas" width="720" height="1280"></canvas>
+      </div>
+      <div class="poster-actions">
+        <button id="poster-share-x" class="poster-share-x">𝕏 <span data-i18n="poster_share">分享 X</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 提现处理中 Loading 遮罩（全自动打款准备中） -->
+  <div id="withdraw-loading" class="withdraw-loading">
+    <div class="withdraw-loading-box">
+      <div class="withdraw-spinner"></div>
+      <div class="withdraw-loading-text">链上确认中，USDT 自动打款准备中...</div>
+    </div>
+  </div>
+
+  <!-- 提现成功钞票雨特效层 -->
+  <div id="money-rain"></div>
 
   <!-- 主逻辑脚本 -->
   <script type="module" src="/main.js"></script>
