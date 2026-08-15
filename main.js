@@ -1694,6 +1694,9 @@ function placeCats() {
 }
 
 // ═══════ 猫爬架自动滚动：有猫跟随最上面的猫，无猫显示顶部3盘；顶端不超过喇叭 ═══════
+let _scrollResetTimer = null;
+let _scrollResetBound = false;
+let _programmaticScroll = false;
 function autoScrollCatTree() {
   const ga = document.getElementById('game-area');
   if (!ga || !g) return;
@@ -1705,6 +1708,7 @@ function autoScrollCatTree() {
       if (y < topY) topY = y;
     }
   }
+  _programmaticScroll = true;
   if (topY === Infinity) {
     // 无猫：显示顶部 3 盘（索引 0/1/2）完整可见，第3盘（索引2）底部抬高，避免被底部「每日签到」按钮遮挡
     const top3 = g.children[2];
@@ -1719,6 +1723,23 @@ function autoScrollCatTree() {
     // 有猫：滚动让最上面的猫出现在喇叭下方
     ga.scrollTop = Math.max(0, topY - 8);
   }
+  setTimeout(() => { _programmaticScroll = false; }, 50);
+}
+
+// 用户手动滚动游戏区后，停止滚动 1.2 秒自动复位，避免猫爬架滚出视野看不到
+function setupCatTreeAutoReset() {
+  if (_scrollResetBound) return;
+  const ga = document.getElementById('game-area');
+  if (!ga) return;
+  _scrollResetBound = true;
+  ga.addEventListener('scroll', () => {
+    if (_programmaticScroll) return;
+    if (_scrollResetTimer) clearTimeout(_scrollResetTimer);
+    _scrollResetTimer = setTimeout(() => {
+      _scrollResetTimer = null;
+      autoScrollCatTree();
+    }, 1200);
+  }, { passive: true });
 }
 
 // ═══════ 购买（扣金币 + buyCount++ 触发通胀）═══════
@@ -3108,6 +3129,7 @@ function setupBeaconSave() {
 function init(){
   loadPokedex(); updatePokedexBadge();
   twa(); grid(); btn(); ev(); updateAiBtn(); bindConfirmModal();
+  setupCatTreeAutoReset();   // 手动滚动游戏区后自动复位猫爬架
   // 先用本地实时存档恢复（秒开显示上次进度），云端稍后异步合并
   applyStateToS(loadLocal());
   ui();
