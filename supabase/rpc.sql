@@ -526,6 +526,9 @@ $$ LANGUAGE plpgsql;
 -- ── 1. 用户表字段扩充 ───────────────────────────────────────────────
 ALTER TABLE users ADD COLUMN IF NOT EXISTS internal_usdt DOUBLE PRECISION DEFAULT 0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS newbie_cat_claimed BOOLEAN DEFAULT false;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS newbie_ad_stage INTEGER DEFAULT 0;   -- 新人解锁广告进度：0=99% / 1=99.5% / 2=99.7%
+ALTER TABLE users ADD COLUMN IF NOT EXISTS boost_ad_used INTEGER DEFAULT 0;     -- 加速收益广告今日已用次数
+ALTER TABLE users ADD COLUMN IF NOT EXISTS boost_ad_day TEXT DEFAULT '';        -- 加速收益广告所属日期（UTC 跨天重置）
 ALTER TABLE users ADD COLUMN IF NOT EXISTS last_share_at BIGINT DEFAULT 0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS ad_contribution BIGINT DEFAULT 0;  -- 累计广告贡献（=份额）
 
@@ -605,10 +608,13 @@ CREATE OR REPLACE FUNCTION claim_newbie_cat(p_tg_id text)
 RETURNS json AS $$
 DECLARE
   v_claimed boolean;
+  v_stage int;
+  v_invites int;
   v_grid jsonb;
   v_idx int;
 BEGIN
-  SELECT newbie_cat_claimed, grid INTO v_claimed, v_grid
+  SELECT newbie_cat_claimed, COALESCE(newbie_ad_stage, 0), COALESCE(invite_count, 0), grid
+    INTO v_claimed, v_stage, v_invites, v_grid
   FROM users WHERE tg_id = p_tg_id FOR UPDATE;
 
   IF NOT FOUND THEN
@@ -617,6 +623,14 @@ BEGIN
 
   IF v_claimed THEN
     RETURN json_build_object('ok', false, 'reason', 'already claimed');
+  END IF;
+
+  IF v_stage < 2 THEN
+    RETURN json_build_object('ok', false, 'reason', 'ads not completed', 'stage', v_stage);
+  END IF;
+
+  IF v_invites < 2 THEN
+    RETURN json_build_object('ok', false, 'reason', 'invites not enough', 'invites', v_invites);
   END IF;
 
   SELECT i INTO v_idx FROM generate_series(0, 15) AS i
@@ -636,6 +650,62 @@ BEGIN
   WHERE tg_id = p_tg_id;
 
   RETURN json_build_object('ok', true, 'level', 35, 'grid', v_grid);
+END;
+$$ LANGUAGE plpgsql;
+
+-- ── 5.1 新人解锁广告进度推进（看一次广告 +1 阶段，封顶 2）──
+CREATE OR REPLACE FUNCTION advance_newbie_ad(p_tg_id text)
+RETURNS json AS $$
+DECLARE
+  v_stage int;
+BEGIN
+  UPDATE users
+  SET newbie_ad_stage = LEAST(COALESCE(newbie_ad_stage, 0) + 1, 2)
+  WHERE tg_id = p_tg_id
+  RETURNING newbie_ad_stage INTO v_stage;
+
+  IF NOT FOUND THEN
+    RETURN json_build_object('ok', false, 'reason', 'user not found');
+  END IF;
+
+  RETURN json_build_object('ok', true, 'stage', v_stage);
+END;
+$$ LANGUAGE plpgsql;
+
+-- ── 5.2 加速收益广告：每日 15 次，奖励 = 3×当前秒收益（金额由后端入账）──
+CREATE OR REPLACE FUNCTION boost_ad_reward(p_tg_id text, p_amount double precision)
+RETURNS json AS $$
+DECLARE
+  v_used int;
+  v_day text;
+  v_today text := to_char(now() AT TIME ZONE 'UTC', 'YYYY-MM-DD');
+  v_amount double precision;
+BEGIN
+  SELECT COALESCE(boost_ad_used, 0), boost_ad_day INTO v_used, v_day
+  FROM users WHERE tg_id = p_tg_id FOR UPDATE;
+
+  IF NOT FOUND THEN
+    RETURN json_build_object('ok', false, 'reason', 'user not found');
+  END IF;
+
+  -- 跨天重置
+  IF v_day IS DISTINCT FROM v_today THEN
+    v_used := 0;
+  END IF;
+
+  IF v_used >= 15 THEN
+    RETURN json_build_object('ok', false, 'reason', 'daily limit reached', 'used', v_used);
+  END IF;
+
+  v_amount := GREATEST(0, COALESCE(p_amount, 0));
+
+  UPDATE users
+  SET coins = coins + v_amount,
+      boost_ad_used = v_used + 1,
+      boost_ad_day = v_today
+  WHERE tg_id = p_tg_id;
+
+  RETURN json_build_object('ok', true, 'reward', v_amount, 'used', v_used + 1);
 END;
 $$ LANGUAGE plpgsql;
 

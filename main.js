@@ -476,6 +476,9 @@ const S = {
   internalUsdt: 0,                    // 内部美金余额（后端 RPC 结算）
   adContribution: 0,                  // 广告贡献度（后端累计看广告数，HUD 展示）
   newbieCatClaimed: false,            // 新人35级猫是否已领取
+  newbieAdStage: 0,                   // 新人解锁广告进度：0=99% / 1=99.5% / 2=99.7%
+  boostAdUsed: 0,                     // 加速收益广告今日已用次数
+  boostAdDay: '',                     // 加速收益广告所属日期
 };
 const AI_KEY = 'cybermerge_ai_unlock_day';  // 存最后一次签到解锁智能合成的日期 "YYYY-MM-DD"
 const AD_DAY_KEY = 'cybermerge_ad_day';     // 存最后一天广告计数所属日期 "YYYY-MM-DD"（跨天归零）
@@ -706,6 +709,7 @@ function resetDailyCountersIfNewDay() {
   } catch(_) {}
   S.adUsedToday = 0;
   S.wdAdUsed = 0;
+  S.boostAdUsed = 0;
 }
 
 // ═══════ 赛季（7天一个赛季，每周一 08:00 北京时间重置，从第0赛季开始）═══════
@@ -1163,6 +1167,9 @@ async function syncBackend() {
     if (typeof u.adContribution === 'number') S.adContribution = u.adContribution;
     if (typeof u.internalUsdt === 'number') S.internalUsdt = u.internalUsdt;
     if (typeof u.newbieCatClaimed === 'boolean') S.newbieCatClaimed = u.newbieCatClaimed;
+    if (typeof u.newbieAdStage === 'number') S.newbieAdStage = u.newbieAdStage;
+    if (typeof u.boostAdUsed === 'number') S.boostAdUsed = u.boostAdUsed;
+    if (typeof u.boostAdDay === 'string') S.boostAdDay = u.boostAdDay;
     if (typeof u.username === 'string' && u.username) S.username = u.username;
 
     // 合并完成后跨天归零每日广告计数（避免把昨日 adUsedToday 混入今天）
@@ -1500,20 +1507,9 @@ function ui() {
     }
   }
 
-  // 广告按钮：只显示每日剩余次数（不再用「金币不够」高亮，因为前端不算价）
-  const adBtn = document.getElementById('btn-ad-reward');
-  if (adBtn) {
-    const adLv = adRewardLv();
-    const adCountEl = document.getElementById('ad-count');
-    if (adCountEl) adCountEl.textContent = (adDailyLimit() - S.adUsedToday) + '/' + adDailyLimit();
-    const adLvEl = document.getElementById('ad-lv');
-    if (adLvEl) adLvEl.textContent = adLv;
-    if (S.adUsedToday >= adDailyLimit()) {
-      adBtn.classList.add('btn-disabled');
-    } else {
-      adBtn.classList.remove('btn-disabled');
-    }
-  }
+  // 加速收益广告按钮：显示今日剩余次数
+  const boostCountEl = document.getElementById('boost-count');
+  if (boostCountEl) boostCountEl.textContent = '(' + S.boostAdUsed + '/' + BOOST_AD_LIMIT + ')';
 
   // 智能合成按钮：跨 0 点检测 + 文案状态刷新
   checkDailyReset();
@@ -1567,7 +1563,10 @@ function draw(i) {
   dom.addEventListener('click', tap);
 }
 
-// 新人 99% 锁猫（带皇冠，点击弹合规确认面板后看广告解锁 35 级猫）
+// 新人多阶段解锁：99% →（看广告）99.5% →（看广告）99.7% →（邀请2好友）100% 领取
+function newbieProgress() {
+  return [99, 99.5, 99.7][Math.min(S.newbieAdStage || 0, 2)];
+}
 function makeNewbieLock() {
   const card = d('div', 'pet-card newbie-lock');
   card.innerHTML =
@@ -1576,13 +1575,56 @@ function makeNewbieLock() {
       '<img class="pet-img newbie-lock-img" src="/cats_new/LV.35.png" alt="锁定的35级猫" draggable="false" />' +
       '<span class="newbie-crown">👑</span>' +
       '<span class="newbie-lock-icon">🔒</span>' +
-      '<span class="newbie-progress">99%</span>' +
+      '<span class="newbie-progress">' + newbieProgress() + '%</span>' +
     '</div>';
   card.addEventListener('click', (e) => {
     e.stopPropagation();
-    confirmAd({ icon: '👑', title: t('confirm_newbie_t'), desc: t('confirm_newbie_d'), onOk: watchNewbieAd });
+    newbieClick();
   });
   return card;
+}
+function newbieClick() {
+  const stage = Math.min(S.newbieAdStage || 0, 2);
+  if (stage < 2) {
+    confirmAd({
+      icon: '👑',
+      title: '观看广告后解锁...',
+      desc: '解锁 35 级皇冠猫（当前进度 ' + newbieProgress() + '%）',
+      onOk: () => showMonetagAd(() => advanceNewbieAd())
+    });
+  } else if (S.inviteCount >= 2) {
+    claimNewbieCat();
+  } else {
+    confirmAd({
+      icon: '👑',
+      title: '当前进度 99.7%',
+      desc: '请邀请两位好友或群立马解锁进度 100%',
+      okText: '邀请好友',
+      onOk: inviteForNewbie
+    });
+  }
+}
+async function advanceNewbieAd() {
+  const r = await callRpc('advance_newbie_ad', {});
+  if (!r || r.ok === false) { toast(t('t_ad_load_failed'), 'warn'); return; }
+  S.newbieAdStage = Number(r.stage) || 0;
+  if (S.newbieAdStage === 1) {
+    toast('当前解锁进度 99.5%，请再看一次广告解锁进度...', 'info');
+  } else if (S.newbieAdStage === 2) {
+    toast('当前进度 99.7%，请邀请两位好友或群立马解锁进度 100%', 'info');
+  }
+  if (g) draw(0);
+  ui();
+  saveLocal();
+}
+function inviteForNewbie() {
+  const inviteUrl = buildInviteLink();
+  if (tg && tg.openTelegramLink) {
+    tg.openTelegramLink('https://t.me/share/url?url=' + encodeURIComponent(inviteUrl) + '&text=' + encodeURIComponent(t('t_share_text')));
+  } else {
+    try { navigator.clipboard?.writeText(inviteUrl); toast(t('t_invite_copied'), 'success'); }
+    catch(_) { toast(t('t_invite_link') + inviteUrl, 'info'); }
+  }
 }
 // ═══════ Monetag 激励弹窗广告统一封装 ═══════
 // 所有广告位都走同一个 zone：show_11583087({ ymid: 玩家 Telegram ID })
@@ -1605,10 +1647,6 @@ function showMonetagAd(onReward) {
   } catch(_) {
     toast(t('t_ad_load_failed'), 'warn');
   }
-}
-
-function watchNewbieAd() {
-  showMonetagAd(() => claimNewbieCat());
 }
 
 function tap(e) {
@@ -1766,7 +1804,7 @@ async function buy() {
 
   if (!r || r.ok === false) {
     if (r && r.reason === 'insufficient coins') {
-      toast(t('t_no_coins').replace('{price}', fmtNum(r.price || 0)), 'error');
+      toast('金币不足，观看广告后领取加速收益立马到账', 'warn');
     } else if (r && r.reason === 'grid full') {
       toast(t('t_grid_full_buy'), 'warn');
     } else {
@@ -1928,12 +1966,18 @@ async function doRecycle(index, level) {
   autoScrollCatTree();   // 回收后自动滚动
 }
 
-// ═══════ 新人 35 级猫（99% 锁 → 看广告解锁）═══════
+// ═══════ 新人 35 级猫（看广告2次 + 邀请2好友后领取）═══════
 async function claimNewbieCat() {
   if (S.newbieCatClaimed) { toast(t('t_newbie_done'), 'warn'); return; }
   const r = await callRpc('claim_newbie_cat', {});
   if (!r || r.ok === false) {
-    toast(t('t_recycle_fail'), 'warn');
+    if (r && r.reason === 'invites not enough') {
+      toast('邀请好友数量不足，需邀请两位好友', 'warn');
+    } else if (r && r.reason === 'ads not completed') {
+      toast('广告还没看完，请先看广告解锁', 'warn');
+    } else {
+      toast(t('t_recycle_fail'), 'warn');
+    }
     return;
   }
   S.newbieCatClaimed = true;
@@ -2065,7 +2109,7 @@ function spawnAirdrop() {
     confirmAd({ icon: '📦', title: t('confirm_airdrop_t'), desc: t('confirm_airdrop_d'), onOk: () => watchAirdropAd(box) });
   });
   layer.appendChild(box);
-  setTimeout(() => { if (box.parentNode) box.remove(); }, 10000);
+  setTimeout(() => { if (box.parentNode) box.remove(); }, 35000);   // 35 秒后消失
 }
 function watchAirdropAd(box) {
   showMonetagAd(() => {
@@ -2080,9 +2124,40 @@ function watchAirdropAd(box) {
 function startAirdrop() {
   const loop = () => {
     spawnAirdrop();
-    setTimeout(loop, 3 * 60 * 1000 + Math.random() * 2 * 60 * 1000);
+    setTimeout(loop, 10 * 60 * 1000 + Math.random() * 5 * 60 * 1000);   // 每 10-15 分钟掉一次
   };
   loop();
+}
+
+// ═══════ 加速收益广告：看广告领 3×当前秒收益（每日 15 次）═══════
+const BOOST_AD_LIMIT = 15;
+function boostAd() {
+  if (S.boostAdUsed >= BOOST_AD_LIMIT) {
+    toast('今日权益已用完', 'warn');
+    return;
+  }
+  showMonetagAd(async () => {
+    const amount = totalEarnPerSec() * 3;
+    if (amount <= 0) {
+      toast('当前还没有产出，先去合成猫咪吧', 'warn');
+      return;
+    }
+    const r = await callRpc('boost_ad_reward', { amount });
+    if (!r || r.ok === false) {
+      if (r && r.reason === 'daily limit reached') {
+        toast('今日权益已用完', 'warn');
+      } else {
+        toast(t('t_buy_fail'), 'warn');
+      }
+      return;
+    }
+    S.boostAdUsed = Number(r.used) || 0;
+    S.usdt = parseFloat((S.usdt + (Number(r.reward) || 0)).toFixed(4));
+    toast('加速收益 +' + fmtNum(Number(r.reward) || 0) + ' ' + t('level_coins_suf'), 'success');
+    ui();
+    saveLocal();
+    saveCloudNow();
+  });
 }
 
 function down(e) {
@@ -2779,6 +2854,7 @@ function btn(){
   });
 
   document.getElementById('btn-merge')?.addEventListener('click',buy);
+  document.getElementById('btn-ad-boost')?.addEventListener('click', boostAd);
   // 推特赚金：点击生成 9:16 海报 → 预览 → 分享 X
   document.getElementById('btn-twitter')?.addEventListener('click', openPoster);
   document.getElementById('poster-close')?.addEventListener('click', closePoster);
