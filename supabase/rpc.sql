@@ -866,3 +866,30 @@ BEGIN
   RETURN json_build_object('ok', true);
 END;
 $$ LANGUAGE plpgsql;
+
+-- ═══════════════════════════════════════════════════════════
+-- 定时任务：pg_cron 自动结算（北京时间 08:00 = UTC 00:00）
+-- 前提：先在 Supabase → Database → Extensions 启用 pg_cron
+-- ═══════════════════════════════════════════════════════════
+
+-- 1) 启用扩展（若已手动启用可跳过）
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+
+-- 2) 每周一 00:00 UTC 结算上一赛季奖池 → 按广告份额发 internal_usdt
+SELECT cron.schedule(
+  'cybermerge-settle-season',
+  '0 0 * * 1',
+  $$ SELECT settle_season(COALESCE((SELECT season_id FROM global_stats WHERE id = 1), 0) + 1); $$
+);
+
+-- 3) 每周一 00:05 UTC 快照上一赛季（赛季榜 + 广告数）+ 重置
+SELECT cron.schedule(
+  'cybermerge-weekly-snapshot',
+  '5 0 * * 1',
+  $$ SELECT run_weekly_season(); $$
+);
+
+-- 查看 / 删除定时任务
+-- SELECT * FROM cron.job WHERE jobname LIKE 'cybermerge%';
+-- SELECT cron.unschedule('cybermerge-settle-season');
+-- SELECT cron.unschedule('cybermerge-weekly-snapshot');
