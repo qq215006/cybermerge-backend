@@ -3279,6 +3279,16 @@
 .pf-withdraw-btn { background: linear-gradient(135deg, #ffb300, #e65100); box-shadow: 0 2px 6px rgba(230,81,0,0.35); }
 .pf-settings-btn { background: linear-gradient(135deg, #90a4ae, #607d8b); box-shadow: 0 2px 6px rgba(96,125,139,0.35); }
 
+/* ═══════════ TON Connect 钱包弹窗层级修复 ═══════════
+   TonConnect 自带的钱包选择弹窗 z-index 只有 1000，会被游戏内
+   个人中心(100003) / 提现(100001) 等弹窗盖住，导致"绑定钱包/提现
+   点下去拉不起钱包"。这里把它的挂载根节点提升为更高的独立层叠上下文，
+   让钱包弹窗永远浮在所有游戏弹窗之上。 */
+#tc-widget-root {
+  position: relative;
+  z-index: 100050;
+}
+
 /* 新人 99% 锁猫：皇冠 + 锁 + 进度 */
 .newbie-crown {
   position: absolute;

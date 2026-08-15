@@ -582,7 +582,9 @@ async function initTonConnect() {
         refreshWalletUI();
       }
     });
-  } catch(_) {}
+  } catch(e) {
+    console.error('TonConnect init failed:', e);
+  }
 }
 
 // 链接钱包：打开 TON Connect 弹窗（用户选钱包授权后，onStatusChange 自动保存地址）
@@ -593,7 +595,7 @@ async function connectWallet() {
     return;
   }
   if (!tonConnectUI) {
-    toast(t('t_ad_not_loaded'), 'warn');
+    toast('钱包加载中，请稍后再试', 'warn');
     return;
   }
   try {
@@ -649,10 +651,12 @@ function startMoneyRain() {
 }
 
 async function doWithdraw() {
-  if (!tonConnectUI) { toast(t('t_ad_not_loaded'), 'warn'); return; }
+  if (!tonConnectUI) { toast('钱包加载中，请稍后再试', 'warn'); return; }
+  // 先确保钱包已连接（未连接则拉起钱包弹窗）
+  if (!wallet.address) { connectWallet(); return; }
+  // 再检查 USD 余额门槛
   const usdtAmount = Number(S.internalUsdt) || 0;
   if (usdtAmount < WITHDRAW_MIN_USDT) { toast(t('t_need_10usdt'), 'warn'); return; }
-  if (!wallet.address) { toast(t('t_need_wallet'), 'warn'); connectWallet(); return; }
 
   try {
     const payload = await buildCommentPayload(String(getTgId()));
