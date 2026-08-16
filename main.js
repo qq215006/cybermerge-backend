@@ -467,7 +467,7 @@ const S = {
 };
 const AI_KEY = 'cybermerge_ai_unlock_day';  // 存最后一次签到解锁智能合成的日期 "YYYY-MM-DD"
 const AD_DAY_KEY = 'cybermerge_ad_day';     // 存最后一天广告计数所属日期 "YYYY-MM-DD"（跨天归零）
-const AI_TICK_MS = 400;                     // AI 循环周期（毫秒）：降低频率，避免持续全量重绘卡顿
+const AI_TICK_MS = 500;                     // AI 循环周期（毫秒）：降低频率，给交互/拖拽留出主线程时间片
 // ═══════ Monetag 激励弹窗广告（统一 zone：11583087，通过 show_11583087('pop') 触发）═══════
 
 // ═══════ 每日任务：1 个任务 + 金币奖励（看 Monetag 弹窗广告）═══════
@@ -773,7 +773,7 @@ function aiTick() {
         if (newLv === MAX_LV) S.divCats.push(4);  // 合成出40级猫：记分红资格
         sortGrid();                        // 合成后自动降序排序（与手动合成一致）
         const ni = S.grid.indexOf(newLv);  // 找新等级排序后的位置
-        if (ni >= 0) boom(ni);             // 在正确位置触发合成闪光
+        if (ni >= 0) boom(ni, { shake: false });  // 智能合成高频：只闪光不整屏震动
         collect(newLv);
         if (mr.coins > 0) S.usdt = parseFloat((S.usdt + mr.coins).toFixed(4));  // 合成金币奖励
         audio.sfxMerge();                 // 🔔 智能合成成功音效
@@ -1729,16 +1729,20 @@ function autoScrollCatTree() {
       lastBar = Math.floor(i / 4);
     }
   }
-  _programmaticScroll = true;
+  let target;
   if (count <= 8) {
     // 前 2 根就够放，不滚动（固定显示顶部两根横杆）
-    ga.scrollTop = 0;
+    target = 0;
   } else {
     // 超过 8 只 → 向下滚动，让最下面有猫的那根杆露出来
     const bf = document.getElementById('board-frame');
     const offset = bf ? bf.offsetTop : 0;   // board-frame 在广播条之下，滚动需补上该偏移
-    ga.scrollTop = Math.max(0, offset + CAT_BAR_TOPS[lastBar] - 40);
+    target = Math.max(0, offset + CAT_BAR_TOPS[lastBar] - 40);
   }
+  // 位置没变就跳过，避免每次合成都触发一次 scrollTop 重排（智能合成时尤其频繁）
+  if (Math.abs(ga.scrollTop - target) < 1) return;
+  _programmaticScroll = true;
+  ga.scrollTop = target;
   setTimeout(() => { _programmaticScroll = false; }, 50);
 }
 
@@ -2277,13 +2281,17 @@ function at(x,y){
   return -1;
 }
 
-function boom(i){
+function boom(i, opts){
+  opts = opts || {};
   let s=g.children[i]; if(!s)return;
   s.classList.add('has-merge-flash');
   let f=d('div','merge-flash'); s.appendChild(f);
   f.addEventListener('animationend',()=>{f.remove();s.classList.remove('has-merge-flash');},{once:true});
-  let a=document.getElementById('app');
-  if(a){a.classList.add('screen-shake');a.addEventListener('animationend',()=>a.classList.remove('screen-shake'),{once:true});}
+  // 全屏震动只在手动合成时触发；智能合成高频时关闭，避免持续整屏重排导致交互卡顿
+  if (opts.shake !== false) {
+    let a=document.getElementById('app');
+    if(a){a.classList.add('screen-shake');a.addEventListener('animationend',()=>a.classList.remove('screen-shake'),{once:true});}
+  }
 }
 
 // ═══════ 全局事件 ═══════
