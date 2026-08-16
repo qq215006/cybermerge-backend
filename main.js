@@ -545,6 +545,10 @@ async function initTonConnect() {
     tonConnectUI = new TonConnectUI({
       connector,
       restoreConnection: true,
+      // TWA↔TWA：转账授权后让钱包按这个 t.me 链接返回游戏（缺了会在 TG 里授权完成却回不来、卡死循环）
+      actionsConfiguration: {
+        twaReturnUrl: 'https://t.me/CyberCatMergeBot/app',
+      },
     });
     // 锁定 TON 主网（chain id -239），避免误连测试网
     tonConnectUI.setConnectionNetwork('-239');
