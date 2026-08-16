@@ -798,6 +798,7 @@ async function aiBuyCat() {
   _aiBuying = true;
   try {
     const lv = buyLevel();
+    await saveCloudNow();   // 买猫前先同步本地合成结果到后端，避免撤回刚合成的猫
     const r = await callRpc('buy_cat', { level: lv });
     if (r && r.ok) {
       if (typeof r.price === 'number') S.usdt = parseFloat((Math.max(0, S.usdt - r.price)).toFixed(4));
@@ -1761,6 +1762,7 @@ function setupCatTreeAutoReset() {
 async function buy() {
   if (shopLocked()) { toast(t('shop_locked'), 'warn'); return; }
   const lv = buyLevel();
+  await saveCloudNow();   // 买猫前先同步本地合成结果到后端，避免后端旧 grid 覆盖撤回刚合成的猫
   const r = await callRpc('buy_cat', { level: lv });
 
   if (!r || r.ok === false) {
@@ -1945,6 +1947,7 @@ async function doRecycle(index, level) {
 // ═══════ 新人 35 级猫（看广告2次 + 邀请2好友后领取）═══════
 async function claimNewbieCat() {
   if (S.newbieCatClaimed) { toast(t('t_newbie_done'), 'warn'); return; }
+  await saveCloudNow();   // 领取前先同步本地合成结果，避免后端旧 grid 覆盖撤回刚合成的猫
   const r = await callRpc('claim_newbie_cat', {});
   if (!r || r.ok === false) {
     if (r && r.reason === 'invites not enough') {
