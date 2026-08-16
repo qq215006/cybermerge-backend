@@ -774,10 +774,14 @@ function markInteracting() {
   if (_interactTimer) clearTimeout(_interactTimer);
   _interactTimer = setTimeout(() => { _userInteracting = false; }, 800);
 }
+// 弹窗打开期间 AI 完全暂停（弹窗渲染需要主线程，AI 让道）
+function _anyModalOpen() {
+  return !!document.querySelector('.pokedex-modal.show, .profile-modal.show, .settings-modal.show, .leaderboard-modal.show, .task-modal.show, .poster-modal.show, .confirm-modal.show, .offline-modal.show');
+}
 
 // AI 单次动作：先尽量合成（从高到低）→ 再尽量买（钱够才买）
 function aiTick() {
-  if (S.aiLock || _userInteracting) return;   // 锁 / 用户交互时让道
+  if (S.aiLock || D.on || _userInteracting || _anyModalOpen()) return;   // 锁 / 拖拽 / 交互 / 弹窗打开时让道
   S.aiLock = true;
   try {
     // ① 从高等级到低等级扫一遍：找到有 2 只同级就合成
@@ -2357,11 +2361,9 @@ function boom(i, opts){
 
 // ═══════ 全局事件 ═══════
 function ev(){
-  // 交互让道：任何触摸/鼠标操作都暂停 AI 合成，操作停止 800ms 后恢复
+  // 交互让道：只在「点击/拖拽开始」时暂停 AI，不监听 move（避免手指滑动页面也触发，导致 AI 停停走走）
   document.addEventListener('touchstart', markInteracting, { passive: true, capture: true });
-  document.addEventListener('touchmove',  markInteracting, { passive: true, capture: true });
   document.addEventListener('mousedown',  markInteracting, { capture: true });
-  document.addEventListener('mousemove',  markInteracting, { capture: true });
 
   document.addEventListener('touchmove', e=>{ if(D.on) move(e); }, {passive:false});
   document.addEventListener('touchend',  e=>{ if(D.on) up(e); });
