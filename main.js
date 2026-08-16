@@ -273,6 +273,13 @@ function buyLevel() {
 function shopLocked() {
   return false;
 }
+// 16 格是否全满（无空格）
+function isGridFull() {
+  for (let i = 0; i < TOTAL; i++) {
+    if (S.grid[i] === null) return false;
+  }
+  return true;
+}
 
 // ═══════ 大数字格式化：K / M / B / T / Qa / Qi ═══════
 const SUFFIXES = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc'];
@@ -814,6 +821,12 @@ function aiTick() {
       }
     }
     if (merged) return;
+    // 满格且无同级可合成 → 死局（买猫也 grid full），自动关闭避免每 tick 空转 + 打网络
+    if (isGridFull()) {
+      stopAiLoop();
+      toast('场上已满且无同级猫可合成，智能合成已自动关闭', 'info');
+      return;
+    }
     // ② 没有可合成 → 异步走 buy_cat RPC 买一只（前端不算价，防重入）
     aiBuyCat();
   } finally {
