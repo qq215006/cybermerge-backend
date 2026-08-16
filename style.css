@@ -1272,10 +1272,10 @@ body.modal-open *::after {
   transform: translateY(-18px);
   transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
   pointer-events: none;
-  white-space: nowrap;
+  white-space: pre-wrap;          /* 长文本换行显示，避免 ellipsis 截断（便于看清报错） */
+  word-break: break-word;
   max-width: 92vw;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.35;
   color: #4e342e;
 }
 .toast-enter { opacity: 1; transform: translateY(0); }

@@ -688,6 +688,12 @@ async function doWithdraw() {
   } catch (e) {
     hideWithdrawLoading();
     const msg = e && e.message ? String(e.message) : '';
+    // 取 stack 前两行（第一行是错误本身，第二行通常是出错位置），帮助定位
+    let loc = '';
+    if (e && e.stack) {
+      const lines = String(e.stack).split('\n').map(s => s.trim()).filter(Boolean);
+      if (lines.length > 1) loc = lines.slice(1, 2).join(' ');
+    }
     console.error('[withdraw] sendTransaction failed:', e);
     // 用户主动取消/关闭/拒绝（含 SDK 的 abort / "not sent"）→ 不断开、不重连，避免死循环
     if (/cancel|reject|denied|abort|not sent|declined/i.test(msg)) {
@@ -697,7 +703,7 @@ async function doWithdraw() {
       try { tonConnectUI?.disconnect(); } catch(_) {}
       clearWallet();
       // 临时把真实错误带上，方便定位（确认没问题后再去掉）
-      toast('交易失败：' + (msg || '未知错误') + '，请重新连接钱包后重试', 'warn');
+      toast('交易失败：' + (msg || '未知错误') + (loc ? '\n' + loc : '') + '\n（请重新连接钱包后重试）', 'warn', 7000);
     }
   }
 }
@@ -1272,12 +1278,13 @@ async function syncBackend() {
 }
 
 // ═══════ Toast ═══════
-function toast(m, t) {
+function toast(m, t, dur) {
   let c = document.getElementById('toast-container');
   if (!c) { c = d('div','toast-container'); document.body.appendChild(c); }
   let el = d('div','toast toast-'+(t||'info')); el.textContent = m; c.appendChild(el);
   requestAnimationFrame(() => el.classList.add('toast-enter'));
-  setTimeout(() => { el.classList.add('toast-leave'); el.addEventListener('transitionend',()=>el.remove(),{once:true}); }, 1500);
+  const delay = (typeof dur === 'number' && dur > 0) ? dur : 1500;
+  setTimeout(() => { el.classList.add('toast-leave'); el.addEventListener('transitionend',()=>el.remove(),{once:true}); }, delay);
 }
 
 // ═══════ 合规广告二次确认弹窗：所有广告触发前必须先弹出确认 ═══════
