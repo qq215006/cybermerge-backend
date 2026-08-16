@@ -137,13 +137,27 @@
 
     <!-- ═══════════ 底部导航栏（4 个圆形透明气泡按钮） ═══════════ -->
     <nav id="bottom-bar">
-      <button id="btn-daily-checkin" class="ai-merge-btn bubble-btn" type="button">⚡</button>
-      <button id="btn-twitter" class="bubble-btn bubble-twitter" type="button">🐦</button>
+      <button id="btn-daily-checkin" class="ai-merge-btn bubble-btn" type="button">
+        <span class="bubble-emoji">⚡</span>
+        <span class="bubble-label" data-i18n="btn_ai">合成</span>
+      </button>
+      <button id="btn-twitter" class="bubble-btn bubble-twitter" type="button">
+        <span class="bubble-emoji">🐦</span>
+        <span class="bubble-label" data-i18n="btn_twitter">X赚</span>
+      </button>
       <button id="btn-merge" class="bubble-btn bubble-buy" type="button">
         <img id="buy-cat-float" class="buy-cat-float" src="/cats_new/LV.1.png" alt="" draggable="false" />
         <span id="bb-coin-icon" class="bb-coin-icon">❤️</span>
+        <span class="bubble-label" data-i18n="btn_buy">买猫</span>
       </button>
-      <button id="btn-ads" class="bubble-btn bubble-pokedex" type="button">🐾</button>
+      <button id="btn-ads" class="bubble-btn bubble-pokedex" type="button">
+        <span class="bubble-emoji">🐾</span>
+        <span class="bubble-label" data-i18n="btn_pokedex">图鉴</span>
+      </button>
+      <button id="btn-profile" class="bubble-btn bubble-profile" type="button">
+        <img id="profile-cat" class="profile-cat" src="/cats_new/LV.1.png" alt="" draggable="false" />
+        <span class="bubble-label" data-i18n="btn_profile">我的</span>
+      </button>
     </nav>
   </div>
 

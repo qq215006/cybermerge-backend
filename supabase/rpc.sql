@@ -612,8 +612,8 @@ DECLARE
   v_grid jsonb;
   v_idx int;
 BEGIN
-  SELECT newbie_cat_claimed, COALESCE(newbie_ad_stage, 0), COALESCE(invite_count, 0), grid
-    INTO v_claimed, v_stage, v_invites, v_grid
+  SELECT newbie_cat_claimed, COALESCE(newbie_ad_stage, 0), grid
+    INTO v_claimed, v_stage, v_grid
   FROM users WHERE tg_id = p_tg_id FOR UPDATE;
 
   IF NOT FOUND THEN
@@ -628,6 +628,8 @@ BEGIN
     RETURN json_build_object('ok', false, 'reason', 'ads not completed', 'stage', v_stage);
   END IF;
 
+  -- 新人解锁：检查「邀请总数」（通过邀请链接进来的好友数），而不是有效邀请数
+  SELECT COUNT(*) INTO v_invites FROM invites WHERE inviter_tg_id = p_tg_id;
   IF v_invites < 2 THEN
     RETURN json_build_object('ok', false, 'reason', 'invites not enough', 'invites', v_invites);
   END IF;
@@ -813,6 +815,7 @@ CREATE OR REPLACE FUNCTION recycle_cat(p_tg_id text, p_grid_index int, p_cat_lev
 RETURNS json AS $$
 DECLARE
   v_grid jsonb;
+  v_div_cats jsonb;
   v_actual_level int;
   v_reward_coins double precision := 0;
   v_reward_usdt double precision := 0;
@@ -821,7 +824,7 @@ BEGIN
     RETURN json_build_object('ok', false, 'reason', 'invalid index');
   END IF;
 
-  SELECT grid INTO v_grid FROM users WHERE tg_id = p_tg_id FOR UPDATE;
+  SELECT grid, COALESCE(div_cats, '[]'::jsonb) INTO v_grid, v_div_cats FROM users WHERE tg_id = p_tg_id FOR UPDATE;
 
   IF NOT FOUND THEN
     RETURN json_build_object('ok', false, 'reason', 'user not found');
@@ -835,10 +838,15 @@ BEGIN
 
   v_grid := jsonb_set(v_grid, ARRAY[p_grid_index::text], 'null'::jsonb);
 
+  -- 回收 40 级猫：同步移除一个分红资格（该猫不再参与分红）
+  IF p_cat_level = 40 AND jsonb_array_length(v_div_cats) > 0 THEN
+    v_div_cats := v_div_cats - (jsonb_array_length(v_div_cats) - 1);
+  END IF;
+
   IF p_cat_level < 35 THEN
     -- 34级及以下：金币 = 购买价 50% = 100 * 2.2^(level-1) * 0.5
     v_reward_coins := 100 * power(2.2, p_cat_level - 1) * 0.5;
-    UPDATE users SET grid = v_grid, coins = coins + v_reward_coins
+    UPDATE users SET grid = v_grid, coins = coins + v_reward_coins, div_cats = v_div_cats
     WHERE tg_id = p_tg_id;
     RETURN json_build_object('ok', true, 'type', 'coins', 'reward', v_reward_coins, 'grid', v_grid);
   ELSE
@@ -858,7 +866,7 @@ BEGIN
       RETURN json_build_object('ok', false, 'reason', 'prize pool exhausted');
     END IF;
 
-    UPDATE users SET grid = v_grid, internal_usdt = COALESCE(internal_usdt, 0) + v_reward_usdt
+    UPDATE users SET grid = v_grid, internal_usdt = COALESCE(internal_usdt, 0) + v_reward_usdt, div_cats = v_div_cats
     WHERE tg_id = p_tg_id;
 
     UPDATE global_stats SET current_prize_pool = current_prize_pool - v_reward_usdt WHERE id = 1;

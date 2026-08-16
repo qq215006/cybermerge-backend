@@ -79,6 +79,11 @@ const I18N = {
   task_sub:        { zh:'Task / Earn',        en:'Task / Earn',            ru:'Задания / Доход' },
   buy_label:       { zh:'买 LV.',             en:'Buy LV.',               ru:'Купить LV.' },
   shop_locked:     { zh:'🛑 35级封顶',        en:'🛑 35 cap',             ru:'🛑 35 макс.' },
+  btn_ai:          { zh:'合成',               en:'AI',                    ru:'AI' },
+  btn_twitter:     { zh:'X赚',                en:'X',                     ru:'X' },
+  btn_buy:         { zh:'买猫',               en:'Buy',                   ru:'Купить' },
+  btn_pokedex:     { zh:'图鉴',               en:'Pedia',                 ru:'Сбор' },
+  btn_profile:     { zh:'我的',               en:'Me',                    ru:'Я' },
   pokedex_btn:     { zh:'猫咪图鉴',           en:'Pedia',                   ru:'Сбор' },
   pokedex_count:   { zh:'已收集',             en:'Collected',              ru:'Собрано' },
   pokedex_unit:    { zh:'只猫咪',             en:'cats',                   ru:'котов' },
@@ -137,6 +142,7 @@ const I18N = {
   t_accel_success:  { zh:'⚡ 加速成功！获得 {name} LV.{lv}', en:'⚡ Boost success! Got {name} LV.{lv}', ru:'⚡ Буст успешен! Получен {name} LV.{lv}' },
   t_task_done:      { zh:'{icon} 任务完成！获得 {coins} 金币', en:'{icon} Task done! Got {coins} coins', ru:'{icon} Задание выполнено! Получено {coins} монет' },
   t_wrong_type:     { zh:'品种不同，不能合体哦', en:'Different breeds cannot merge', ru:'Разные породы нельзя объединять' },
+  t_max_level:      { zh:'满级猫咪无法继续合成', en:'Max level cat cannot merge', ru:'Кот макс. уровня не объединяется' },
   t_merge_success:  { zh:'🎉 合体！{name} LV.{lv}', en:'🎉 Merged! {name} LV.{lv}', ru:'🎉 Объединение! {name} LV.{lv}' },
   t_merge_crit:     { zh:'💥 暴击！直接升级 {name} LV.{lv}', en:'💥 Crit! Upgraded to {name} LV.{lv}', ru:'💥 Крит! {name} LV.{lv}' },
   t_merge_coin:     { zh:'💰 合成奖励 +{coins} 金币', en:'💰 Merge bonus +{coins} coins', ru:'💰 Бонус +{coins} монет' },
@@ -204,8 +210,9 @@ const BUY_LV_GAP = 1;            // 可购最高等级 = maxUnlocked - 1
 const AD_LV_GAP = 5;             // 广告领取等级 = maxUnlocked - 5
 const SHOP_MAX_LV = 34;          // 商店最高可买 34 级（35级以上全靠合成/回收站变现）
 
-// 第 n 级猫的每秒产出算力 P_n = 1 × 1.8^(n-1)
+// 第 n 级猫的每秒产出算力 P_n = 1 × 1.8^(n-1)；40级满级猫不再产币（只等分红/回收）
 function lvEarnPerSec(lv) {
+  if (lv >= MAX_LV) return 0;
   return EARN_BASE * Math.pow(EARN_RATIO, lv - 1);
 }
 
@@ -225,7 +232,10 @@ function gridScore(grid) {
   let s = 0;
   for (let i = 0; i < TOTAL; i++) {
     const lv = grid[i];
-    if (typeof lv === 'number' && lv >= 1 && lv <= MAX_LV) s += lvEarnPerSec(lv);
+    if (typeof lv === 'number' && lv >= 1 && lv <= MAX_LV) {
+      // 40级虽不产币，但作为最终资产分值最高，避免合并存档时丢猫
+      s += (lv === MAX_LV) ? (EARN_BASE * Math.pow(EARN_RATIO, MAX_LV - 1)) : lvEarnPerSec(lv);
+    }
   }
   return s;
 }
@@ -723,15 +733,17 @@ function checkDailyReset() {
 function updateAiBtn() {
   const el = document.querySelector('.ai-merge-btn');
   if (!el) return;
+  const emoji = el.querySelector('.bubble-emoji');
+  const setEmoji = (c) => { if (emoji) emoji.textContent = c; };
   if (S.aiRunning) {
-    el.textContent = '⚡';
+    setEmoji('⚡');
     el.classList.add('ai-running');
     el.classList.remove('ai-locked');
   } else if (isAiUnlockedToday()) {
-    el.textContent = '⚡';
+    setEmoji('⚡');
     el.classList.remove('ai-running', 'ai-locked');
   } else {
-    el.textContent = '🎯';
+    setEmoji('🎯');
     el.classList.remove('ai-running');
     el.classList.add('ai-locked');
   }
@@ -759,9 +771,9 @@ function aiTick() {
         S.grid[idx1] = null;
         S.grid[idx2] = newLv;
         if (newLv === MAX_LV) S.divCats.push(4);  // 合成出40级猫：记分红资格
-        draw(idx1);                        // 只局部重绘两个格子，避免每次合成全量重绘 16 只猫
-        draw(idx2);
-        boom(idx2);                        // 合成闪光（在合成位置）
+        sortGrid();                        // 合成后自动降序排序（与手动合成一致）
+        const ni = S.grid.indexOf(newLv);  // 找新等级排序后的位置
+        if (ni >= 0) boom(ni);             // 在正确位置触发合成闪光
         collect(newLv);
         if (mr.coins > 0) S.usdt = parseFloat((S.usdt + mr.coins).toFixed(4));  // 合成金币奖励
         audio.sfxMerge();                 // 🔔 智能合成成功音效
@@ -788,7 +800,7 @@ async function aiBuyCat() {
     const lv = buyLevel();
     const r = await callRpc('buy_cat', { level: lv });
     if (r && r.ok) {
-      if (typeof r.price === 'number') S.usdt = parseFloat((S.usdt - r.price).toFixed(4));
+      if (typeof r.price === 'number') S.usdt = parseFloat((Math.max(0, S.usdt - r.price)).toFixed(4));
       if (typeof r.inflate_count === 'number') S.inflateCount = r.inflate_count;
       if (typeof r.buy_count === 'number') S.buyCount = r.buy_count;
       applyGridFromRpc(r.grid);
@@ -1405,6 +1417,8 @@ function ui() {
   if (adcontEl) adcontEl.textContent = String(S.adContribution || 0);
   const avatarEl = document.getElementById('hud-avatar');
   if (avatarEl) avatarEl.src = '/cats_new/LV.' + userLv + '.png';
+  const profileCatEl = document.getElementById('profile-cat');
+  if (profileCatEl) profileCatEl.src = '/cats_new/LV.' + userLv + '.png';
 
   // 中间按钮：买猫（35 级封顶锁定，前端不算价）
   const mergeBtn = document.getElementById('btn-merge');
@@ -1512,16 +1526,9 @@ function newbieClick() {
       desc: '解锁 35 级皇冠猫（当前进度 ' + newbieProgress() + '%）',
       onOk: () => showMonetagAd(() => advanceNewbieAd())
     });
-  } else if (S.inviteCount >= 2) {
-    claimNewbieCat();
   } else {
-    confirmAd({
-      icon: '👑',
-      title: '当前进度 99.7%',
-      desc: '请邀请两位好友或群立马解锁进度 100%',
-      okText: '邀请好友',
-      onOk: inviteForNewbie
-    });
+    // 广告已完成，直接尝试领取；邀请数由后端 claim_newbie_cat 校验
+    claimNewbieCat();
   }
 }
 async function advanceNewbieAd() {
@@ -1728,7 +1735,7 @@ async function buy() {
   }
 
   // 一切以 RPC 返回为准：price 来自后端，grid 来自后端，前端不算价
-  if (typeof r.price === 'number') S.usdt = parseFloat((S.usdt - r.price).toFixed(4));
+  if (typeof r.price === 'number') S.usdt = parseFloat((Math.max(0, S.usdt - r.price)).toFixed(4));
   if (typeof r.inflate_count === 'number') S.inflateCount = r.inflate_count;
   if (typeof r.buy_count === 'number') S.buyCount = r.buy_count;
   applyGridFromRpc(r.grid);
@@ -1870,6 +1877,10 @@ async function doRecycle(index, level) {
     return;
   }
   applyGridFromRpc(r.grid);
+  // 回收 40 级猫：同步移除一个分红资格（个人中心分红只数 = 场上实际 40 级猫数）
+  if (level >= MAX_LV && S.divCats.length > 0) {
+    S.divCats.pop();
+  }
   if (r.type === 'coins') {
     if (typeof r.reward === 'number') S.usdt = parseFloat((S.usdt + r.reward).toFixed(4));
     floatIncomeTop(r.reward);                       // 金币飞向 HUD
@@ -1888,7 +1899,14 @@ async function claimNewbieCat() {
   const r = await callRpc('claim_newbie_cat', {});
   if (!r || r.ok === false) {
     if (r && r.reason === 'invites not enough') {
-      toast('邀请好友数量不足，需邀请两位好友', 'warn');
+      // 邀请数不足：引导分享邀请
+      confirmAd({
+        icon: '👑',
+        title: '邀请好友解锁',
+        desc: '邀请两位好友即可解锁 35 级皇冠猫',
+        okText: '邀请好友',
+        onOk: inviteForNewbie
+      });
     } else if (r && r.reason === 'ads not completed') {
       toast('广告还没看完，请先看广告解锁', 'warn');
     } else {
@@ -2154,6 +2172,17 @@ function up(e) {
       clearTimeout(safeKill);
     }, {once:true});
     toast(t('t_wrong_type'),'warn');
+    return;
+  }
+  // 满级猫不能再合成（否则 40+40 会白亏一只猫，还会重复记分红资格）
+  if (sl >= MAX_LV) {
+    if(!cl) { clearTimeout(safeKill); return; }
+    cl.classList.add('pet-snap-back');
+    cl.addEventListener('animationend', ()=>{
+      if(cl.parentNode) cl.remove();
+      clearTimeout(safeKill);
+    }, {once:true});
+    toast(t('t_max_level'),'warn');
     return;
   }
   const mr = mergeResultLv(sl);
@@ -2729,6 +2758,7 @@ function btn(){
     }
   });
   document.getElementById('btn-ads')?.addEventListener('click',openPokedex);
+  document.getElementById('btn-profile')?.addEventListener('click', openProfile);
   // 社区：打开 Telegram 群链接
   document.getElementById('btn-community')?.addEventListener('click', () => {
     if (tg && tg.openTelegramLink) tg.openTelegramLink('https://t.me/lcz8com');

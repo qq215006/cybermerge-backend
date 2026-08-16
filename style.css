@@ -1175,7 +1175,7 @@
   top: 80px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 9998;
+  z-index: 1000000;               /* toast 提示永远在最顶层，覆盖个人中心等所有弹窗 */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1321,9 +1321,11 @@
     inset 0 -3px 6px rgba(150,100,40,0.12),
     0 4px 12px rgba(90,50,10,0.22);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 30px;
+  gap: 2px;
+  font-size: 26px;
   line-height: 1;
   color: #6d4c41;
   cursor: pointer;
@@ -1334,6 +1336,28 @@
   transition: transform 0.08s ease, filter 0.2s ease;
 }
 .bubble-btn:active { transform: scale(0.92); }
+
+/* 气泡按钮文字标签：简写小字 */
+.bubble-label {
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  color: #6d4c41;
+  white-space: nowrap;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+/* 个人中心按钮：当前等级猫咪图标 */
+.profile-cat {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  object-position: bottom center;
+  pointer-events: none;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 3px rgba(90,50,10,0.28));
+}
 
 /* 每日签到/智能合成：绿色气泡 */
 .ai-merge-btn {
@@ -1385,14 +1409,14 @@
 /* 左/右组：垂直堆叠，统一 gap 小一点避免超高 */
 .bottom-btn-group { gap: 4px; }
 
-/* 底部栏：4 个圆形透明气泡按钮，贴底居中 */
+/* 底部栏：5 个圆形透明气泡按钮，贴底居中 */
 #bottom-bar {
   display: flex;
   flex-direction: row;
   align-items: flex-end;
   justify-content: center;
-  padding: 0 10px calc(env(safe-area-inset-bottom, 8px) + 10px);
-  gap: 14px;
+  padding: 0 6px calc(env(safe-area-inset-bottom, 8px) + 10px);
+  gap: 8px;
   margin-top: auto;                      /* 猫咪区固定高度后，把底部按钮栏推到屏幕底部 */
   min-height: 0;
   flex-shrink: 0;
