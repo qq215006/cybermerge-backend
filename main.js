@@ -684,15 +684,16 @@ async function doWithdraw() {
   } catch (e) {
     hideWithdrawLoading();
     const msg = e && e.message ? String(e.message) : '';
-    if (/cancel|reject|denied/i.test(msg)) {
-      // 用户主动取消签名/支付
-      toast('支付取消', 'info');
+    console.error('[withdraw] sendTransaction failed:', e);
+    // 用户主动取消/关闭/拒绝（含 SDK 的 abort / "not sent"）→ 不断开、不重连，避免死循环
+    if (/cancel|reject|denied|abort|not sent|declined/i.test(msg)) {
+      toast('支付已取消', 'info');
     } else {
-      // 技术失败（钱包 session 失效 / 未连接 / 跳转失败）：断开重连，让用户重新授权
+      // 真正技术失败（session 失效 / 未连接 / 桥接超时）→ 断开并提示手动重连（不再自动弹钱包，避免重复拉起）
       try { tonConnectUI?.disconnect(); } catch(_) {}
       clearWallet();
-      toast('钱包连接已失效，请重新连接钱包', 'warn');
-      setTimeout(() => connectWallet(), 300);
+      // 临时把真实错误带上，方便定位（确认没问题后再去掉）
+      toast('交易失败：' + (msg || '未知错误') + '，请重新连接钱包后重试', 'warn');
     }
   }
 }
