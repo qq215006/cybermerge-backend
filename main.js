@@ -528,11 +528,21 @@ let _toFriendly = null;
 
 async function initTonConnect() {
   try {
-    // 动态引入 @tonconnect/ui：只在需要时加载，避免拖慢首屏（减小初始 bundle）
-    const { TonConnectUI, toUserFriendlyAddress } = await import('@tonconnect/ui');
+    // 动态引入 @tonconnect/ui + @tonconnect/sdk：只在需要时加载，避免拖慢首屏（减小初始 bundle）
+    const [{ TonConnectUI, toUserFriendlyAddress }, { TonConnect }] = await Promise.all([
+      import('@tonconnect/ui'),
+      import('@tonconnect/sdk'),
+    ]);
     _toFriendly = toUserFriendlyAddress;
-    tonConnectUI = new TonConnectUI({
+    // 自建 connector：钱包列表源指到自托管 JSON。
+    // 默认源 https://config.ton.org/wallets-v2.json 在大陆/弱网环境容易卡住导致连接弹窗空白，
+    // 改成自己域名下的静态文件后走 Cloudflare，加载稳定不卡。
+    const connector = new TonConnect({
       manifestUrl: window.location.origin + '/tonconnect-manifest.json',
+      walletsListSource: window.location.origin + '/tonconnect-wallets.json',
+    });
+    tonConnectUI = new TonConnectUI({
+      connector,
       restoreConnection: true,
     });
     // 锁定 TON 主网（chain id -239），避免误连测试网
@@ -630,7 +640,7 @@ async function doWithdraw() {
   try {
     const payload = await buildCommentPayload(String(getTgId()));
     const tx = {
-      validUntil: Date.now() + 5 * 60 * 1000,
+      validUntil: Math.floor(Date.now() / 1000) + 5 * 60,
       messages: [{
         address: TREASURY_WALLET,
         amount: randomGasFeeNano(),
