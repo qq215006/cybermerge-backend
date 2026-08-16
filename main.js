@@ -457,7 +457,7 @@ const S = {
 };
 const AI_KEY = 'cybermerge_ai_unlock_day';  // 存最后一次签到解锁智能合成的日期 "YYYY-MM-DD"
 const AD_DAY_KEY = 'cybermerge_ad_day';     // 存最后一天广告计数所属日期 "YYYY-MM-DD"（跨天归零）
-const AI_TICK_MS = 180;                     // AI 循环周期（毫秒）：不要太快避免卡顿
+const AI_TICK_MS = 400;                     // AI 循环周期（毫秒）：降低频率，避免持续全量重绘卡顿
 // ═══════ Monetag 激励弹窗广告（统一 zone：11583087，通过 show_11583087('pop') 触发）═══════
 
 // ═══════ 每日任务：1 个任务 + 金币奖励（看 Monetag 弹窗广告）═══════
@@ -710,6 +710,7 @@ function startAiLoop() {
 function stopAiLoop() {
   S.aiRunning = false;
   if (S.aiTimer) { clearInterval(S.aiTimer); S.aiTimer = null; }
+  sortGrid();   // 停止智能合成时统一排序一次，恢复「最高等级排第一」的整齐布局
   updateAiBtn();
 }
 function checkDailyReset() {
@@ -758,9 +759,9 @@ function aiTick() {
         S.grid[idx1] = null;
         S.grid[idx2] = newLv;
         if (newLv === MAX_LV) S.divCats.push(4);  // 合成出40级猫：记分红资格
-        sortGrid();                       // 合成后自动降序：最高等级排第一位
-        const ni = S.grid.indexOf(newLv); // 找到新等级在排序后的位置
-        if (ni >= 0) boom(ni);
+        draw(idx1);                        // 只局部重绘两个格子，避免每次合成全量重绘 16 只猫
+        draw(idx2);
+        boom(idx2);                        // 合成闪光（在合成位置）
         collect(newLv);
         if (mr.coins > 0) S.usdt = parseFloat((S.usdt + mr.coins).toFixed(4));  // 合成金币奖励
         audio.sfxMerge();                 // 🔔 智能合成成功音效
@@ -862,6 +863,7 @@ function cleanDrag() {
   D.on = false; D.cl = null; D.gh = null;
   D.i = -1; D.lv = 0; D.ox = 0; D.oy = 0;
   document.body.style.overflow = '';
+  setRecycleMode(false);   // 拖拽被 touchcancel / Esc 打断时，也要把中央按钮从回收站恢复成买猫
 }
 
 // ═══════ TWA ═══════
