@@ -466,6 +466,8 @@ const S = {
   boostAdDay: '',                     // 加速收益广告所属日期
 };
 const AI_KEY = 'cybermerge_ai_unlock_day';  // 存最后一次签到解锁智能合成的日期 "YYYY-MM-DD"
+const AI_EXPIRE_KEY = 'cybermerge_ai_expire';  // 存本次 AI 解锁的到期时间戳（毫秒）
+const AI_LIMIT_MS = 15 * 60 * 1000;            // 单次智能合成限时 15 分钟
 const AD_DAY_KEY = 'cybermerge_ad_day';     // 存最后一天广告计数所属日期 "YYYY-MM-DD"（跨天归零）
 const AI_TICK_MS = 500;                     // AI 循环周期（毫秒）：降低频率，给交互/拖拽留出主线程时间片
 // ═══════ Monetag 激励弹窗广告（统一 zone：11583087，通过 show_11583087('pop') 触发）═══════
@@ -711,6 +713,15 @@ function isAiUnlockedToday() {
 function setAiUnlockedToday() {
   try { localStorage.setItem(AI_KEY, todayStr()); } catch(_) {}
 }
+function setAiExpire() {
+  try { localStorage.setItem(AI_EXPIRE_KEY, String(Date.now() + AI_LIMIT_MS)); } catch(_) {}
+}
+function isAiExpired() {
+  try {
+    const exp = Number(localStorage.getItem(AI_EXPIRE_KEY)) || 0;
+    return Date.now() > exp;
+  } catch(_) { return true; }
+}
 function startAiLoop() {
   stopAiLoop();
   S.aiRunning = true;
@@ -724,10 +735,14 @@ function stopAiLoop() {
   updateAiBtn();
 }
 function checkDailyReset() {
-  // 跨 0 点自动关闭智能合成（今日不是解锁日 → 关）
-  if (S.aiRunning && !isAiUnlockedToday()) {
+  if (!S.aiRunning) return;
+  // 跨 0 点 或 单次 15 分钟到期 → 自动关闭智能合成
+  if (!isAiUnlockedToday()) {
     stopAiLoop();
     toast(t('t_ai_daily_reset'),'info');
+  } else if (isAiExpired()) {
+    stopAiLoop();
+    toast('本次智能合成已结束，重新签到继续', 'info');
   }
 }
 function updateAiBtn() {
@@ -739,7 +754,7 @@ function updateAiBtn() {
     setEmoji('⚡');
     el.classList.add('ai-running');
     el.classList.remove('ai-locked');
-  } else if (isAiUnlockedToday()) {
+  } else if (isAiUnlockedToday() && !isAiExpired()) {
     setEmoji('⚡');
     el.classList.remove('ai-running', 'ai-locked');
   } else {
@@ -827,15 +842,16 @@ async function aiBuyCat() {
 // 点击签到合成按钮：免费签到开启/关闭智能合成（不看广告）
 function toggleAiMerge(e) {
   if (e) { e.preventDefault?.(); e.stopPropagation?.(); }
-  if (!isAiUnlockedToday()) {
-    // 免费签到：直接解锁今天的智能合成
+  // 未签到 或 已到期 → 签到/续时，解锁 15 分钟
+  if (!isAiUnlockedToday() || isAiExpired()) {
     setAiUnlockedToday();
+    setAiExpire();
     startAiLoop();
     toast(t('t_ai_checkin_ok'),'success');
     saveLocal();
     return;
   }
-  // 已签到 → 切换开关
+  // 有效期内 → 切换开关
   if (S.aiRunning) stopAiLoop();
   else startAiLoop();
 }
