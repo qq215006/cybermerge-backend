@@ -766,9 +766,18 @@ function updateAiBtn() {
   }
 }
 
+// ═══════ 交互让道：用户操作时暂停 AI 合成，避免抢主线程导致卡顿 ═══════
+let _userInteracting = false;
+let _interactTimer = null;
+function markInteracting() {
+  _userInteracting = true;
+  if (_interactTimer) clearTimeout(_interactTimer);
+  _interactTimer = setTimeout(() => { _userInteracting = false; }, 800);
+}
+
 // AI 单次动作：先尽量合成（从高到低）→ 再尽量买（钱够才买）
 function aiTick() {
-  if (S.aiLock) return;            // 锁：避免重入
+  if (S.aiLock || _userInteracting) return;   // 锁 / 用户交互时让道
   S.aiLock = true;
   try {
     // ① 从高等级到低等级扫一遍：找到有 2 只同级就合成
@@ -2348,6 +2357,12 @@ function boom(i, opts){
 
 // ═══════ 全局事件 ═══════
 function ev(){
+  // 交互让道：任何触摸/鼠标操作都暂停 AI 合成，操作停止 800ms 后恢复
+  document.addEventListener('touchstart', markInteracting, { passive: true, capture: true });
+  document.addEventListener('touchmove',  markInteracting, { passive: true, capture: true });
+  document.addEventListener('mousedown',  markInteracting, { capture: true });
+  document.addEventListener('mousemove',  markInteracting, { capture: true });
+
   document.addEventListener('touchmove', e=>{ if(D.on) move(e); }, {passive:false});
   document.addEventListener('touchend',  e=>{ if(D.on) up(e); });
   document.addEventListener('touchcancel', e=>{ cleanDrag(); });
