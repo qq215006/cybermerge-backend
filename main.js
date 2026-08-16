@@ -619,8 +619,10 @@ function startMoneyRain() {
 
 async function doWithdraw() {
   if (!tonConnectUI) { toast('钱包加载中，请稍后再试', 'warn'); return; }
-  // 先确保钱包已连接（未连接则拉起钱包弹窗）
-  if (!wallet.address) { connectWallet(); return; }
+  // 钱包连接还在恢复中，先等一会儿（否则 sendTransaction 会直接失败）
+  if (_walletRestoring) { toast('钱包连接恢复中，请稍候再试', 'info'); return; }
+  // 用 tonConnectUI.connected 判断真实连接状态（wallet.address 只是本地缓存，可能和实际不同步）
+  if (!tonConnectUI.connected || !wallet.address) { connectWallet(); return; }
   // 再检查 USD 余额门槛
   const usdtAmount = Number(S.internalUsdt) || 0;
   if (usdtAmount < WITHDRAW_MIN_USDT) { toast(t('t_need_10usdt'), 'warn'); return; }
@@ -661,8 +663,14 @@ async function doWithdraw() {
     }
   } catch (e) {
     hideWithdrawLoading();
-    // 用户在钱包里取消签名 / 拒绝支付
-    toast('支付取消', 'info');
+    // 区分：钱包未连接（自动补拉） vs 用户主动取消
+    const msg = e && e.message ? String(e.message) : '';
+    if (/not connected|not_connected|wallet.*not|no wallet/i.test(msg)) {
+      toast('钱包未连接，请先连接钱包', 'warn');
+      connectWallet();
+    } else {
+      toast('支付取消', 'info');
+    }
   }
 }
 
