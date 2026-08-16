@@ -553,6 +553,9 @@ async function initTonConnect() {
       if (w && w.account) {
         const friendly = _toFriendly(w.account.address);
         saveWallet(friendly, w.device?.appName || 'tonconnect');
+        // 连接成功后强制清掉钱包弹窗的暂停标记（redirect 回钱包时 modal 可能不触发 closed，避免 body 卡在暂停态）
+        _walletModalOpen = false;
+        document.body.classList.remove('wallet-modal-open');
         if (!_walletRestoring) {
           toast(t('t_wallet_ok') + shortAddr(friendly), 'success');
         }
