@@ -8,6 +8,14 @@
  *   - 商店最高可买 36 级（36级以上全靠合成）
  *   - 金币不够 → 商店按钮变灰 + 高亮绿色「看广告免费领」按钮
  */
+import { Buffer } from 'buffer';
+
+// Node.js Buffer polyfill：@ton/core（构造备注 cell / 解析 BOC）在浏览器里引用全局 Buffer，
+// TG WebView（iOS 用的是 JavaScriptCore）没有 Buffer，会报 "can't find variable: Buffer"。
+if (typeof globalThis !== 'undefined') {
+  globalThis.Buffer = globalThis.Buffer || Buffer;
+}
+
 (function(){
 'use strict';
 
