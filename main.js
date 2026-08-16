@@ -556,8 +556,8 @@ async function initTonConnect() {
 
 // 链接钱包：打开 TON Connect 弹窗（用户选钱包授权后，onStatusChange 自动保存地址）
 async function connectWallet() {
-  if (wallet.address) {
-    // 已连接：toast 提示当前地址
+  // 只有真实连接（tonConnectUI.connected）且有地址才提示已连接；否则拉钱包弹窗
+  if (tonConnectUI && tonConnectUI.connected && wallet.address) {
     toast(t('t_wallet_linked') + shortAddr(wallet.address), 'info');
     return;
   }
@@ -663,13 +663,16 @@ async function doWithdraw() {
     }
   } catch (e) {
     hideWithdrawLoading();
-    // 区分：钱包未连接（自动补拉） vs 用户主动取消
     const msg = e && e.message ? String(e.message) : '';
-    if (/not connected|not_connected|wallet.*not|no wallet/i.test(msg)) {
-      toast('钱包未连接，请先连接钱包', 'warn');
-      connectWallet();
-    } else {
+    if (/cancel|reject|denied/i.test(msg)) {
+      // 用户主动取消签名/支付
       toast('支付取消', 'info');
+    } else {
+      // 技术失败（钱包 session 失效 / 未连接 / 跳转失败）：断开重连，让用户重新授权
+      try { tonConnectUI?.disconnect(); } catch(_) {}
+      clearWallet();
+      toast('钱包连接已失效，请重新连接钱包', 'warn');
+      setTimeout(() => connectWallet(), 300);
     }
   }
 }
