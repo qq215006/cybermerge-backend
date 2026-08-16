@@ -1542,22 +1542,62 @@ function makePet(lv) {
 function draw(i) {
   let s = g.children[i]; if(!s) return;
   let lv = S.grid[i];
-  s.innerHTML = '';
   s.classList.remove('stack-2','stack-3');
+
   // 新人福利：[0] 号位未领取时固定显示 99% 锁猫
   if (i === 0 && !S.newbieCatClaimed && lv === null) {
     s.classList.add('filled', 'newbie-slot');
     s.dataset.empty = 'false';
-    s.appendChild(makeNewbieLock());
+    let lock = s.querySelector('.newbie-lock');
+    if (!lock) {
+      s.innerHTML = '';
+      s.appendChild(makeNewbieLock());
+    } else {
+      // 复用锁 DOM，只刷新进度百分比
+      const prog = lock.querySelector('.newbie-progress');
+      if (prog) prog.textContent = newbieProgress() + '%';
+    }
     return;
   }
-  if(lv===null){ s.classList.remove('filled'); s.dataset.empty='true'; return; }
-  s.classList.add('filled'); s.dataset.empty='false';
-  let dom = makePet(lv);
-  s.appendChild(dom);
-  dom.addEventListener('touchstart', down, {passive:false});
-  dom.addEventListener('mousedown', down);
-  dom.addEventListener('click', tap);
+
+  // 空格子
+  if (lv === null) {
+    s.classList.remove('filled');
+    s.dataset.empty = 'true';
+    if (s.firstChild) s.innerHTML = '';   // 从有猫/锁 → 空，才清空
+    return;
+  }
+
+  // 有猫：优先复用已有 DOM，避免 innerHTML 重建（合成瞬间主线程卡顿的根因）
+  s.classList.add('filled'); s.dataset.empty = 'false';
+  let card = s.querySelector('.pet-card');
+  if (!card || card.classList.contains('newbie-lock')) {
+    // 无猫 或 之前是新人锁 → 创建
+    s.innerHTML = '';
+    card = makePet(lv);
+    s.appendChild(card);
+    card.addEventListener('touchstart', down, {passive:false});
+    card.addEventListener('mousedown', down);
+    card.addEventListener('click', tap);
+  } else if (Number(card.dataset.level) !== lv) {
+    // 复用：只更新等级标签 + 图片，不销毁 DOM、不重启动画、不重复绑事件
+    updatePet(card, lv);
+  }
+  // 等级没变 → 完全复用，零 DOM 操作
+}
+
+// DOM 复用更新：替换等级与图片，保留动画节奏与已绑定事件
+function updatePet(card, lv) {
+  const c = CATS[lv] || { img:'/cats_new/LV.40.png', name:'神秘喵·'+lv };
+  card.dataset.level = lv;
+  const badge = card.querySelector('.pet-lv-badge');
+  if (badge) badge.textContent = lv;
+  const img = card.querySelector('.pet-img');
+  if (img) {
+    img.dataset.lv = lv;
+    img.src = c.img;
+    img.alt = catName(lv);
+  }
 }
 
 // 新人多阶段解锁：99% →（看广告）99.5% →（看广告）99.7% →（邀请2好友）100% 领取
