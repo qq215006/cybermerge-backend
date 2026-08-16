@@ -803,7 +803,17 @@ async function aiBuyCat() {
       if (typeof r.price === 'number') S.usdt = parseFloat((Math.max(0, S.usdt - r.price)).toFixed(4));
       if (typeof r.inflate_count === 'number') S.inflateCount = r.inflate_count;
       if (typeof r.buy_count === 'number') S.buyCount = r.buy_count;
-      applyGridFromRpc(r.grid);
+      // 只重绘买猫后新增的那一格，避免每次买猫全量重绘 16 只猫导致卡顿
+      if (Array.isArray(r.grid)) {
+        for (let i = 0; i < TOTAL; i++) {
+          const x = r.grid[i];
+          const nx = (typeof x === 'number' && x >= 1 && x <= MAX_LV) ? x : null;
+          if (S.grid[i] !== nx) {
+            S.grid[i] = nx;
+            draw(i);
+          }
+        }
+      }
       collect(lv);
       ui();
       saveLocal();
@@ -1177,7 +1187,7 @@ async function syncBackend() {
 // ═══════ Toast ═══════
 function toast(m, t) {
   let c = document.getElementById('toast-container');
-  if (!c) { c = d('div','toast-container'); document.getElementById('app').appendChild(c); }
+  if (!c) { c = d('div','toast-container'); document.body.appendChild(c); }
   let el = d('div','toast toast-'+(t||'info')); el.textContent = m; c.appendChild(el);
   requestAnimationFrame(() => el.classList.add('toast-enter'));
   setTimeout(() => { el.classList.add('toast-leave'); el.addEventListener('transitionend',()=>el.remove(),{once:true}); }, 1500);
