@@ -31,8 +31,16 @@
 
   <!-- 房间背景装饰层 -->
   <div id="room-bg">
-    <!-- 动态视频背景（静音循环自动播放，铺满整屋） -->
-    <video class="bg-video" src="/bg.mp4" poster="/poster.jpg" autoplay muted loop playsinline webkit-playsinline></video>
+    <!-- 静态背景图（从 bg.mp4 提取的高清帧，替代视频背景以降低移动端 GPU 负载） -->
+    <img class="bg-video" src="/bg_static.jpg" alt="" draggable="false" />
+    <!-- 光影特效层：在静态图上叠柔光光晕 + 光点漂浮，模拟视频的光影流动感（GPU 友好） -->
+    <div class="bg-light" aria-hidden="true">
+      <span class="bg-glow bg-glow-1"></span>
+      <span class="bg-glow bg-glow-2"></span>
+      <i class="bg-particle bg-particle-1"></i>
+      <i class="bg-particle bg-particle-2"></i>
+      <i class="bg-particle bg-particle-3"></i>
+    </div>
     <!-- 左：窗户 + 窗帘 -->
     <div class="room-window">
       <div class="window-frame">

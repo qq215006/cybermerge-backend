@@ -22,8 +22,9 @@ package/
 *.jpeg
 *.jpg
 *.png.bak
-# 启动加载海报（入库，供 Cloudflare 部署使用）
+# 启动加载海报 + 静态背景图（入库，供 Cloudflare 部署使用）
 !public/poster.jpg
+!public/bg_static.jpg
 
 # 日志
 *.log

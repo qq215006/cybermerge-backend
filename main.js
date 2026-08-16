@@ -866,6 +866,7 @@ let _dTimer = 0;
 let g, tg;
 let timerSec = 364.02;
 let timerInterval = null;
+let _slowUiTimer = null;   // 低频状态刷新定时器（1s，等级/头像/昵称/邀请/广告贡献/买猫按钮/跨天检测）
 
 function pos(e) {
   if (e.touches?.length) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -1330,9 +1331,10 @@ const audio = {
   }
 };
 
-// ═══════ 全局产金定时器（每秒遍历网格算力累加）═══════
+// ═══════ 全局产金定时器（每 100ms 累加算力产出；低频状态走独立 1s 定时器）═══════
 function startTimer() {
   if (timerInterval) clearInterval(timerInterval);
+  if (_slowUiTimer) clearInterval(_slowUiTimer);
   let earnAccum = 0;
   let floatTick = 0;                    // 100ms tick 计数，每 10 tick = 1 秒飘一次+产出
   timerInterval = setInterval(() => {
@@ -1348,7 +1350,7 @@ function startTimer() {
       earnAccum = 0;
     }
     // timer-rate 不再每 tick 覆盖 —— 它的文案由 data-i18n 持久管理，applyI18n() 时切换
-    ui();
+    uiFast();   // 高频只刷金币，避免每 100ms 全量写 DOM
 
     // 每 500ms（5 个 100ms tick）：飘数字 + 本地存档（金币产出实时写 localStorage，不碰网络）
     floatTick++;
@@ -1361,6 +1363,9 @@ function startTimer() {
       saveLocal();
     }
   }, 100);
+
+  // 低频状态刷新：1 秒一次（等级/头像/昵称/邀请/广告贡献/买猫按钮/跨天检测/AI 按钮状态）
+  _slowUiTimer = setInterval(uiSlow, 1000);
 }
 
 // ═══════ 每秒+产出浮动数字：红色上飘渐隐，附着在中间买猫按钮上面
@@ -1399,13 +1404,11 @@ function floatIncomeTop(amount) {
 let _lastCoinPop = 0;
 let _lastCoinVal = null;
 
-// ═══════ UI：顶栏余额 + 中间按钮（金币 / 拟买等级 / 灰禁 / 广告按钮）═══════
-function ui() {
-  // 等级横排：LV40招财猫头像 + 当前等级 + 当前金币 + 进度条（按 40 级满级算比例）
-  const userLv = Math.max(1, maxUnlockedLv());
-  const levelLvEl = document.getElementById('level-lv');
+// ═══════ UI 渲染拆分：uiFast 高频金币线（100ms），uiSlow 低频状态线（脏标记 + 1s 兜底）═══════
+
+// 高频：只刷持续变化的金币余额（每 100ms 由 startTimer 调用）
+function uiFast() {
   const levelCoinsEl = document.getElementById('level-coins');
-  if (levelLvEl) levelLvEl.textContent = 'Lv.' + userLv;
   if (levelCoinsEl) {
     levelCoinsEl.textContent = fmtNum(S.usdt) + ' ' + t('level_coins_suf');
     // 金币增加时做一次「呼吸」scale pop（节流 100ms，用 Web Animations 不额外建图层）
@@ -1421,37 +1424,58 @@ function ui() {
     }
     _lastCoinVal = S.usdt;
   }
-  // HUD USDT 余额
+  // HUD USDT 余额（低频变化，但一次 textContent 写开销极小，随金币线一起刷）
   const usdtEl = document.getElementById('hud-usdt');
   if (usdtEl) usdtEl.textContent = '$' + (Number(S.internalUsdt) || 0).toFixed(2);
-  // HUD 昵称 / 邀请数 / 广告贡献度
-  const nameEl = document.getElementById('hud-name');
-  if (nameEl) nameEl.textContent = [...(S.username || 'Player')].slice(0, 6).join('');
-  const inviteEl = document.getElementById('hud-invite');
-  if (inviteEl) inviteEl.textContent = String(S.inviteCount || 0);
-  const adcontEl = document.getElementById('hud-adcont');
-  if (adcontEl) adcontEl.textContent = String(S.adContribution || 0);
-  const avatarEl = document.getElementById('hud-avatar');
-  if (avatarEl) avatarEl.src = '/cats_new/LV.' + userLv + '.png';
-  const profileCatEl = document.getElementById('profile-cat');
-  if (profileCatEl) profileCatEl.src = '/cats_new/LV.' + userLv + '.png';
+}
 
-  // 中间按钮：买猫（35 级封顶锁定，前端不算价）
+// 低频状态缓存（脏标记：值没变就不碰 DOM）
+let _lastUserLv = null;
+let _lastUsername = null;
+let _lastInvite = null;
+let _lastAdCont = null;
+
+// 低频：等级/头像/昵称/邀请数/广告贡献/买猫按钮 —— 只在值变化时写 DOM（1s 兜底 + 操作后即时）
+function uiSlow() {
+  const userLv = Math.max(1, maxUnlockedLv());
+  if (userLv !== _lastUserLv) {
+    _lastUserLv = userLv;
+    const levelLvEl = document.getElementById('level-lv');
+    if (levelLvEl) levelLvEl.textContent = 'Lv.' + userLv;
+    const avatarEl = document.getElementById('hud-avatar');
+    if (avatarEl) avatarEl.src = '/cats_new/LV.' + userLv + '.png';
+    const profileCatEl = document.getElementById('profile-cat');
+    if (profileCatEl) profileCatEl.src = '/cats_new/LV.' + userLv + '.png';
+  }
+
+  const name = [...(S.username || 'Player')].slice(0, 6).join('');
+  if (name !== _lastUsername) {
+    _lastUsername = name;
+    const nameEl = document.getElementById('hud-name');
+    if (nameEl) nameEl.textContent = name;
+  }
+  if (S.inviteCount !== _lastInvite) {
+    _lastInvite = S.inviteCount;
+    const inviteEl = document.getElementById('hud-invite');
+    if (inviteEl) inviteEl.textContent = String(S.inviteCount || 0);
+  }
+  if (S.adContribution !== _lastAdCont) {
+    _lastAdCont = S.adContribution;
+    const adcontEl = document.getElementById('hud-adcont');
+    if (adcontEl) adcontEl.textContent = String(S.adContribution || 0);
+  }
+
+  // 中间买猫按钮：锁定态 + 悬浮猫素材（等级变了才换图）
   const mergeBtn = document.getElementById('btn-merge');
   const locked = shopLocked();
-
-  // 悬浮猫咪：按即将购买的等级展示素材（锁定态展示 35 级）
   const buyCatImg = document.getElementById('buy-cat-float');
   if (buyCatImg) {
     const catLv = locked ? 35 : buyLevel();
-    const cat = CATS[catLv] || CATS[1];
     if (buyCatImg.dataset.lv !== String(catLv)) {
-      buyCatImg.src = cat.img;
+      buyCatImg.src = (CATS[catLv] || CATS[1]).img;
       buyCatImg.dataset.lv = String(catLv);
     }
   }
-
-  // 锁定态：钛金色锁定，禁止点击
   if (mergeBtn) {
     if (locked) {
       mergeBtn.classList.add('shop-locked');
@@ -1461,9 +1485,15 @@ function ui() {
     }
   }
 
-  // 智能合成按钮：跨 0 点检测 + 文案状态刷新
+  // 跨 0 点检测 + 智能合成按钮状态：1s 一次即可，无需 100ms
   checkDailyReset();
   updateAiBtn();
+}
+
+// 完整刷新：操作后（合成/买猫/登录合并等）即时调用；内部走脏标记，不会重复写
+function ui() {
+  uiFast();
+  uiSlow();
 }
 
 function makePet(lv) {
@@ -1637,13 +1667,16 @@ function mergeResultLv(baseLv) {
 
 // ═══════ 合成后自动排序：最高等级排第一个（索引0），空格(null)排最后 ═══════
 function sortGrid() {
+  const before = S.grid.slice();   // 快照排序前状态，用于 diff
   // 取出所有非空格，按等级降序（高在前）
   const cats = S.grid.filter(x => x !== null).sort((a, b) => b - a);
   // 尾部补 null 到 16 格
   while (cats.length < TOTAL) cats.push(null);
   S.grid = cats;
-  // 全量重绘（保持视觉与数据一致）
-  for (let i = 0; i < TOTAL; i++) draw(i);
+  // diff 局部重绘：只重绘排序前后内容变化的那几格，避免每次全量重建 16 格
+  for (let i = 0; i < TOTAL; i++) {
+    if (before[i] !== S.grid[i]) draw(i);
+  }
   autoScrollCatTree();   // 合成排序后自动滚动
 }
 
@@ -2052,9 +2085,8 @@ function spawnAirdrop() {
   layer.innerHTML = '';
   const box = d('div', 'airdrop-box');
   box.textContent = '📦';
-  const side = Math.random() < 0.5 ? 'left' : 'right';
-  box.style[side] = (Math.random() * 20 + 6) + 'px';               // 屏幕左右边缘 6-26px
-  box.style.top = (Math.random() * 40 + 15) + '%';                 // 视口中上部 15%-55%，确保可见
+  box.style.left = (Math.random() * 82 + 4) + '%';                 // 横向随机分布（覆盖左中右，避开最边缘被裁剪）
+  box.style.top = (Math.random() * 45 + 12) + '%';                 // 视口中上部 12%-57%，确保可见且不遮底部按钮
   box.addEventListener('click', () => {
     confirmAd({ icon: '📦', title: t('confirm_airdrop_t'), desc: t('confirm_airdrop_d'), onOk: () => watchAirdropAd(box) });
   });

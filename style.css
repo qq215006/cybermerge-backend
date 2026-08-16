@@ -63,10 +63,12 @@
     background: radial-gradient(ellipse at center, #2a1810 0%, #1a0f08 70%, #0e0703 100%);
   }
   #app {
-    width: min(100dvh * 9 / 16, 430px);
-    height: 100dvh;
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    width: 375px;               /* iPhone SE (2/3代) 逻辑分辨率 375×667，约 9:16 */
+    height: 667px;
     max-width: none;
-    aspect-ratio: 9 / 16;
     border-radius: 28px;
     border: 4px solid #3a2014;
     box-shadow:
@@ -76,15 +78,13 @@
     overflow-y: auto;
     overflow-x: hidden;
   }
-  /* 桌面端：房间背景跟着 9:16 容器一起裁剪（不再是 fixed 全屏） */
+  /* 桌面端：房间背景跟随 9:16 手机框（iPhone SE 尺寸），居中裁剪 */
   #room-bg {
-    position: absolute;
-    left: 0;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    height: 100%;
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    width: 375px;
+    height: 667px;
     border-radius: 24px;
     overflow: hidden;
   }
@@ -94,9 +94,7 @@
    房间背景（CSS 绘制：窗户+窗帘+猫爬架+绿植+鹦鹉）
    ═══════════════════════════════════════════ */
 #room-bg {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
+  z-index: 1;
   pointer-events: none;
   overflow: hidden;
   /* 墙面：奶油橘黄 + 淡原木 —— 统一整屋暖色系，与中间猫爪盘更搭 */
@@ -111,15 +109,73 @@
     );
 }
 
-/* 动态视频背景：铺满房间，覆盖静态 CSS 房间作为主背景 */
+/* 静态背景图：铺满房间，覆盖静态 CSS 房间作为主背景 */
 .bg-video {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  z-index: 2;                 /* 视频盖住静态房间装饰/地板，但整体 #room-bg=0 仍在 UI 之下（置底） */
+  z-index: 2;                 /* 背景图盖住静态房间装饰/地板，但整体 #room-bg=0 仍在 UI 之下（置底） */
   pointer-events: none;
+}
+
+/* ═══════ 光影特效层：模拟视频的光影流动（只用 transform/opacity，GPU 合成，低开销） ═══════ */
+.bg-light {
+  position: absolute;
+  inset: 0;
+  z-index: 3;                 /* 盖在背景图之上，给整屋打柔光 */
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* 柔光光晕：两团暖色光缓慢漂移 + 呼吸 */
+.bg-glow {
+  position: absolute;
+  border-radius: 50%;
+  will-change: transform, opacity;
+}
+.bg-glow-1 {
+  width: 78%;
+  height: 52%;
+  left: -18%;
+  top: -6%;
+  background: radial-gradient(circle, rgba(255,242,205,0.55) 0%, rgba(255,225,170,0.18) 55%, transparent 72%);
+  animation: glowDrift1 9s ease-in-out infinite alternate;
+}
+.bg-glow-2 {
+  width: 86%;
+  height: 58%;
+  right: -22%;
+  bottom: -6%;
+  background: radial-gradient(circle, rgba(255,214,164,0.48) 0%, rgba(255,196,140,0.16) 55%, transparent 72%);
+  animation: glowDrift2 11s ease-in-out infinite alternate;
+}
+@keyframes glowDrift1 {
+  from { transform: translate3d(0, 0, 0) scale(1); opacity: 0.55; }
+  to   { transform: translate3d(6%, 4%, 0) scale(1.14); opacity: 0.8; }
+}
+@keyframes glowDrift2 {
+  from { transform: translate3d(0, 0, 0) scale(1.1); opacity: 0.5; }
+  to   { transform: translate3d(-5%, -3%, 0) scale(0.94); opacity: 0.78; }
+}
+
+/* 光点粒子：细小暖色光点缓慢上浮 */
+.bg-particle {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,248,220,0.95) 0%, rgba(255,240,200,0.35) 60%, transparent 100%);
+  will-change: transform, opacity;
+  animation: particleFloat 8s ease-in-out infinite alternate;
+}
+.bg-particle-1 { left: 18%; top: 24%; }
+.bg-particle-2 { left: 68%; top: 16%; width: 5px; height: 5px; animation-delay: 2.6s; }
+.bg-particle-3 { left: 44%; top: 62%; width: 6px; height: 6px; animation-delay: 4.2s; }
+@keyframes particleFloat {
+  from { transform: translate3d(0, 0, 0); opacity: 0.3; }
+  to   { transform: translate3d(0, -28px, 0); opacity: 0.9; }
 }
 
 /* 地板（底部木纹）——颜色调成暖橘棕，避免和爪盘色差大 */
