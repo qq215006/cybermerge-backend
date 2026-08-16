@@ -1517,6 +1517,8 @@ let _lastAdCont = null;
 
 // 低频：等级/头像/昵称/邀请数/广告贡献/买猫按钮 —— 只在值变化时写 DOM（1s 兜底 + 操作后即时）
 function uiSlow() {
+  // 任意游戏内弹窗打开时暂停动画，把 GPU/主线程让给弹窗渲染（与钱包弹窗 wallet-modal-open 同理）
+  document.body.classList.toggle('modal-open', _anyModalOpen());
   const userLv = Math.max(1, maxUnlockedLv());
   if (userLv !== _lastUserLv) {
     _lastUserLv = userLv;

@@ -192,6 +192,13 @@ body.wallet-modal-open *::after {
   animation-play-state: paused !important;
 }
 
+/* 任意游戏内弹窗（离线收益/个人中心/设置/排行榜/图鉴/任务/海报/确认）打开时暂停动画，避免弹窗卡顿 */
+body.modal-open *,
+body.modal-open *::before,
+body.modal-open *::after {
+  animation-play-state: paused !important;
+}
+
 /* 地板（底部木纹）——颜色调成暖橘棕，避免和爪盘色差大 */
 #room-bg::after {
   content: '';
@@ -2652,6 +2659,17 @@ body.wallet-modal-open *::after {
   -webkit-tap-highlight-color: transparent;
 }
 .offline-claim:active { transform: scale(0.97); }
+
+/* ═══════════════════════════════════════════
+   移动端性能：全屏模态遮罩禁用 backdrop-filter 毛玻璃
+   backdrop-filter blur 会强制 GPU 每帧重绘整个动画背景（猫呼吸/光晕/粒子 + 大量 will-change 图层），
+   低端机上叠加弹窗会导致完全卡死、点击无响应。改为纯半透明底色，视觉几乎无损但性能大幅提升。
+   ═══════════════════════════════════════════ */
+.offline-modal, .pokedex-modal, .profile-modal, .settings-modal,
+.leaderboard-modal, .task-modal, .poster-modal, .confirm-modal {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
 
 /* ═══════════════════════════════════════════
    启动加载页（海报 + 进度条 + 百分比）
