@@ -2014,12 +2014,11 @@ async function fetchPrizePool() {
 }
 function startPrizePoolPolling() {
   fetchPrizePool();
-  setInterval(fetchPrizePool, 15000);
+  setInterval(fetchPrizePool, 15 * 60 * 1000);   // 15 分钟同步一次真实奖池（前端 900ms 平滑过渡）
 }
 
 // ═══════ 全服喜讯广播：猫抓板上方悬浮小喇叭（排队滚动播报）═══════
 let _broadcastQueue = [];
-let _lastBroadcastId = 0;
 let _broadcastPlaying = false;
 
 async function reportMergeCritBroadcast(level, extra, coins) {
@@ -2036,13 +2035,8 @@ async function fetchBroadcasts() {
     });
     const data = await resp.json();
     if (data.success && Array.isArray(data.broadcasts)) {
-      data.broadcasts.forEach(b => {
-        const id = Number(b.id) || 0;
-        if (id > _lastBroadcastId) {
-          _lastBroadcastId = id;
-          _broadcastQueue.unshift(b);   // 新的优先插队
-        }
-      });
+      // 一次拉满 50 条，直接替换本地队列（真实数据，本地轮播，不再高频增量拉取）
+      _broadcastQueue = data.broadcasts.slice();
       if (!_broadcastPlaying) playNextBroadcast();
     }
   } catch(_) {}
@@ -2052,7 +2046,7 @@ function playNextBroadcast() {
   if (!_broadcastQueue.length) { _broadcastPlaying = false; return; }
   _broadcastPlaying = true;
   const b = _broadcastQueue.shift();
-  showBroadcastText(b, () => { setTimeout(playNextBroadcast, 350); });
+  showBroadcastText(b, () => { setTimeout(playNextBroadcast, 15000); });   // 每 15 秒轮播一条
 }
 
 function showBroadcastText(b, onDone) {
@@ -2082,7 +2076,7 @@ function showBroadcastText(b, onDone) {
 
 function startBroadcastPolling() {
   fetchBroadcasts();
-  setInterval(fetchBroadcasts, 3000);
+  setInterval(fetchBroadcasts, 15 * 60 * 1000);   // 15 分钟拉一次 50 条，本地轮播
 }
 
 // ═══════ 动态空投：3-5 分钟随机生成补给箱（沿边缘游走 + 呼吸灯），点击弹合规确认窗 ═══════
