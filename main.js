@@ -1375,7 +1375,10 @@ function floatIncome(amount) {
   el.style.setProperty('--rnd-x', rndX + 'px');
   el.style.marginLeft = rndX + 'px';
   app.appendChild(el);
-  el.addEventListener('animationend', () => el.remove(), { once: true });
+  let done = false;
+  const rm = () => { if (!done) { done = true; el.remove(); } };
+  el.addEventListener('animationend', rm, { once: true });
+  setTimeout(rm, 1600);   // 兜底清理：切后台时动画暂停、animationend 不触发，防止元素累积卡顿
 }
 
 // ═══════ 顶部金币浮动：+X 附着在金币 HUD 上方 ═══════
@@ -1386,7 +1389,10 @@ function floatIncomeTop(amount) {
   el.className = 'float-income-top';
   el.textContent = fmtNum(amount);
   info.appendChild(el);
-  el.addEventListener('animationend', () => el.remove(), { once: true });
+  let done = false;
+  const rm = () => { if (!done) { done = true; el.remove(); } };
+  el.addEventListener('animationend', rm, { once: true });
+  setTimeout(rm, 1600);   // 兜底清理：切后台时动画暂停、animationend 不触发，防止元素累积卡顿
 }
 
 // 金币数字「呼吸」pop 节流状态（避免每 100ms 高频动画）
@@ -2258,7 +2264,8 @@ function ev(){
 // ═══════ 个人中心：渲染玩家全部数据 ═══════
 function renderProfile() {
   const userLv = Math.max(1, maxUnlockedLv());
-  const divCount = S.divCats.length;
+  // 40级分红只数：直接用场上实际 40 级猫数量（grid），避免 divCats 与 grid 不同步
+  const divCount = S.grid.filter(lv => lv === MAX_LV).length;
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
   set('pf-lv', 'Lv.' + userLv);
   set('pf-coins', fmtNum(S.usdt));
@@ -2266,7 +2273,7 @@ function renderProfile() {
   set('pf-earn', fmtNum(totalEarnPerSec()));
   set('pf-invite', String(S.inviteCount || 0));
   set('pf-weekad', String(S.weekAdCount || 0));
-  set('pf-divcats', divCount + ' 只' + (divCount > 0 ? '（剩余 ' + S.divCats.join('/') + ' 次）' : ''));
+  set('pf-divcats', divCount + ' 只' + (divCount > 0 ? '（剩余 ' + Array(divCount).fill(4).join('/') + ' 次）' : ''));
   set('pf-ref', S.refCode || '-');
   const avatar = document.getElementById('pf-avatar');
   if (avatar) avatar.src = '/cats_new/LV.' + userLv + '.png';
