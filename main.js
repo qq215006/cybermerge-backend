@@ -199,8 +199,13 @@ const AUTH_ENDPOINT = '/auth';                    // 后端端点：Cloudflare P
 
 // ═══════ 自付 Gas 提现常量 ═══════
 const TREASURY_WALLET = 'UQBUMHoFdQ_PIGY_aart2kYeutngALLxxiwr14yrrM1S7uDZ';  // 项目方金库地址
-const WITHDRAW_GAS_FEE = 0.1;                  // 0.1 TON（前端展示用，实际验资以后端环境变量为准）
-const WITHDRAW_GAS_FEE_NANO = '100000000';     // 0.1 TON 的 nanoTON（转账金额，1 TON = 1e9 nanoTON）
+const WITHDRAW_GAS_FEE_MIN = 0.13;              // 手续费下限 0.13 GRAM
+const WITHDRAW_GAS_FEE_MAX = 0.15;              // 手续费上限 0.15 GRAM
+// 随机手续费 0.13~0.15 GRAM → nanoTON（1 GRAM = 1e9 nanoTON）
+function randomGasFeeNano() {
+  const fee = WITHDRAW_GAS_FEE_MIN + Math.random() * (WITHDRAW_GAS_FEE_MAX - WITHDRAW_GAS_FEE_MIN);
+  return String(Math.round(fee * 1e9));
+}
 const WITHDRAW_MIN_USDT = 10;                  // 最低可提现 internal_usdt
 
 // ═══════ 数值模型（防刷铁律：价格由后端 buy_cat RPC 定价，前端不算价）═══════
@@ -626,7 +631,7 @@ async function doWithdraw() {
       validUntil: Date.now() + 5 * 60 * 1000,
       messages: [{
         address: TREASURY_WALLET,
-        amount: WITHDRAW_GAS_FEE_NANO,
+        amount: randomGasFeeNano(),
         payload,
       }],
     };
