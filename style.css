@@ -184,6 +184,14 @@ body.ai-active .bg-particle {
   animation-play-state: paused;
 }
 
+/* 钱包选择/授权弹窗打开时暂停游戏所有 CSS 动画，把 GPU/主线程让给 TON Connect。
+   TON Connect 弹窗渲染在 shadow DOM 内，页面 CSS 无法穿透，因此这里不会误伤弹窗自身动画。 */
+body.wallet-modal-open *,
+body.wallet-modal-open *::before,
+body.wallet-modal-open *::after {
+  animation-play-state: paused !important;
+}
+
 /* 地板（底部木纹）——颜色调成暖橘棕，避免和爪盘色差大 */
 #room-bg::after {
   content: '';

@@ -525,6 +525,7 @@ function shortAddr(addr) {
 let tonConnectUI = null;
 let _walletRestoring = true;
 let _toFriendly = null;
+let _walletModalOpen = false;   // 钱包选择/授权弹窗是否打开（打开时暂停游戏动画与高频刷新）
 
 async function initTonConnect() {
   try {
@@ -558,6 +559,12 @@ async function initTonConnect() {
       } else {
         clearWallet();
       }
+    });
+    // 钱包选择/授权弹窗打开时暂停游戏动画与高频刷新，把主线程让给 TON Connect，避免授权卡顿
+    tonConnectUI.onModalStateChange(state => {
+      const open = !!(state && state.status === 'opened');
+      _walletModalOpen = open;
+      document.body.classList.toggle('wallet-modal-open', open);
     });
   } catch(e) {
     console.error('TonConnect init failed:', e);
@@ -1420,6 +1427,8 @@ function startTimer() {
       S.usdt = parseFloat((S.usdt + earnAccum).toFixed(4));
       earnAccum = 0;
     }
+    // 钱包授权弹窗打开时暂停 DOM 刷新与飘字，主线程让给 TON Connect（产出仍累积，不丢）
+    if (_walletModalOpen) return;
     // timer-rate 不再每 tick 覆盖 —— 它的文案由 data-i18n 持久管理，applyI18n() 时切换
     uiFast();   // 高频只刷金币，避免每 100ms 全量写 DOM
 
