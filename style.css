@@ -178,6 +178,12 @@
   to   { transform: translate3d(0, -28px, 0); opacity: 0.9; }
 }
 
+/* 智能合成运行时暂停背景光效，降低移动端 GPU 负担 */
+body.ai-active .bg-glow,
+body.ai-active .bg-particle {
+  animation-play-state: paused;
+}
+
 /* 地板（底部木纹）——颜色调成暖橘棕，避免和爪盘色差大 */
 #room-bg::after {
   content: '';

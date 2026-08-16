@@ -469,7 +469,7 @@ const AI_KEY = 'cybermerge_ai_unlock_day';  // 存最后一次签到解锁智能
 const AI_EXPIRE_KEY = 'cybermerge_ai_expire';  // 存本次 AI 解锁的到期时间戳（毫秒）
 const AI_LIMIT_MS = 15 * 60 * 1000;            // 单次智能合成限时 15 分钟
 const AD_DAY_KEY = 'cybermerge_ad_day';     // 存最后一天广告计数所属日期 "YYYY-MM-DD"（跨天归零）
-const AI_TICK_MS = 500;                     // AI 循环周期（毫秒）：降低频率，给交互/拖拽留出主线程时间片
+const AI_TICK_MS = 800;                     // AI 循环周期（毫秒）：进一步降频，缓解 TG 移动端主线程过载
 // ═══════ Monetag 激励弹窗广告（统一 zone：11583087，通过 show_11583087('pop') 触发）═══════
 
 // ═══════ 每日任务：1 个任务 + 金币奖励（看 Monetag 弹窗广告）═══════
@@ -726,11 +726,13 @@ function startAiLoop() {
   stopAiLoop();
   S.aiRunning = true;
   S.aiTimer = setInterval(aiTick, AI_TICK_MS);
+  document.body.classList.add('ai-active');   // 智能合成运行时暂停背景光效，降低移动端 GPU 负担
   updateAiBtn();
 }
 function stopAiLoop() {
   S.aiRunning = false;
   if (S.aiTimer) { clearInterval(S.aiTimer); S.aiTimer = null; }
+  document.body.classList.remove('ai-active');
   sortGrid();   // 停止智能合成时统一排序一次，恢复「最高等级排第一」的整齐布局
   updateAiBtn();
 }
@@ -831,7 +833,7 @@ async function aiBuyCat() {
         }
       }
       collect(lv);
-      ui();
+      uiFast();   // 买猫后只刷金币，等级/按钮状态由 1s uiSlow 兜底，避免高频全量刷新
       saveLocal();
     }
   } finally {
@@ -1369,9 +1371,9 @@ function startTimer() {
     // timer-rate 不再每 tick 覆盖 —— 它的文案由 data-i18n 持久管理，applyI18n() 时切换
     uiFast();   // 高频只刷金币，避免每 100ms 全量写 DOM
 
-    // 每 500ms（5 个 100ms tick）：飘数字 + 本地存档（金币产出实时写 localStorage，不碰网络）
+    // 每 1 秒（10 个 100ms tick）：飘数字 + 本地存档（降频减少移动端 DOM 创建/销毁）
     floatTick++;
-    if (floatTick >= 5) {
+    if (floatTick >= 10) {
       if (earn > 0) {
         floatIncome(earn);
         floatIncomeTop(earn);
