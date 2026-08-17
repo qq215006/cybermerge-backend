@@ -256,6 +256,260 @@
         <button id="pf-withdraw" class="pf-copy-btn pf-withdraw-btn">💵 <span data-i18n="profile_claim">Claim / 提现</span></button>
         <button id="pf-settings" class="pf-copy-btn pf-settings-btn">⚙️ <span data-i18n="profile_settings">游戏设置</span></button>
         <button id="pf-copy-ref" class="pf-copy-btn" data-i18n="profile_copy">复制邀请码</button>
+        <button id="pf-help" class="pf-copy-btn pf-help-btn">❓ <span data-i18n="profile_help">帮助说明</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ 帮助说明弹窗（中/英/俄三语，按当前语言显示） ═══════════ -->
+  <div id="help-modal" class="help-modal">
+    <div class="help-content">
+      <div class="help-header">
+        <span class="help-title">❓ <span data-i18n="help_title">帮助说明</span></span>
+        <button id="help-close" class="help-close">✕</button>
+      </div>
+      <div class="help-body">
+
+        <!-- 中文 -->
+        <div class="help-lang help-zh">
+          <section><h3>🎮 游戏简介</h3>
+            <p>在 Telegram 里拖动同等级猫咪合成更高等级，猫咪持续产出金币，高级猫可回收变现，冲上 40 级还能参与每周分红，收益可提现到 TON 钱包。</p>
+          </section>
+          <section><h3>🚀 快速上手</h3>
+            <ol>
+              <li>点中间按钮买猫，攒两只同等级。</li>
+              <li>拖动一只猫到另一只同等级猫身上，合成更高一级。</li>
+              <li>合成出的等级自动进图鉴，图鉴决定商店能买多高。</li>
+              <li>点底部 ⚡ 合成（每日签到）开启自动合成挂机。</li>
+              <li>看广告、邀请好友、冲 40 级拿分红。</li>
+            </ol>
+          </section>
+          <section><h3>🐱 猫咪合成</h3>
+            <ul>
+              <li>两只同级 → 一只高 1 级；40 级满级不能再合。</li>
+              <li>暴击跳级：0.1% +1 级、0.005% +2 级、0.00001% +3 级。</li>
+              <li>合成金币：5% 概率 +2500、10% 概率 +1500。</li>
+            </ul>
+          </section>
+          <section><h3>💰 金币系统</h3>
+            <ul>
+              <li>每秒产出：第 n 级 = 1 × 1.8^(n-1)。</li>
+              <li>买价 = 100 × 2.2^(等级-1) × 通胀（跨级 2.2 贵于产出 1.8）。</li>
+              <li>每天前 5 次买猫不涨价，之后每次 +10%，封顶 5 倍，早 8 点重置。</li>
+            </ul>
+          </section>
+          <section><h3>📈 等级</h3>
+            <ul>
+              <li>1 ~ 40 级；商店最高买 34 级，35 级及以上全靠合成。</li>
+              <li>图鉴历史最高等级决定商店上限和广告领猫等级。</li>
+            </ul>
+          </section>
+          <section><h3>♻️ 回收变现</h3>
+            <ul>
+              <li>拖猫到中间按钮（变回收站）。</li>
+              <li>34 级及以下：返还购买价 50% 金币。</li>
+              <li>35 级及以上：给 USDT（35=0.1 / 36=0.5 / 37=1 / 38=2 / 39=4 / 40=8）。</li>
+              <li>35 级+的 USDT 从奖池扣，奖池不足会失败。</li>
+            </ul>
+          </section>
+          <section><h3>⚡ 签到 · 智能合成</h3>
+            <ul>
+              <li>点底部 ⚡ 合成 = 免费签到（不看广告）。</li>
+              <li>解锁 15 分钟自动合成，早 8 点自动关闭需重新签到。</li>
+            </ul>
+          </section>
+          <section><h3>🎁 离线收益</h3>
+            <ul><li>签到后离线也继续产出，上线弹窗领取。</li></ul>
+          </section>
+          <section><h3>📺 广告</h3>
+            <ul>
+              <li>加速收益：看广告得 3×当前秒收益，每天 15 次。</li>
+              <li>免费领猫：领最高等级 −5 的猫，每天 15 次（邀请可加，封顶 20）。</li>
+              <li>任务墙：看广告领金币（如 +10000）。</li>
+            </ul>
+          </section>
+          <section><h3>👥 邀请</h3>
+            <ul><li>邀请链接带专属码，邀请数影响每日广告上限。</li></ul>
+          </section>
+          <section><h3>📖 图鉴</h3>
+            <ul><li>合成出过的等级自动收集，决定历史最高等级。</li></ul>
+          </section>
+          <section><h3>🏆 分红</h3>
+            <ul>
+              <li>广告收益 50% 注入分红池，每周结算。</li>
+              <li>只有 40 级猫能参与，按本周看广告次数占比瓜分。</li>
+              <li>每只 40 级猫 4 次分红寿命，扣完自动回收。</li>
+            </ul>
+          </section>
+          <section><h3>💵 提现</h3>
+            <ul>
+              <li>可提现余额来自 35 级+回收和赛季分红。</li>
+              <li>门槛 ≥ 10 USDT。</li>
+              <li>需自付 0.13~0.15 GRAM gas 费，且付 gas 钱包 = 到账钱包。</li>
+            </ul>
+          </section>
+        </div>
+
+        <!-- English -->
+        <div class="help-lang help-en" hidden>
+          <section><h3>🎮 About</h3>
+            <p>Drag same-level cats to merge into higher levels inside Telegram. Cats produce coins, high-level cats can be recycled for USDT, and LV.40 cats earn weekly dividends you can withdraw to your TON wallet.</p>
+          </section>
+          <section><h3>🚀 Quick Start</h3>
+            <ol>
+              <li>Buy cats with the middle button.</li>
+              <li>Drag one cat onto another of the same level to merge.</li>
+              <li>Merged levels are collected and decide your shop cap.</li>
+              <li>Tap ⚡ Merge to check in and start auto merge.</li>
+              <li>Watch ads, invite friends, aim for LV.40 dividends.</li>
+            </ol>
+          </section>
+          <section><h3>🐱 Merging</h3>
+            <ul>
+              <li>Two same-level → one +1 level; LV.40 is max.</li>
+              <li>Crit jumps: 0.1% +1, 0.005% +2, 0.00001% +3.</li>
+              <li>Merge coins: 5% chance +2500, 10% chance +1500.</li>
+            </ul>
+          </section>
+          <section><h3>💰 Coins</h3>
+            <ul>
+              <li>Per-second output: level n = 1 × 1.8^(n-1).</li>
+              <li>Buy price = 100 × 2.2^(level-1) × inflation (2.2 &gt; 1.8).</li>
+              <li>First 5 buys/day no inflation, then +10% each, capped 5×, resets 8 AM.</li>
+            </ul>
+          </section>
+          <section><h3>📈 Levels</h3>
+            <ul>
+              <li>1~40; shop sells up to LV.34, 35+ only by merging.</li>
+              <li>Highest collected level sets shop &amp; ad-cat caps.</li>
+            </ul>
+          </section>
+          <section><h3>♻️ Recycle</h3>
+            <ul>
+              <li>Drag a cat to the middle button (becomes recycle bin).</li>
+              <li>LV.34 and below: 50% of buy price in coins.</li>
+              <li>LV.35+: USDT (35=0.1 / 36=0.5 / 37=1 / 38=2 / 39=4 / 40=8).</li>
+              <li>LV.35+ USDT comes from the prize pool; fails if pool is empty.</li>
+            </ul>
+          </section>
+          <section><h3>⚡ Check-in &amp; Auto Merge</h3>
+            <ul>
+              <li>Tap ⚡ Merge = free daily check-in (no ad).</li>
+              <li>Unlocks 15 min auto merge; auto-off at 8 AM.</li>
+            </ul>
+          </section>
+          <section><h3>🎁 Offline</h3>
+            <ul><li>After check-in you keep earning offline; claim on return.</li></ul>
+          </section>
+          <section><h3>📺 Ads</h3>
+            <ul>
+              <li>Boost: 3× current per-second output, 15/day.</li>
+              <li>Free cat: level = highest −5, 15/day (invites add up to 20).</li>
+              <li>Tasks: watch ads for coins (e.g. +10000).</li>
+            </ul>
+          </section>
+          <section><h3>👥 Invite</h3>
+            <ul><li>Share your invite link; invites raise your daily ad cap.</li></ul>
+          </section>
+          <section><h3>📖 Collection</h3>
+            <ul><li>Every merged level is collected and sets your highest level.</li></ul>
+          </section>
+          <section><h3>🏆 Dividends</h3>
+            <ul>
+              <li>50% of ad revenue goes into the weekly pool.</li>
+              <li>Only LV.40 cats qualify; split by your ads watched this week.</li>
+              <li>Each LV.40 cat has 4 dividend lives, then auto-recycles.</li>
+            </ul>
+          </section>
+          <section><h3>💵 Withdraw</h3>
+            <ul>
+              <li>Balance comes from LV.35+ recycling and season dividends.</li>
+              <li>Minimum 10 USDT.</li>
+              <li>You pay 0.13~0.15 GRAM gas; gas wallet must equal receiving wallet.</li>
+            </ul>
+          </section>
+        </div>
+
+        <!-- Русский -->
+        <div class="help-lang help-ru" hidden>
+          <section><h3>🎮 О игре</h3>
+            <p>В Telegram перетаскивайте котов одного уровня, чтобы получить уровень выше. Коты приносят монеты, старшие уровни можно продать за USDT, а коты 40 уровня дают еженедельные дивиденды с выводом в TON-кошелёк.</p>
+          </section>
+          <section><h3>🚀 Быстрый старт</h3>
+            <ol>
+              <li>Покупайте котов средней кнопкой.</li>
+              <li>Перетащите кота на кота того же уровня.</li>
+              <li>Собранные уровни определяют лимит магазина.</li>
+              <li>Нажмите ⚡ Слияние — это ежедневная отметка.</li>
+              <li>Смотрите рекламу, приглашайте друзей, идите к 40 уровню.</li>
+            </ol>
+          </section>
+          <section><h3>🐱 Слияние</h3>
+            <ul>
+              <li>Два одного уровня → один на +1 уровень; 40 — максимум.</li>
+              <li>Крит: 0.1% +1, 0.005% +2, 0.00001% +3.</li>
+              <li>Монеты: 5% шанс +2500, 10% шанс +1500.</li>
+            </ul>
+          </section>
+          <section><h3>💰 Монеты</h3>
+            <ul>
+              <li>Доход в секунду: уровень n = 1 × 1.8^(n-1).</li>
+              <li>Цена = 100 × 2.2^(уровень-1) × инфляция (2.2 &gt; 1.8).</li>
+              <li>Первые 5 покупок в день без инфляции, далее +10%, максимум 5×, сброс в 8:00.</li>
+            </ul>
+          </section>
+          <section><h3>📈 Уровни</h3>
+            <ul>
+              <li>1~40; магазин до 34 уровня, 35+ только слиянием.</li>
+              <li>Максимальный собранный уровень задаёт лимиты.</li>
+            </ul>
+          </section>
+          <section><h3>♻️ Продажа</h3>
+            <ul>
+              <li>Перетащите кота на среднюю кнопку (корзина).</li>
+              <li>34 и ниже: 50% цены монетами.</li>
+              <li>35+: USDT (35=0.1 / 36=0.5 / 37=1 / 38=2 / 39=4 / 40=8).</li>
+              <li>USDT за 35+ берётся из пула; при нехватке — отказ.</li>
+            </ul>
+          </section>
+          <section><h3>⚡ Отметка и автослияние</h3>
+            <ul>
+              <li>⚡ Слияние = бесплатная ежедневная отметка (без рекламы).</li>
+              <li>Даёт 15 минут автослияния; в 8:00 отключается.</li>
+            </ul>
+          </section>
+          <section><h3>🎁 Офлайн</h3>
+            <ul><li>После отметки доход идёт и офлайн; заберите при входе.</li></ul>
+          </section>
+          <section><h3>📺 Реклама</h3>
+            <ul>
+              <li>Буст: 3× текущего дохода в секунду, 15/день.</li>
+              <li>Бесплатный кот: уровень = максимальный −5, 15/день (приглашения до 20).</li>
+              <li>Задания: монеты за рекламу (например +10000).</li>
+            </ul>
+          </section>
+          <section><h3>👥 Приглашения</h3>
+            <ul><li>Делитесь ссылкой; приглашения повышают лимит рекламы.</li></ul>
+          </section>
+          <section><h3>📖 Коллекция</h3>
+            <ul><li>Каждый собранный уровень фиксируется и задаёт ваш максимум.</li></ul>
+          </section>
+          <section><h3>🏆 Дивиденды</h3>
+            <ul>
+              <li>50% дохода от рекламы идёт в еженедельный пул.</li>
+              <li>Только коты 40 уровня; делёж по числу просмотров рекламы за неделю.</li>
+              <li>У каждого кота 40 уровня 4 жизни дивидендов, затем автоудаление.</li>
+            </ul>
+          </section>
+          <section><h3>💵 Вывод</h3>
+            <ul>
+              <li>Баланс из продажи 35+ и сезонных дивидендов.</li>
+              <li>Минимум 10 USDT.</li>
+              <li>Вы платите 0.13~0.15 GRAM газа; кошелёк газа = кошелёк получения.</li>
+            </ul>
+          </section>
+        </div>
+
       </div>
     </div>
   </div>

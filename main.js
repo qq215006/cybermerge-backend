@@ -62,6 +62,8 @@ const I18N = {
   profile_wallet:    { zh:'连接 TON 钱包',   en:'Connect TON',          ru:'TON-кошелек' },
   profile_claim:     { zh:'Claim / 提现',    en:'Claim',                ru:'Вывод' },
   profile_settings:  { zh:'游戏设置',        en:'Settings',             ru:'Настройки' },
+  profile_help:      { zh:'帮助说明',        en:'Help',                 ru:'Помощь' },
+  help_title:        { zh:'帮助说明',        en:'Help',                 ru:'Помощь' },
   // 合规广告二次确认弹窗
   confirm_cancel:    { zh:'取消',            en:'Cancel',               ru:'Отмена' },
   confirm_ok:        { zh:'▶ 观看视频',      en:'▶ Watch',              ru:'▶ Смотреть' },
@@ -838,7 +840,7 @@ function markInteracting() {
 }
 // 弹窗打开期间 AI 完全暂停（弹窗渲染需要主线程，AI 让道）
 function _anyModalOpen() {
-  return !!document.querySelector('.pokedex-modal.show, .profile-modal.show, .settings-modal.show, .leaderboard-modal.show, .task-modal.show, .poster-modal.show, .confirm-modal.show, .offline-modal.show');
+  return !!document.querySelector('.pokedex-modal.show, .profile-modal.show, .settings-modal.show, .leaderboard-modal.show, .task-modal.show, .poster-modal.show, .confirm-modal.show, .offline-modal.show, .help-modal.show');
 }
 
 // AI 单次动作：先尽量合成（从高到低）→ 再尽量买（钱够才买）
@@ -2939,6 +2941,19 @@ function btn(){
     try { navigator.clipboard?.writeText(link); toast(t('profile_copied'), 'success'); }
     catch(_) { toast(t('profile_ref') + ': ' + link, 'info'); }
   });
+  // 帮助说明：打开帮助弹窗，按当前语言显示对应内容块
+  const openHelp = () => {
+    const hm = document.getElementById('help-modal');
+    if (!hm) return;
+    const lang = (_lang === 'en' || _lang === 'ru') ? _lang : 'zh';
+    hm.querySelectorAll('.help-lang').forEach(el => { el.hidden = !el.classList.contains('help-' + lang); });
+    hm.classList.add('show');
+    const body = hm.querySelector('.help-body'); if (body) body.scrollTop = 0;
+  };
+  const closeHelp = () => document.getElementById('help-modal')?.classList.remove('show');
+  document.getElementById('pf-help')?.addEventListener('click', openHelp);
+  document.getElementById('help-close')?.addEventListener('click', closeHelp);
+  document.getElementById('help-modal')?.addEventListener('click', (e) => { if (e.target.id === 'help-modal') closeHelp(); });
 
   document.getElementById('btn-merge')?.addEventListener('click',buy);
   // 推特赚金：点击生成 9:16 海报 → 预览 → 分享 X
