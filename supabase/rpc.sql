@@ -672,7 +672,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- ── 5.2 加速收益广告：每日 15 次，奖励 = 3×当前秒收益（金额由后端入账）──
+-- ── 5.2 加速收益广告：每日 100 次，奖励 = 3×当前秒收益（金额由后端入账）──
 CREATE OR REPLACE FUNCTION boost_ad_reward(p_tg_id text, p_amount double precision)
 RETURNS json AS $$
 DECLARE
@@ -693,7 +693,7 @@ BEGIN
     v_used := 0;
   END IF;
 
-  IF v_used >= 15 THEN
+  IF v_used >= 100 THEN
     RETURN json_build_object('ok', false, 'reason', 'daily limit reached', 'used', v_used);
   END IF;
 

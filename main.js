@@ -198,8 +198,8 @@ const GRID_SIZE = 4;
 const TOTAL = 16;
 const MAX_LV = 40;
 const MERGE_NEED = 2;            // 2 只同级合 1 只（经典合成）
-const AD_BASE_LIMIT = 15;         // 每人每天基础广告次数
-const AD_INVITE_BONUS_MAX = 5;    // 邀请加成上限（每邀请1人+1，最多+5 → 封顶20）
+const AD_BASE_LIMIT = 100;        // 每人每天基础广告次数
+const AD_INVITE_BONUS_MAX = 5;    // 邀请加成上限（每邀请1人+1，最多+5）
 
 // ═══════ 云存档 / 防作弊常量 ═══════
 const SECRET_SALT = 'CYBER_CAT_SECRET_2026';      // 前后端共同约定的签名盐
@@ -2270,8 +2270,8 @@ function startAirdrop() {
   loop();
 }
 
-// ═══════ 加速收益广告：看广告领 3×当前秒收益（每日 15 次）═══════
-const BOOST_AD_LIMIT = 15;
+// ═══════ 加速收益广告：看广告领 3×当前秒收益（每日 100 次）═══════
+const BOOST_AD_LIMIT = 100;
 function boostAd() {
   if (S.boostAdUsed >= BOOST_AD_LIMIT) {
     toast('今日权益已用完', 'warn');
