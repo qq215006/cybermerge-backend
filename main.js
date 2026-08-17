@@ -1641,9 +1641,9 @@ function draw(i) {
       s.innerHTML = '';
       s.appendChild(makeNewbieLock());
     } else {
-      // 复用锁 DOM，只刷新进度百分比
+      // 复用锁 DOM，只刷新进度文案（99% / 99.5% / 邀请解锁）
       const prog = lock.querySelector('.newbie-progress');
-      if (prog) prog.textContent = newbieProgress() + '%';
+      if (prog) prog.textContent = newbieProgress();
     }
     return;
   }
@@ -1688,9 +1688,12 @@ function updatePet(card, lv) {
   }
 }
 
-// 新人多阶段解锁：99% →（看广告）99.5% →（看广告）99.7% →（邀请2好友）100% 领取
+// 新人多阶段解锁：99% →（看广告）99.5% →（看广告）→（邀请2好友）100% 领取
 function newbieProgress() {
-  return [99, 99.5, 99.7][Math.min(S.newbieAdStage || 0, 2)];
+  const stage = Math.min(S.newbieAdStage || 0, 2);
+  if (stage === 0) return '99%';
+  if (stage === 1) return '99.5%';
+  return '邀请解锁';   // 广告已看完，邀请2位好友即可解锁100%
 }
 function makeNewbieLock() {
   const card = d('div', 'pet-card newbie-lock');
@@ -1700,7 +1703,7 @@ function makeNewbieLock() {
       '<img class="pet-img newbie-lock-img" src="/cats_new/LV.35.png" alt="锁定的35级猫" draggable="false" />' +
       '<span class="newbie-crown">👑</span>' +
       '<span class="newbie-lock-icon">🔒</span>' +
-      '<span class="newbie-progress">' + newbieProgress() + '%</span>' +
+      '<span class="newbie-progress">' + newbieProgress() + '</span>' +
     '</div>';
   card.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -1714,7 +1717,7 @@ function newbieClick() {
     confirmAd({
       icon: '👑',
       title: '观看广告后解锁...',
-      desc: '解锁 35 级皇冠猫（当前进度 ' + newbieProgress() + '%）',
+      desc: '解锁 35 级皇冠猫（当前进度 ' + newbieProgress() + '）',
       onOk: () => showMonetagAd(() => advanceNewbieAd())
     });
   } else {
@@ -2093,11 +2096,13 @@ async function doRecycle(index, level) {
 }
 
 // ═══════ 新人 35 级猫（看广告2次 + 邀请2好友后领取）═══════
-async function claimNewbieCat() {
-  if (S.newbieCatClaimed) { toast(t('t_newbie_done'), 'warn'); return; }
+// silent=true：静默检测（邀请数够就自动领，不够不打扰），用于从邀请分享返回后自动领取
+async function claimNewbieCat(silent) {
+  if (S.newbieCatClaimed) { if (!silent) toast(t('t_newbie_done'), 'warn'); return; }
   await saveCloudNow();   // 领取前先同步本地合成结果，避免后端旧 grid 覆盖撤回刚合成的猫
   const r = await callRpc('claim_newbie_cat', {});
   if (!r || r.ok === false) {
+    if (silent) return;   // 静默模式：邀请不够/广告没看完都不打扰
     if (r && r.reason === 'invites not enough') {
       // 邀请数不足：引导分享邀请
       confirmAd({
@@ -2120,6 +2125,13 @@ async function claimNewbieCat() {
   ui();
   saveLocal();
   autoScrollCatTree();   // 新人猫后自动滚动
+  if (silent) toast('🎉 已解锁 35 级皇冠猫！', 'success');
+}
+
+// 从邀请分享返回后自动检测领取（广告已看完 + 邀请数够就自动领）
+function tryAutoClaimNewbie() {
+  if (S.newbieCatClaimed || (S.newbieAdStage || 0) < 2) return;
+  claimNewbieCat(true);
 }
 
 // ═══════ S1 奖池横幅：轮询 global_stats + CountUp 平滑滚动 ═══════
@@ -3254,6 +3266,7 @@ function setupBeaconSave() {
   window.addEventListener('pagehide', beaconSave);
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') beaconSave();
+    else tryAutoClaimNewbie();   // 从邀请分享返回后，自动检测并领取35级皇冠猫
   });
 }
 

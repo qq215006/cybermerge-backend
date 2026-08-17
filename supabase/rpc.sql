@@ -612,8 +612,8 @@ DECLARE
   v_grid jsonb;
   v_idx int;
 BEGIN
-  SELECT newbie_cat_claimed, COALESCE(newbie_ad_stage, 0), grid
-    INTO v_claimed, v_stage, v_grid
+  SELECT newbie_cat_claimed, COALESCE(newbie_ad_stage, 0), grid, COALESCE(invite_count, 0)
+    INTO v_claimed, v_stage, v_grid, v_invites
   FROM users WHERE tg_id = p_tg_id FOR UPDATE;
 
   IF NOT FOUND THEN
@@ -628,8 +628,7 @@ BEGIN
     RETURN json_build_object('ok', false, 'reason', 'ads not completed', 'stage', v_stage);
   END IF;
 
-  -- 新人解锁：检查「邀请总数」（通过邀请链接进来的好友数），而不是有效邀请数
-  SELECT COUNT(*) INTO v_invites FROM invites WHERE inviter_tg_id = p_tg_id;
+  -- 新人解锁：检查有效邀请数（users.invite_count，与个人中心显示口径一致）
   IF v_invites < 2 THEN
     RETURN json_build_object('ok', false, 'reason', 'invites not enough', 'invites', v_invites);
   END IF;
