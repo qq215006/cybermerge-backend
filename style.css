@@ -192,10 +192,14 @@ body.wallet-modal-open *::after {
   animation-play-state: paused !important;
 }
 
-/* 任意游戏内弹窗（离线收益/个人中心/设置/排行榜/图鉴/任务/海报/确认）打开时暂停动画，避免弹窗卡顿 */
-body.modal-open *,
-body.modal-open *::before,
-body.modal-open *::after {
+/* 任意游戏内弹窗打开时暂停「游戏区域」动画，避免弹窗卡顿；
+   只停 #app 和 #room-bg，不停弹窗自身的进出动画（否则弹窗会被暂停在 opacity:0 显示不出来） */
+body.modal-open #app *,
+body.modal-open #app *::before,
+body.modal-open #app *::after,
+body.modal-open #room-bg *,
+body.modal-open #room-bg *::before,
+body.modal-open #room-bg *::after {
   animation-play-state: paused !important;
 }
 
